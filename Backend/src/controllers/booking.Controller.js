@@ -7,6 +7,8 @@ import asyncHandler from "../utils/asyncHandler.utils.js"
 import ErrorResponse from "../utils/errorResponse.utils.js"
 import mongoose from "mongoose";
 
+
+
 // @desc    Search buses by route and date
 // @route   GET /api/bookings/search-buses
 // @access  Public
@@ -118,6 +120,8 @@ export const searchBuses = asyncHandler(async (req, res, next) => {
   });
 });
 
+
+
 // @desc    Get available seats for a schedule
 // @route   GET /api/bookings/seats/:scheduleId
 // @access  Public
@@ -186,9 +190,9 @@ export const createBooking = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Number of passengers must match number of seats', 400));
   }
 
-  if (seat_ids.length > 6) {
-    return next(new ErrorResponse('Cannot book more than 6 seats at once', 400));
-  }
+//   if (seat_ids.length > 6) {
+//     return next(new ErrorResponse('Cannot book more than 6 seats at once', 400));
+//   }
 
   // Validate passenger details
   for (const passenger of passengers) {
