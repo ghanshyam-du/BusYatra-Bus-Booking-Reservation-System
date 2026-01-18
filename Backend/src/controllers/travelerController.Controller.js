@@ -13,4 +13,28 @@ import mongoose from "mongoose";
 // @route   POST /api/traveler/buses
 // @access  Private (Traveler only)
 
-export const addBus = 
+export const addBus = asyncHandler(async (req, res, next) => {
+    const { bus_number,
+        bus_type,
+        bus_model,
+        from_location,
+        to_location,
+        total_seats,
+        fare,
+        amenities
+    } = req.body;
+
+    const traveler = await  Traveler.findOne({user_id: req.user.user_id});
+
+    if(!traveler) {
+        return next(new ErrorResponse("Traveler profile not found", 404));
+    }
+
+    if(traveler.verification_status !== "APPROVED"){
+        return next(new ErrorResponse("Your account is not approved yet. Please wait for admin approvel.", 403));
+    }
+
+    if(!bus_type || !bus_model || )
+
+
+})
