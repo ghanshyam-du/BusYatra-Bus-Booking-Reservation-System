@@ -170,6 +170,8 @@ export const getAvailableSeats = asyncHandler(async (req, res, next) => {
   });
 });
 
+
+
 // @desc    Create booking (Book seats)
 // @route   POST /api/bookings
 // @access  Private (Customer)
@@ -274,7 +276,7 @@ export const createBooking = asyncHandler(async (req, res, next) => {
       seat_numbers: seats.map(s => s.seat_number),
       total_amount,
       booking_status: 'CONFIRMED',
-      payment_status: 'PAID', // In real app, integrate payment gateway
+      payment_status: 'PAID', // In real app, integrate payment gateway   
       payment_method: 'UPI'
     }], { session });
 
@@ -350,6 +352,8 @@ export const createBooking = asyncHandler(async (req, res, next) => {
   }
 });
 
+
+
 // @desc    Get user's bookings
 // @route   GET /api/bookings/my-bookings
 // @access  Private (Customer)
@@ -417,6 +421,8 @@ export const getMyBookings = asyncHandler(async (req, res, next) => {
   });
 });
 
+
+
 // @desc    Get single booking details
 // @route   GET /api/bookings/:bookingId
 // @access  Private (Customer - own bookings only)
@@ -480,6 +486,8 @@ export const getBookingDetails = asyncHandler(async (req, res, next) => {
     }
   });
 });
+
+
 
 // @desc    Cancel booking
 // @route   PUT /api/bookings/:bookingId/cancel
