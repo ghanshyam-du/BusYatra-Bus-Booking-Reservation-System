@@ -163,3 +163,51 @@ export const updateBus = asyncHandler(async (req, res, next) => {
         data: bus
     });
 });
+
+
+
+// @desc    Delete bus (soft delete by setting is_active to false)
+// @route   DELETE /api/traveler/buses/:busId
+// @access  Private (Traveler only)
+
+
+export const deleteBus = asyncHandler(async (req, res, next) => {
+  const { busId } = req.params;
+  const traveler = await Traveler.findOne({ user_id: req.user.user_id });
+
+  if (!traveler) {
+    return next(new ErrorResponse('Traveler profile not found', 404));
+  }
+
+  const bus = await Bus.findOne({ bus_id: busId });
+
+  if (!bus) {
+    return next(new ErrorResponse('Bus not found', 404));
+  }
+
+  // Check ownership
+  if (bus.traveler_id !== traveler.traveler_id) {
+    return next(new ErrorResponse('Not authorized to delete this bus', 403));
+  }
+
+  // Check if bus has upcoming schedules
+  const upcomingSchedules = await BusSchedule.countDocuments({
+    bus_id: busId,
+    journey_date: { $gte: new Date() },
+    schedule_status: 'ACTIVE'
+  });
+
+  if (upcomingSchedules > 0) {
+    return next(new ErrorResponse('Cannot delete bus with upcoming schedules. Cancel schedules first.', 400));
+  }
+
+  // Soft delete
+  bus.is_active = false;
+  await bus.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Bus deleted successfully',
+    data: {}
+  });
+});
