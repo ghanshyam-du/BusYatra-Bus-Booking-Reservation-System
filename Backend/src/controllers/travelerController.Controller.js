@@ -218,3 +218,42 @@ export const deleteBus = asyncHandler(async (req, res, next) => {
 // ================================================================
 
 
+// @desc    Create bus schedule (auto-generates seats)
+// @route   POST /api/traveler/schedules
+// @access  Private (Traveler only)
+
+
+export const createSchedule = asyncHandler(async(req, res, next) =>{
+    const {bus_id, journey_date, departure_time, arrival_time} = req.body;
+
+    const traveler = await Traveler.findOne({user_id: req.user.user_id})
+
+    if(!traveler){
+        return next(new ErrorResponse("Traveler profile not found",404));
+    }
+
+    if(!bus_id || !journey_date || !departure_time || !arrival_time){
+         return next(new ErrorResponse("Please provide all required fields", 400));
+    }
+
+
+    const bus = await Bus.findOne({bus_id});
+
+    if(!bus){
+        return next(new ErrorResponse("Bus not found!",404));
+    }
+
+    if(bus.traveler_id !== traveler.traveler_id){
+         return next(new ErrorResponse('Not authorized to delete this bus', 403));
+    }
+
+    if(!bus.is_active){
+        return next(new ErrorResponse("Cannot create schedule for inactive bus", 400));
+    }
+
+    const scheduleDate = new Date(journey_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0)
+
+
+})
