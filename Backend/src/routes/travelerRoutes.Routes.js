@@ -22,7 +22,7 @@ import {
   getSupportTicketDetails
 } from "../controllers/travelerController.Controller";
 
-import { protect, authorize } from "../middlewares/auth.middlewares"
+import { protect, authorize } from "../routes/authRoutes.Routes.js"
 
 const router = express.Router();
 
@@ -59,4 +59,4 @@ router.route('/tickets')
 
 router.get('/tickets/:ticketId', getSupportTicketDetails);
 
-module.exports = router;
+export default router;
