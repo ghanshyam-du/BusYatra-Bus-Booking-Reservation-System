@@ -6,6 +6,7 @@ import authRoutes from "./src/routes/authRoutes.Routes.js";
 import errorHandler from "./src/middlewares/errorHandler.middlewares.js";
 import bookingRoutes from "./src/routes/bookingRoutes.Routes.js"
 import travelerRoutes from "./src/routes/travelerRoutes.Routes.js"
+import adminRoutes from "./src/routes/adminRoutes.Routes.js"
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/traveler', travelerRoutes);
+app.use('/api/admin',adminRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
