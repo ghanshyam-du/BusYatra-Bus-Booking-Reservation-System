@@ -20,7 +20,7 @@ import asyncHandler from "../utils/asyncHandler.utils.js"
 // @access  Private/Admin
 
 
-exports.getAllTravelers = asyncHandler(async (req, res, next) => {
+export const getAllTravelers = asyncHandler(async (req, res, next) => {
   const { status, search, page = 1, limit = 10 } = req.query;
 
   // Build query
@@ -62,7 +62,7 @@ exports.getAllTravelers = asyncHandler(async (req, res, next) => {
 // @desc    Get traveler details
 // @route   GET /api/admin/travelers/:id
 // @access  Private/Admin
-exports.getTravelerDetails = asyncHandler(async (req, res, next) => {
+export const getTravelerDetails = asyncHandler(async (req, res, next) => {
   const traveler = await Traveler.findOne({ traveler_id: req.params.id })
     .populate('user_id', 'full_name email mobile_number role');
 
@@ -124,7 +124,7 @@ exports.getTravelerDetails = asyncHandler(async (req, res, next) => {
 // @desc    Onboard new traveler (Create traveler profile for existing user)
 // @route   POST /api/admin/travelers/onboard
 // @access  Private/Admin
-exports.onboardTraveler = asyncHandler(async (req, res, next) => {
+export const onboardTraveler = asyncHandler(async (req, res, next) => {
   const { user_id, company_name, business_contact, address } = req.body;
 
   // Check if user exists
@@ -162,7 +162,7 @@ exports.onboardTraveler = asyncHandler(async (req, res, next) => {
 // @desc    Update traveler verification status
 // @route   PUT /api/admin/travelers/:id/status
 // @access  Private/Admin
-exports.updateTravelerStatus = asyncHandler(async (req, res, next) => {
+export const updateTravelerStatus = asyncHandler(async (req, res, next) => {
   const { status } = req.body;
 
   if (!['APPROVED', 'REJECTED', 'PENDING'].includes(status)) {
@@ -197,10 +197,12 @@ exports.updateTravelerStatus = asyncHandler(async (req, res, next) => {
 // SUPPORT TICKET MANAGEMENT
 // ================================================================
 
+
 // @desc    Get all support tickets
 // @route   GET /api/admin/tickets
 // @access  Private/Admin
-exports.getAllTickets = asyncHandler(async (req, res, next) => {
+
+export const getAllTickets = asyncHandler(async (req, res, next) => {
   const { status, priority, type, page = 1, limit = 10 } = req.query;
 
   let query = {};
@@ -230,10 +232,13 @@ exports.getAllTickets = asyncHandler(async (req, res, next) => {
   });
 });
 
+
 // @desc    Get ticket details
 // @route   GET /api/admin/tickets/:id
 // @access  Private/Admin
-exports.getTicketDetails = asyncHandler(async (req, res, next) => {
+
+
+export const getTicketDetails = asyncHandler(async (req, res, next) => {
   const ticket = await SupportTicket.findOne({ ticket_id: req.params.id })
     .populate('traveler_id', 'company_name business_contact user_id')
     .populate('admin_id', 'user_id');
@@ -248,10 +253,12 @@ exports.getTicketDetails = asyncHandler(async (req, res, next) => {
   });
 });
 
+
 // @desc    Assign ticket to admin
 // @route   PUT /api/admin/tickets/:id/assign
 // @access  Private/Admin
-exports.assignTicket = asyncHandler(async (req, res, next) => {
+
+export const assignTicket = asyncHandler(async (req, res, next) => {
   const ticket = await SupportTicket.findOne({ ticket_id: req.params.id });
   
   if (!ticket) {
@@ -276,10 +283,12 @@ exports.assignTicket = asyncHandler(async (req, res, next) => {
   });
 });
 
+
 // @desc    Resolve/Close ticket
 // @route   PUT /api/admin/tickets/:id/resolve
 // @access  Private/Admin
-exports.resolveTicket = asyncHandler(async (req, res, next) => {
+
+export const resolveTicket = asyncHandler(async (req, res, next) => {
   const { resolution_notes } = req.body;
 
   if (!resolution_notes) {
@@ -303,6 +312,8 @@ exports.resolveTicket = asyncHandler(async (req, res, next) => {
   });
 });
 
+
+
 // ================================================================
 // SYSTEM ANALYTICS & REPORTS
 // ================================================================
@@ -310,7 +321,9 @@ exports.resolveTicket = asyncHandler(async (req, res, next) => {
 // @desc    Get dashboard statistics
 // @route   GET /api/admin/dashboard/stats
 // @access  Private/Admin
-exports.getDashboardStats = asyncHandler(async (req, res, next) => {
+
+
+export const getDashboardStats = asyncHandler(async (req, res, next) => {
   // Total counts
   const totalUsers = await User.countDocuments({ role: 'CUSTOMER' });
   const totalTravelers = await Traveler.countDocuments({ verification_status: 'APPROVED' });
@@ -368,10 +381,14 @@ exports.getDashboardStats = asyncHandler(async (req, res, next) => {
   });
 });
 
+
+
 // @desc    Get revenue report
 // @route   GET /api/admin/reports/revenue
 // @access  Private/Admin
-exports.getRevenueReport = asyncHandler(async (req, res, next) => {
+
+
+export const getRevenueReport = asyncHandler(async (req, res, next) => {
   const { start_date, end_date, groupBy = 'day' } = req.query;
 
   let matchStage = {
@@ -434,10 +451,14 @@ exports.getRevenueReport = asyncHandler(async (req, res, next) => {
   });
 });
 
+
+
 // @desc    Get top travelers by revenue
 // @route   GET /api/admin/reports/top-travelers
 // @access  Private/Admin
-exports.getTopTravelers = asyncHandler(async (req, res, next) => {
+
+
+export const getTopTravelers = asyncHandler(async (req, res, next) => {
   const { limit = 10 } = req.query;
 
   const topTravelers = await Booking.aggregate([
@@ -494,10 +515,12 @@ exports.getTopTravelers = asyncHandler(async (req, res, next) => {
   });
 });
 
+
 // @desc    Get booking statistics
 // @route   GET /api/admin/reports/bookings
 // @access  Private/Admin
-exports.getBookingStats = asyncHandler(async (req, res, next) => {
+
+export const getBookingStats = asyncHandler(async (req, res, next) => {
   const stats = await Booking.aggregate([
     {
       $group: {
@@ -527,6 +550,7 @@ exports.getBookingStats = asyncHandler(async (req, res, next) => {
   });
 });
 
+
 // ================================================================
 // USER MANAGEMENT
 // ================================================================
@@ -534,7 +558,9 @@ exports.getBookingStats = asyncHandler(async (req, res, next) => {
 // @desc    Get all users
 // @route   GET /api/admin/users
 // @access  Private/Admin
-exports.getAllUsers = asyncHandler(async (req, res, next) => {
+
+
+export const getAllUsers = asyncHandler(async (req, res, next) => {
   const { role, search, page = 1, limit = 10 } = req.query;
 
   let query = {};
@@ -569,10 +595,12 @@ exports.getAllUsers = asyncHandler(async (req, res, next) => {
   });
 });
 
+
 // @desc    Deactivate/Activate user
 // @route   PUT /api/admin/users/:id/toggle-status
 // @access  Private/Admin
-exports.toggleUserStatus = asyncHandler(async (req, res, next) => {
+
+export const toggleUserStatus = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ user_id: req.params.id });
   
   if (!user) {
@@ -589,6 +617,7 @@ exports.toggleUserStatus = asyncHandler(async (req, res, next) => {
   });
 });
 
+
 // ================================================================
 // BUS & SCHEDULE MANAGEMENT (OVERRIDE CAPABILITIES)
 // ================================================================
@@ -596,7 +625,8 @@ exports.toggleUserStatus = asyncHandler(async (req, res, next) => {
 // @desc    Get all buses (across all travelers)
 // @route   GET /api/admin/buses
 // @access  Private/Admin
-exports.getAllBuses = asyncHandler(async (req, res, next) => {
+
+export const getAllBuses = asyncHandler(async (req, res, next) => {
   const { status, search, page = 1, limit = 10 } = req.query;
 
   let query = {};
@@ -631,10 +661,12 @@ exports.getAllBuses = asyncHandler(async (req, res, next) => {
   });
 });
 
+
 // @desc    Deactivate any bus (admin override)
 // @route   PUT /api/admin/buses/:id/deactivate
 // @access  Private/Admin
-exports.deactivateBus = asyncHandler(async (req, res, next) => {
+
+export const deactivateBus = asyncHandler(async (req, res, next) => {
   const bus = await Bus.findOne({ bus_id: req.params.id });
   
   if (!bus) {
