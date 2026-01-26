@@ -3,7 +3,7 @@ import asyncHandler from "../utils/asyncHandler.utils.js"
 import ErrorResponse from "../utils/errorResponse.utils.js"
 import sendTokenResponse from "../utils/sendTokenResponse.utils.js"
 
-import crypto from "crypto";
+import crypto from "crypto"
 
 
 // @desc    Register user
