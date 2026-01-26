@@ -35,8 +35,10 @@ app.get("/", (req, res) => {
   });
 });
 
+
 // Error Handler (always at the end)
 app.use(errorHandler);
+
 
 // Database + Server
 connectDB()
