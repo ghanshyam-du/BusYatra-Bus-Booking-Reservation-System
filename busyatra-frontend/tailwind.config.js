@@ -20,7 +20,25 @@ export default {
           900: '#0c4a6e',
         },
       },
+
+      backdropBlur: {
+        xs: '2px',
+        sm: '6px',
+        md: '12px',
+        lg: '20px',
+      },
+
+      boxShadow: {
+        glass:
+          '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+      },
+
+      borderRadius: {
+        xl: '1.25rem',
+        '2xl': '1.75rem',
+        '3xl': '2rem',
+      },
     },
   },
   plugins: [],
-}
+};

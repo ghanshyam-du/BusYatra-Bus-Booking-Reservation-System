@@ -61,7 +61,7 @@ function App() {
             path="/traveler/*"
             element={
               <PrivateRoute allowedRoles={['TRAVELER']}>
-                <TravelerDashboard />
+                {/* <TravelerDashboard /> */}
               </PrivateRoute>
             }
           />
@@ -70,7 +70,7 @@ function App() {
             path="/admin/*"
             element={
               <PrivateRoute allowedRoles={['ADMIN']}>
-                <AdminDashboard />
+                {/* <AdminDashboard /> */}
               </PrivateRoute>
             }
           />
