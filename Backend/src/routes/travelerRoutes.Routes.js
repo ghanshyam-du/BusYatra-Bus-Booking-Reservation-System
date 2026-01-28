@@ -20,9 +20,10 @@ import {
   createSupportTicket,
   getMySupportTickets,
   getSupportTicketDetails
-} from "../controllers/travelerController.Controller";
+} from "../controllers/travelerController.Controller.js";
 
-import { protect, authorize } from "../routes/authRoutes.Routes.js"
+
+import { authorize, protect } from "../middlewares/auth.middlewares.js";
 
 const router = express.Router();
 

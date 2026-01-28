@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/common/PrivateRoute';
-
+import "./App.css"
 // Pages
 import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';

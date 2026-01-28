@@ -7,7 +7,7 @@ import SupportTicket from "../models/supportTickets.models.js"
 import asyncHandler from "../utils/asyncHandler.utils.js";
 import ErrorResponse from "../utils/errorResponse.utils.js";
 import mongoose from "mongoose";
-import busScheduleModels from "../models/busSchedule.models.js"
+// import busScheduleModels from "../models/busSchedule.models.js"
 
 
 // @desc    Add new bus
