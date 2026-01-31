@@ -41,6 +41,7 @@ const RegisterPage = () => {
     date_of_birth: '',
   });
 
+  
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
