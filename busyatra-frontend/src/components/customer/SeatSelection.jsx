@@ -1,10 +1,57 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Calendar, MapPin } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  Box,
+  Typography,
+  Button,
+  TextField,
+  Grid,
+  IconButton,
+  Chip,
+  Stack,
+  Card,
+  CardContent,
+  Divider,
+  Avatar,
+  FormControl,
+  Select,
+  MenuItem,
+  InputLabel,
+  Fade,
+  Slide,
+  Paper,
+  alpha,
+  Skeleton,
+  useTheme,
+  useMediaQuery,
+} from '@mui/material';
+import {
+  Close as CloseIcon,
+  Person as PersonIcon,
+  CalendarMonth as CalendarIcon,
+  LocationOn as LocationIcon,
+  DirectionsBus as BusIcon,
+  EventSeat as SeatIcon,
+  CheckCircle as CheckCircleIcon,
+  Cancel as CancelIcon,
+  AttachMoney as MoneyIcon,
+  ArrowForward as ArrowIcon,
+  Male as MaleIcon,
+  Female as FemaleIcon,
+  Wc as OtherIcon,
+} from '@mui/icons-material';
 import bookingService from '../../services/bookingService';
 import { formatCurrency, formatTime, formatDate } from '../../utils/formatters';
 import toast from 'react-hot-toast';
 
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
+
 const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [seats, setSeats] = useState([]);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [passengers, setPassengers] = useState([]);
@@ -73,146 +120,528 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
 
   const totalAmount = selectedSeats.length * bus.fare;
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold">Select Seats</h2>
-            <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-              <span className="flex items-center gap-1">
-                <MapPin className="w-4 h-4" />
-                {bus.from_location} → {bus.to_location}
-              </span>
-              <span className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
-                {formatDate(bus.journey_date)}
-              </span>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
-            <X className="w-6 h-6" />
-          </button>
-        </div>
+  const getGenderIcon = (gender) => {
+    switch (gender) {
+      case 'Male': return <MaleIcon fontSize="small" />;
+      case 'Female': return <FemaleIcon fontSize="small" />;
+      default: return <OtherIcon fontSize="small" />;
+    }
+  };
 
-        <div className="p-6">
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Seat Layout */}
-            <div>
-              <h3 className="font-bold mb-4">Select Your Seats</h3>
-              
+  return (
+    <Dialog
+      open={true}
+      onClose={onClose}
+      maxWidth="lg"
+      fullWidth
+      fullScreen={isMobile}
+      TransitionComponent={Transition}
+      PaperProps={{
+        sx: {
+          borderRadius: isMobile ? 0 : 4,
+          maxHeight: '95vh',
+          background: 'linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%)',
+        }
+      }}
+    >
+      {/* Header */}
+      <Box
+        sx={{
+          background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+          color: 'white',
+          p: 3,
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: '-50%',
+            right: '-10%',
+            width: '400px',
+            height: '400px',
+            background: alpha('#fff', 0.1),
+            borderRadius: '50%',
+          }
+        }}
+      >
+        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ position: 'relative', zIndex: 1 }}>
+          <Box>
+            <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+              <BusIcon sx={{ fontSize: 28 }} />
+              <Typography variant="h4" fontWeight="800" letterSpacing="-0.5px">
+                Select Your Seats
+              </Typography>
+            </Stack>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 3 }} mt={2}>
+              <Chip
+                icon={<LocationIcon />}
+                label={`${bus.from_location} → ${bus.to_location}`}
+                sx={{
+                  bgcolor: alpha('#fff', 0.2),
+                  color: 'white',
+                  fontWeight: 600,
+                  backdropFilter: 'blur(10px)',
+                  '& .MuiChip-icon': { color: 'white' }
+                }}
+              />
+              <Chip
+                icon={<CalendarIcon />}
+                label={formatDate(bus.journey_date)}
+                sx={{
+                  bgcolor: alpha('#fff', 0.2),
+                  color: 'white',
+                  fontWeight: 600,
+                  backdropFilter: 'blur(10px)',
+                  '& .MuiChip-icon': { color: 'white' }
+                }}
+              />
+              <Chip
+                icon={<MoneyIcon />}
+                label={`${formatCurrency(bus.fare)} per seat`}
+                sx={{
+                  bgcolor: alpha('#fff', 0.2),
+                  color: 'white',
+                  fontWeight: 600,
+                  backdropFilter: 'blur(10px)',
+                  '& .MuiChip-icon': { color: 'white' }
+                }}
+              />
+            </Stack>
+          </Box>
+          <IconButton
+            onClick={onClose}
+            sx={{
+              bgcolor: alpha('#fff', 0.2),
+              color: 'white',
+              '&:hover': {
+                bgcolor: alpha('#fff', 0.3),
+                transform: 'rotate(90deg)',
+              },
+              transition: 'all 0.3s',
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </Stack>
+      </Box>
+
+      <DialogContent sx={{ p: { xs: 2, md: 4 } }}>
+        <Grid container spacing={4}>
+          {/* Seat Layout Section */}
+          <Grid item xs={12} md={7}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 3,
+                borderRadius: 3,
+                border: '2px solid',
+                borderColor: 'divider',
+                background: 'white',
+              }}
+            >
+              <Stack direction="row" spacing={1} alignItems="center" mb={3}>
+                <SeatIcon color="primary" />
+                <Typography variant="h6" fontWeight="700">
+                  Choose Your Seats
+                </Typography>
+              </Stack>
+
               {/* Legend */}
-              <div className="flex gap-4 mb-6 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 border-2 border-green-500 rounded"></div>
-                  Available
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-500 rounded"></div>
-                  Selected
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gray-300 rounded"></div>
-                  Booked
-                </div>
-              </div>
+              <Stack direction="row" spacing={3} mb={4} flexWrap="wrap" gap={1}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Box
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      border: '3px solid',
+                      borderColor: 'success.main',
+                      borderRadius: 1.5,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  />
+                  <Typography variant="body2" fontWeight={600} color="text.secondary">
+                    Available
+                  </Typography>
+                </Stack>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Box
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      bgcolor: 'primary.main',
+                      borderRadius: 1.5,
+                      boxShadow: '0 4px 12px rgba(30, 60, 114, 0.3)',
+                    }}
+                  />
+                  <Typography variant="body2" fontWeight={600} color="text.secondary">
+                    Selected
+                  </Typography>
+                </Stack>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Box
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      bgcolor: 'action.disabledBackground',
+                      borderRadius: 1.5,
+                    }}
+                  />
+                  <Typography variant="body2" fontWeight={600} color="text.secondary">
+                    Booked
+                  </Typography>
+                </Stack>
+              </Stack>
+
+              <Divider sx={{ mb: 3 }} />
+
+              {/* Bus Front Indicator */}
+              <Box sx={{ mb: 3, textAlign: 'center' }}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    display: 'inline-flex',
+                    px: 4,
+                    py: 1,
+                    borderRadius: 2,
+                    bgcolor: 'action.hover',
+                  }}
+                >
+                  <Typography variant="caption" fontWeight={700} color="text.secondary">
+                    🚌 DRIVER
+                  </Typography>
+                </Paper>
+              </Box>
 
               {/* Seats Grid */}
               {loading ? (
-                <p>Loading seats...</p>
+                <Grid container spacing={1.5}>
+                  {[...Array(20)].map((_, i) => (
+                    <Grid item xs={2.4} key={i}>
+                      <Skeleton variant="rectangular" height={56} sx={{ borderRadius: 1.5 }} />
+                    </Grid>
+                  ))}
+                </Grid>
               ) : (
-                <div className="grid grid-cols-5 gap-3">
+                <Grid container spacing={1.5}>
                   {seats.map((seat) => {
                     const isSelected = selectedSeats.find((s) => s.seat_id === seat.seat_id);
                     return (
-                      <button
-                        key={seat.seat_id}
-                        onClick={() => toggleSeat(seat)}
-                        disabled={seat.is_booked}
-                        className={`h-12 rounded font-semibold transition ${
-                          seat.is_booked
-                            ? 'bg-gray-300 cursor-not-allowed'
-                            : isSelected
-                            ? 'bg-blue-500 text-white'
-                            : 'border-2 border-green-500 hover:bg-green-50'
-                        }`}
-                      >
-                        {seat.seat_number}
-                      </button>
+                      <Grid item xs={2.4} key={seat.seat_id}>
+                        <Button
+                          onClick={() => toggleSeat(seat)}
+                          disabled={seat.is_booked}
+                          fullWidth
+                          sx={{
+                            height: 56,
+                            borderRadius: 1.5,
+                            fontSize: '0.95rem',
+                            fontWeight: 700,
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            ...(seat.is_booked
+                              ? {
+                                  bgcolor: 'action.disabledBackground',
+                                  color: 'text.disabled',
+                                  cursor: 'not-allowed',
+                                  '&:hover': {
+                                    bgcolor: 'action.disabledBackground',
+                                  }
+                                }
+                              : isSelected
+                              ? {
+                                  bgcolor: 'primary.main',
+                                  color: 'white',
+                                  boxShadow: '0 4px 12px rgba(30, 60, 114, 0.3)',
+                                  transform: 'translateY(-2px)',
+                                  '&:hover': {
+                                    bgcolor: 'primary.dark',
+                                    boxShadow: '0 6px 16px rgba(30, 60, 114, 0.4)',
+                                  }
+                                }
+                              : {
+                                  border: '3px solid',
+                                  borderColor: 'success.main',
+                                  color: 'success.main',
+                                  bgcolor: 'background.paper',
+                                  '&:hover': {
+                                    bgcolor: alpha(theme.palette.success.main, 0.1),
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: '0 4px 12px rgba(76, 175, 80, 0.2)',
+                                  }
+                                }),
+                          }}
+                        >
+                          {seat.seat_number}
+                        </Button>
+                      </Grid>
                     );
                   })}
-                </div>
-              )}
-            </div>
-
-            {/* Passenger Details */}
-            <div>
-              <h3 className="font-bold mb-4">Passenger Details</h3>
-              
-              {selectedSeats.length === 0 ? (
-                <p className="text-gray-500">Select seats to enter passenger details</p>
-              ) : (
-                <div className="space-y-4">
-                  {selectedSeats.map((seat, index) => (
-                    <div key={seat.seat_id} className="border rounded-lg p-4">
-                      <p className="font-semibold mb-3">Seat {seat.seat_number}</p>
-                      <div className="space-y-3">
-                        <input
-                          type="text"
-                          placeholder="Passenger Name"
-                          value={passengers[index]?.name || ''}
-                          onChange={(e) => updatePassenger(index, 'name', e.target.value)}
-                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
-                        />
-                        <div className="grid grid-cols-2 gap-3">
-                          <input
-                            type="number"
-                            placeholder="Age"
-                            value={passengers[index]?.age || ''}
-                            onChange={(e) => updatePassenger(index, 'age', e.target.value)}
-                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
-                          />
-                          <select
-                            value={passengers[index]?.gender || ''}
-                            onChange={(e) => updatePassenger(index, 'gender', e.target.value)}
-                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
-                          >
-                            <option value="">Gender</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                </Grid>
               )}
 
-              {/* Total & Book */}
+              {/* Selected Seats Summary */}
               {selectedSeats.length > 0 && (
-                <div className="mt-6 border-t pt-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="font-semibold">Total Amount:</span>
-                    <span className="text-2xl font-bold text-primary-600">
-                      {formatCurrency(totalAmount)}
-                    </span>
-                  </div>
-                  <button
-                    onClick={handleBooking}
-                    disabled={booking}
-                    className="w-full py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition disabled:opacity-50"
-                  >
-                    {booking ? 'Processing...' : 'Confirm Booking'}
-                  </button>
-                </div>
+                <Box
+                  sx={{
+                    mt: 3,
+                    p: 2,
+                    borderRadius: 2,
+                    bgcolor: alpha(theme.palette.primary.main, 0.08),
+                    border: '1px solid',
+                    borderColor: alpha(theme.palette.primary.main, 0.2),
+                  }}
+                >
+                  <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+                    <Typography variant="body2" fontWeight={600} color="primary.main">
+                      Selected:
+                    </Typography>
+                    {selectedSeats.map((seat) => (
+                      <Chip
+                        key={seat.seat_id}
+                        label={seat.seat_number}
+                        size="small"
+                        color="primary"
+                        onDelete={() => toggleSeat(seat)}
+                        sx={{ fontWeight: 600 }}
+                      />
+                    ))}
+                  </Stack>
+                </Box>
               )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+            </Paper>
+          </Grid>
+
+          {/* Passenger Details Section */}
+          <Grid item xs={12} md={5}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 3,
+                borderRadius: 3,
+                border: '2px solid',
+                borderColor: 'divider',
+                background: 'white',
+                position: 'sticky',
+                top: 20,
+              }}
+            >
+              <Stack direction="row" spacing={1} alignItems="center" mb={3}>
+                <PersonIcon color="primary" />
+                <Typography variant="h6" fontWeight="700">
+                  Passenger Details
+                </Typography>
+              </Stack>
+
+              {selectedSeats.length === 0 ? (
+                <Box
+                  sx={{
+                    textAlign: 'center',
+                    py: 6,
+                  }}
+                >
+                  <SeatIcon sx={{ fontSize: 64, color: 'action.disabled', mb: 2 }} />
+                  <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                    Select seats to enter passenger details
+                  </Typography>
+                </Box>
+              ) : (
+                <Stack spacing={3}>
+                  {selectedSeats.map((seat, index) => (
+                    <Fade in={true} key={seat.seat_id} timeout={300 + index * 100}>
+                      <Card
+                        variant="outlined"
+                        sx={{
+                          borderRadius: 2,
+                          borderWidth: 2,
+                          borderColor: 'divider',
+                          transition: 'all 0.3s',
+                          '&:hover': {
+                            borderColor: 'primary.main',
+                            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
+                          }
+                        }}
+                      >
+                        <CardContent sx={{ p: 2.5 }}>
+                          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                            <Chip
+                              icon={<SeatIcon />}
+                              label={`Seat ${seat.seat_number}`}
+                              color="primary"
+                              size="small"
+                              sx={{ fontWeight: 700 }}
+                            />
+                            <Avatar
+                              sx={{
+                                width: 32,
+                                height: 32,
+                                bgcolor: 'primary.main',
+                                fontSize: '0.875rem',
+                                fontWeight: 700,
+                              }}
+                            >
+                              {index + 1}
+                            </Avatar>
+                          </Stack>
+
+                          <Stack spacing={2}>
+                            <TextField
+                              fullWidth
+                              size="small"
+                              label="Full Name"
+                              placeholder="Enter passenger name"
+                              value={passengers[index]?.name || ''}
+                              onChange={(e) => updatePassenger(index, 'name', e.target.value)}
+                              InputProps={{
+                                startAdornment: <PersonIcon sx={{ mr: 1, color: 'action.active' }} fontSize="small" />,
+                              }}
+                              sx={{
+                                '& .MuiOutlinedInput-root': {
+                                  borderRadius: 1.5,
+                                }
+                              }}
+                            />
+                            <Grid container spacing={2}>
+                              <Grid item xs={6}>
+                                <TextField
+                                  fullWidth
+                                  size="small"
+                                  type="number"
+                                  label="Age"
+                                  placeholder="Age"
+                                  value={passengers[index]?.age || ''}
+                                  onChange={(e) => updatePassenger(index, 'age', e.target.value)}
+                                  inputProps={{ min: 1, max: 120 }}
+                                  sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                      borderRadius: 1.5,
+                                    }
+                                  }}
+                                />
+                              </Grid>
+                              <Grid item xs={6}>
+                                <FormControl fullWidth size="small">
+                                  <InputLabel>Gender</InputLabel>
+                                  <Select
+                                    value={passengers[index]?.gender || ''}
+                                    label="Gender"
+                                    onChange={(e) => updatePassenger(index, 'gender', e.target.value)}
+                                    sx={{
+                                      borderRadius: 1.5,
+                                    }}
+                                  >
+                                    <MenuItem value="Male">
+                                      <Stack direction="row" spacing={1} alignItems="center">
+                                        <MaleIcon fontSize="small" />
+                                        <span>Male</span>
+                                      </Stack>
+                                    </MenuItem>
+                                    <MenuItem value="Female">
+                                      <Stack direction="row" spacing={1} alignItems="center">
+                                        <FemaleIcon fontSize="small" />
+                                        <span>Female</span>
+                                      </Stack>
+                                    </MenuItem>
+                                    <MenuItem value="Other">
+                                      <Stack direction="row" spacing={1} alignItems="center">
+                                        <OtherIcon fontSize="small" />
+                                        <span>Other</span>
+                                      </Stack>
+                                    </MenuItem>
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                            </Grid>
+                          </Stack>
+                        </CardContent>
+                      </Card>
+                    </Fade>
+                  ))}
+                </Stack>
+              )}
+
+              {/* Total & Book Button */}
+              {selectedSeats.length > 0 && (
+                <Box sx={{ mt: 4 }}>
+                  <Divider sx={{ mb: 3 }} />
+                  
+                  <Stack spacing={2}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="body1" fontWeight={600} color="text.secondary">
+                        Seats Selected:
+                      </Typography>
+                      <Typography variant="h6" fontWeight={700}>
+                        {selectedSeats.length}
+                      </Typography>
+                    </Stack>
+                    
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="body1" fontWeight={600} color="text.secondary">
+                        Fare per Seat:
+                      </Typography>
+                      <Typography variant="h6" fontWeight={700}>
+                        {formatCurrency(bus.fare)}
+                      </Typography>
+                    </Stack>
+
+                    <Divider />
+                    
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="h6" fontWeight={700}>
+                        Total Amount:
+                      </Typography>
+                      <Typography
+                        variant="h4"
+                        fontWeight={800}
+                        sx={{
+                          background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                        }}
+                      >
+                        {formatCurrency(totalAmount)}
+                      </Typography>
+                    </Stack>
+
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      size="large"
+                      endIcon={<ArrowIcon />}
+                      onClick={handleBooking}
+                      disabled={booking}
+                      sx={{
+                        mt: 2,
+                        py: 2,
+                        borderRadius: 2,
+                        fontSize: '1.1rem',
+                        fontWeight: 700,
+                        textTransform: 'none',
+                        background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+                        boxShadow: '0 8px 24px rgba(30, 60, 114, 0.3)',
+                        transition: 'all 0.3s',
+                        '&:hover': {
+                          boxShadow: '0 12px 32px rgba(30, 60, 114, 0.4)',
+                          transform: 'translateY(-2px)',
+                        },
+                        '&:active': {
+                          transform: 'translateY(0)',
+                        },
+                        '&:disabled': {
+                          background: 'linear-gradient(135deg, #9e9e9e 0%, #757575 100%)',
+                        }
+                      }}
+                    >
+                      {booking ? 'Processing Booking...' : 'Confirm Booking'}
+                    </Button>
+                  </Stack>
+                </Box>
+              )}
+            </Paper>
+          </Grid>
+        </Grid>
+      </DialogContent>
+    </Dialog>
   );
 };
 
