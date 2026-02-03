@@ -11,6 +11,7 @@ const PrivateRoute = ({ children, allowedRoles = [] }) => {
     return <Loading />;
   }
 
+  console.log("test3",user);
   if (!user) {
     return <Navigate to="/login" replace />;
   }

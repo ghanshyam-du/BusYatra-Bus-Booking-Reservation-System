@@ -89,8 +89,3 @@ const travelerService = {
 
 export default travelerService;
 
-
-// ----------------------------------------------------------------
-// FILE 5: src/services/adminService.js
-// Admin service
-// ----------------------------------------------------------------

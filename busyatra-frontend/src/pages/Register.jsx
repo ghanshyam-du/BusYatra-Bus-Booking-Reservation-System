@@ -72,7 +72,7 @@ const RegisterPage = () => {
       const { confirmPassword, ...registerData } = formData;
       await register(registerData);
       toast.success('Registration successful!');
-      navigate('/customer');
+      navigate('/login');
     } catch (error) {
       toast.error(error.message || 'Registration failed');
     } finally {

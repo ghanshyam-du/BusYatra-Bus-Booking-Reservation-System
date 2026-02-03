@@ -51,9 +51,10 @@ const LoginPage = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await login(formData);
+      const res = await login(formData);
+      console.log('test1', res);
       toast.success('Welcome back! Login successful');
-      navigate('/');
+      navigate('/customer');
     } catch (err) {
       toast.error(err.message || 'Login failed. Please check your credentials.');
     } finally {
@@ -85,7 +86,7 @@ const LoginPage = () => {
         <Grid container spacing={0} sx={{ minHeight: { md: '600px' } }}>
           {/* Left Side - Branding & Features */}
           {!isMobile && (
-            <Grid item md={6}>
+            <Grid size={{md:6}}>
               <Paper
                 elevation={0}
                 sx={{
@@ -131,7 +132,7 @@ const LoginPage = () => {
                     </Box>
                     <Box>
                       <Typography variant="h4" fontWeight={800} letterSpacing="-0.5px">
-                        BusYatra
+                        BusBook
                       </Typography>
                       <Typography variant="body2" sx={{ opacity: 0.9 }}>
                         Your Journey Partner
@@ -195,7 +196,7 @@ const LoginPage = () => {
 
                 {/* Stats */}
                 <Grid container spacing={3} sx={{ position: 'relative', zIndex: 1, mt: 4 }}>
-                  <Grid item xs={4}>
+                  <Grid size={{md:4}}>
                     <Box>
                       <Typography variant="h4" fontWeight={800}>
                         10K+
@@ -205,7 +206,7 @@ const LoginPage = () => {
                       </Typography>
                     </Box>
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={{md:4}}>
                     <Box>
                       <Typography variant="h4" fontWeight={800}>
                         500+
@@ -215,7 +216,7 @@ const LoginPage = () => {
                       </Typography>
                     </Box>
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={{md:4}}>
                     <Box>
                       <Typography variant="h4" fontWeight={800}>
                         4.8★
@@ -231,7 +232,7 @@ const LoginPage = () => {
           )}
 
           {/* Right Side - Login Form */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{xs:12, md:6}}>
             <Paper
               elevation={0}
               sx={{
