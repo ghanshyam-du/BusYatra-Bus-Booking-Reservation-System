@@ -167,7 +167,7 @@ const BusSearch = () => {
           <form onSubmit={handleSearch}>
             <Grid container spacing={2} alignItems="center">
               {/* From Location */}
-              <Grid item xs={12} md={4}>
+              <Grid size={{xs:12, md:4}}>
                 <StyledTextField
                   fullWidth
                   label="From"
@@ -203,7 +203,7 @@ const BusSearch = () => {
               )}
 
               {/* To Location */}
-              <Grid item xs={12} md={4}>
+              <Grid size={{xs:12, md:4}}>
                 <StyledTextField
                   fullWidth
                   label="To"

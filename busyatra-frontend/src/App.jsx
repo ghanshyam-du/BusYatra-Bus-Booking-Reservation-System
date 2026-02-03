@@ -9,7 +9,7 @@ import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';
 import HomePage from './pages/Home';
 import CustomerDashboard from './pages/CustomerDashboard';
-// import TravelerDashboard from './pages/TravelerDashboard';
+import TravelerDashboard from './pages/TravelerDashboard';
 // import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
@@ -62,6 +62,7 @@ function App() {
             element={
               <PrivateRoute allowedRoles={['TRAVELER']}>
                 {/* <TravelerDashboard /> */}
+                <TravelerDashboard/>
               </PrivateRoute>
             }
           />

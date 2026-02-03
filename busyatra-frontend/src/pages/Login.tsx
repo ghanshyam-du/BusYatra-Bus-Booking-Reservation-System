@@ -132,7 +132,7 @@ const LoginPage = () => {
                     </Box>
                     <Box>
                       <Typography variant="h4" fontWeight={800} letterSpacing="-0.5px">
-                        BusBook
+                        BusYatra
                       </Typography>
                       <Typography variant="body2" sx={{ opacity: 0.9 }}>
                         Your Journey Partner
