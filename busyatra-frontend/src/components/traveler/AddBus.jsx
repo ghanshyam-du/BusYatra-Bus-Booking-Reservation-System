@@ -495,7 +495,7 @@ const AddBus = () => {
               onClick={() => navigate('/traveler')}
               sx={{ minWidth: 150 }}
             >
-              Cancel
+              Cancel 
             </Button>
             <Button
               type="submit"
