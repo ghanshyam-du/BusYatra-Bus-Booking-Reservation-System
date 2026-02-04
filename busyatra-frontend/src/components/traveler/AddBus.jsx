@@ -11,9 +11,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
   InputAdornment,
   IconButton,
   Card,
@@ -22,27 +19,22 @@ import {
   Divider,
   Alert,
   Stack,
-  Tooltip,
-  Stepper,
-  Step,
-  StepLabel,
 } from '@mui/material';
 import {
   ArrowBack,
   DirectionsBus,
   LocationOn,
-  Schedule,
   EventSeat,
   CurrencyRupee,
   Wifi,
   BatteryCharging80,
   LocalDrink,
-  AcUnit,
   Bed,
   Lightbulb,
   ExitToApp,
   CheckCircle,
   InfoOutlined,
+  Tv,
 } from '@mui/icons-material';
 import travelerService from '../../services/travelerService';
 import toast from 'react-hot-toast';
@@ -52,31 +44,29 @@ const AddBus = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     bus_number: '',
-    bus_type: 'SEATER',
+    bus_type: 'AC Seater',
+    bus_model: '',
     from_location: '',
     to_location: '',
-    departure_time: '',
-    arrival_time: '',
     total_seats: 40,
     fare: '',
     amenities: []
   });
 
   const busTypes = [
-    { value: 'SEATER', label: 'Seater', description: 'Standard seating' },
-    { value: 'SLEEPER', label: 'Sleeper', description: 'Comfortable berths' },
-    { value: 'SEMI_SLEEPER', label: 'Semi Sleeper', description: 'Reclining seats' },
-    { value: 'AC', label: 'AC', description: 'Air conditioned' },
-    { value: 'NON_AC', label: 'Non-AC', description: 'Regular bus' },
-    { value: 'VOLVO', label: 'Volvo', description: 'Premium luxury' }
+    { value: 'AC Sleeper', label: 'AC Sleeper', description: 'Air conditioned sleeper bus' },
+    { value: 'Non-AC Sleeper', label: 'Non-AC Sleeper', description: 'Regular sleeper bus' },
+    { value: 'AC Seater', label: 'AC Seater', description: 'Air conditioned seating' },
+    { value: 'Non-AC Seater', label: 'Non-AC Seater', description: 'Regular seating bus' },
+    { value: 'Semi Sleeper', label: 'Semi Sleeper', description: 'Reclining seats' }
   ];
 
   const amenityOptions = [
     { name: 'WiFi', icon: <Wifi /> },
-    { name: 'Charging Point', icon: <BatteryCharging80 /> },
+    { name: 'Charging Port', icon: <BatteryCharging80 /> },
     { name: 'Water Bottle', icon: <LocalDrink /> },
-    { name: 'Blanket', icon: <AcUnit /> },
-    { name: 'Pillow', icon: <Bed /> },
+    { name: 'Blanket', icon: <Bed /> },
+    { name: 'TV', icon: <Tv /> },
     { name: 'Reading Light', icon: <Lightbulb /> },
     { name: 'Emergency Exit', icon: <ExitToApp /> }
   ];
@@ -95,17 +85,44 @@ const AddBus = () => {
     }
   };
 
+  const validateBusNumber = (busNumber) => {
+    const pattern = /^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{4}$/;
+    return pattern.test(busNumber);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
-    if (formData.from_location === formData.to_location) {
+    // Validation - Bus Number
+    if (!validateBusNumber(formData.bus_number)) {
+      toast.error('Please enter a valid bus number (e.g., GJ01AB1234)');
+      return;
+    }
+
+    // Validation - From and To locations must be different
+    if (formData.from_location.trim().toLowerCase() === formData.to_location.trim().toLowerCase()) {
       toast.error('From and To locations must be different');
       return;
     }
 
-    if (parseInt(formData.total_seats) < 10 || parseInt(formData.total_seats) > 60) {
+    // Validation - Total seats (10-60)
+    const totalSeats = parseInt(formData.total_seats);
+    if (totalSeats < 10 || totalSeats > 60) {
       toast.error('Total seats must be between 10 and 60');
+      return;
+    }
+
+    // Validation - Fare minimum ₹100
+    const fare = parseFloat(formData.fare);
+    if (fare < 100) {
+      toast.error('Fare must be at least ₹100');
+      return;
+    }
+
+    // Validation - All required fields
+    if (!formData.bus_number || !formData.bus_type || !formData.bus_model || 
+        !formData.from_location || !formData.to_location) {
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -113,8 +130,12 @@ const AddBus = () => {
     try {
       await travelerService.addBus({
         ...formData,
-        total_seats: parseInt(formData.total_seats),
-        fare: parseFloat(formData.fare)
+        bus_number: formData.bus_number.toUpperCase().trim(),
+        from_location: formData.from_location.trim(),
+        to_location: formData.to_location.trim(),
+        bus_model: formData.bus_model.trim(),
+        total_seats: totalSeats,
+        fare: fare
       });
       toast.success('Bus added successfully!');
       navigate('/traveler');
@@ -191,7 +212,7 @@ const AddBus = () => {
           </Typography>
           
           <Grid container spacing={3} mb={4}>
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={4}>
               <TextField
                 fullWidth
                 required
@@ -200,7 +221,7 @@ const AddBus = () => {
                 value={formData.bus_number}
                 onChange={handleChange}
                 placeholder="GJ01AB1234"
-                helperText="Enter registration number (e.g., GJ01AB1234)"
+                helperText="Format: GJ01AB1234 (2 letters + 2 digits + 1-2 letters + 4 digits)"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -209,13 +230,14 @@ const AddBus = () => {
                   ),
                 }}
                 inputProps={{
-                  pattern: '[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{4}',
-                  style: { textTransform: 'uppercase' }
+                  style: { textTransform: 'uppercase' },
+                  maxLength: 10
                 }}
+                error={formData.bus_number && !validateBusNumber(formData.bus_number)}
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={4}>
               <FormControl fullWidth required>
                 <InputLabel>Bus Type</InputLabel>
                 <Select
@@ -236,6 +258,19 @@ const AddBus = () => {
                   ))}
                 </Select>
               </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                required
+                label="Bus Model"
+                name="bus_model"
+                value={formData.bus_model}
+                onChange={handleChange}
+                placeholder="e.g., Volvo 9600, Scania Metrolink"
+                helperText="Enter bus manufacturer and model"
+              />
             </Grid>
           </Grid>
 
@@ -284,64 +319,15 @@ const AddBus = () => {
                     </InputAdornment>
                   ),
                 }}
+                error={formData.from_location && formData.to_location && 
+                       formData.from_location.trim().toLowerCase() === formData.to_location.trim().toLowerCase()}
               />
             </Grid>
           </Grid>
 
           <Divider sx={{ my: 4 }} />
 
-          {/* Section 3: Timing */}
-          <Typography variant="h6" gutterBottom sx={{ mb: 3, color: 'primary.main', fontWeight: 600 }}>
-            Schedule Timing
-          </Typography>
-
-          <Grid container spacing={3} mb={4}>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                required
-                type="time"
-                label="Departure Time"
-                name="departure_time"
-                value={formData.departure_time}
-                onChange={handleChange}
-                InputLabelProps={{ shrink: true }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Schedule color="action" />
-                    </InputAdornment>
-                  ),
-                }}
-                helperText="Bus departure time"
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                required
-                type="time"
-                label="Arrival Time"
-                name="arrival_time"
-                value={formData.arrival_time}
-                onChange={handleChange}
-                InputLabelProps={{ shrink: true }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Schedule color="action" />
-                    </InputAdornment>
-                  ),
-                }}
-                helperText="Expected arrival time"
-              />
-            </Grid>
-          </Grid>
-
-          <Divider sx={{ my: 4 }} />
-
-          {/* Section 4: Capacity & Pricing */}
+          {/* Section 3: Capacity & Pricing */}
           <Typography variant="h6" gutterBottom sx={{ mb: 3, color: 'primary.main', fontWeight: 600 }}>
             Capacity & Pricing
           </Typography>
@@ -365,6 +351,7 @@ const AddBus = () => {
                     </InputAdornment>
                   ),
                 }}
+                error={formData.total_seats && (parseInt(formData.total_seats) < 10 || parseInt(formData.total_seats) > 60)}
               />
             </Grid>
 
@@ -377,9 +364,9 @@ const AddBus = () => {
                 name="fare"
                 value={formData.fare}
                 onChange={handleChange}
-                inputProps={{ min: 1, step: 0.01 }}
+                inputProps={{ min: 100, step: 0.01 }}
                 placeholder="500"
-                helperText="Price per seat in ₹"
+                helperText="Price per seat in ₹ (minimum ₹100)"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -387,13 +374,14 @@ const AddBus = () => {
                     </InputAdornment>
                   ),
                 }}
+                error={formData.fare && parseFloat(formData.fare) < 100}
               />
             </Grid>
           </Grid>
 
           <Divider sx={{ my: 4 }} />
 
-          {/* Section 5: Amenities */}
+          {/* Section 4: Amenities */}
           <Typography variant="h6" gutterBottom sx={{ mb: 2, color: 'primary.main', fontWeight: 600 }}>
             Amenities & Facilities
           </Typography>

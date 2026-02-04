@@ -76,7 +76,7 @@ export const getMyBuses = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse("Traveler profile not found", 404));
     }
 
-    const buses = await Bus.findOne({ traveler_id: traveler.traveler_id }).sort({ createdAt: -1 });
+    const buses = await Bus.find({ traveler_id: traveler.traveler_id }).sort({ createdAt: -1 });
 
     res.status(200).json({
         success: true,

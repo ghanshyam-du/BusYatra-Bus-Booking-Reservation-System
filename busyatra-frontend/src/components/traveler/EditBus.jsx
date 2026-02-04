@@ -1,11 +1,92 @@
-// Edit existing bus
-// ----------------------------------------------------------------
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Bus as BusIcon, MapPin, IndianRupee, Users } from 'lucide-react';
+import {
+  Box,
+  Container,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
+  InputAdornment,
+  IconButton,
+  Breadcrumbs,
+  Link,
+  Card,
+  CardContent,
+  Divider,
+  CircularProgress,
+  Alert,
+  Fade,
+  Skeleton
+} from '@mui/material';
+import {
+  ArrowBack,
+  DirectionsBus,
+  LocationOn,
+  Schedule,
+  AttachMoney,
+  EventSeat,
+  Wifi,
+  BatteryCharging80,
+  LocalDrink,
+  AcUnit,
+  Star,
+  Save,
+  Cancel,
+  NavigateNext
+} from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
 import travelerService from '../../services/travelerService';
 import toast from 'react-hot-toast';
+
+// Styled Components
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(4),
+  borderRadius: theme.spacing(2),
+  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+  background: 'linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%)',
+}));
+
+const HeaderCard = styled(Card)(({ theme }) => ({
+  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  color: 'white',
+  marginBottom: theme.spacing(4),
+  borderRadius: theme.spacing(2),
+  boxShadow: '0 8px 32px rgba(102, 126, 234, 0.35)',
+}));
+
+const StyledButton = styled(Button)(({ theme }) => ({
+  borderRadius: theme.spacing(1.5),
+  padding: theme.spacing(1.5, 4),
+  textTransform: 'none',
+  fontWeight: 600,
+  fontSize: '1rem',
+  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 6px 20px rgba(0,0,0,0.2)',
+  },
+}));
+
+const AmenityChip = styled(Chip)(({ theme }) => ({
+  margin: theme.spacing(0.5),
+  borderRadius: theme.spacing(1),
+  fontWeight: 500,
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    transform: 'scale(1.05)',
+  },
+}));
 
 const EditBus = () => {
   const { busId } = useParams();
@@ -24,8 +105,24 @@ const EditBus = () => {
     amenities: []
   });
 
-  const busTypes = ['SEATER', 'SLEEPER', 'SEMI_SLEEPER', 'AC', 'NON_AC', 'VOLVO'];
-  const amenityOptions = ['WiFi', 'Charging Point', 'Water Bottle', 'Blanket', 'Pillow', 'Reading Light', 'Emergency Exit'];
+  const busTypes = [
+    { value: 'SEATER', label: 'Seater', icon: '🪑' },
+    { value: 'SLEEPER', label: 'Sleeper', icon: '🛏️' },
+    { value: 'SEMI_SLEEPER', label: 'Semi Sleeper', icon: '🛋️' },
+    { value: 'AC', label: 'AC', icon: '❄️' },
+    { value: 'NON_AC', label: 'Non AC', icon: '🌡️' },
+    { value: 'VOLVO', label: 'Volvo', icon: '⭐' }
+  ];
+
+  const amenityOptions = [
+    { name: 'WiFi', icon: <Wifi /> },
+    { name: 'Charging Point', icon: <BatteryCharging80 /> },
+    { name: 'Water Bottle', icon: <LocalDrink /> },
+    { name: 'Blanket', icon: <AcUnit /> },
+    { name: 'Pillow', icon: <Star /> },
+    { name: 'Reading Light', icon: <Star /> },
+    { name: 'Emergency Exit', icon: <Star /> }
+  ];
 
   useEffect(() => {
     fetchBusDetails();
@@ -47,9 +144,13 @@ const EditBus = () => {
           fare: bus.fare,
           amenities: bus.amenities || []
         });
+      } else {
+        toast.error('Bus not found');
+        navigate('/traveler');
       }
     } catch (error) {
       toast.error('Failed to load bus details');
+      navigate('/traveler');
     } finally {
       setLoading(false);
     }
@@ -79,7 +180,7 @@ const EditBus = () => {
         total_seats: parseInt(formData.total_seats),
         fare: parseFloat(formData.fare)
       });
-      toast.success('Bus updated successfully!');
+      toast.success('Bus updated successfully! 🎉');
       navigate('/traveler');
     } catch (error) {
       toast.error(error.message || 'Failed to update bus');
@@ -89,112 +190,405 @@ const EditBus = () => {
   };
 
   if (loading) {
-    return <div className="bg-white rounded-lg shadow-sm p-8 text-center">Loading...</div>;
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <StyledPaper>
+          <Box sx={{ textAlign: 'center', py: 8 }}>
+            <CircularProgress size={60} thickness={4} />
+            <Typography variant="h6" sx={{ mt: 3, color: 'text.secondary' }}>
+              Loading bus details...
+            </Typography>
+            <Box sx={{ mt: 4 }}>
+              <Skeleton variant="rectangular" height={60} sx={{ mb: 2, borderRadius: 2 }} />
+              <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
+            </Box>
+          </Box>
+        </StyledPaper>
+      </Container>
+    );
   }
 
   return (
-    <div>
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={() => navigate('/traveler')}
-          className="p-2 hover:bg-gray-100 rounded-lg transition"
-        >
-          <ArrowLeft className="w-6 h-6" />
-        </button>
-        <div>
-          <h2 className="text-2xl font-bold">Edit Bus</h2>
-          <p className="text-gray-600 mt-1">Update bus details</p>
-        </div>
-      </div>
-
-      {/* Form - Similar to AddBus but with pre-filled data */}
-      <div className="bg-white rounded-lg shadow-sm p-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Same fields as AddBus */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Bus Number *</label>
-              <input
-                type="text"
-                name="bus_number"
-                value={formData.bus_number}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                required
-                disabled
-              />
-              <p className="text-xs text-gray-500 mt-1">Bus number cannot be changed</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Bus Type *</label>
-              <select
-                name="bus_type"
-                value={formData.bus_type}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                required
-              >
-                {busTypes.map(type => (
-                  <option key={type} value={type}>{type.replace('_', ' ')}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Fare per Seat (₹) *</label>
-              <input
-                type="number"
-                name="fare"
-                value={formData.fare}
-                onChange={handleChange}
-                min="1"
-                step="0.01"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Amenities</label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {amenityOptions.map(amenity => (
-                <label key={amenity} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.amenities?.includes(amenity)}
-                    onChange={() => handleAmenityToggle(amenity)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">{amenity}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex gap-4 pt-4">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50"
-            >
-              {submitting ? 'Updating...' : 'Update Bus'}
-            </button>
-            <button
-              type="button"
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Fade in={true} timeout={800}>
+        <Box>
+          {/* Breadcrumbs */}
+          <Breadcrumbs 
+            separator={<NavigateNext fontSize="small" />} 
+            sx={{ mb: 3 }}
+            aria-label="breadcrumb"
+          >
+            <Link 
+              underline="hover" 
+              color="inherit" 
               onClick={() => navigate('/traveler')}
-              className="px-8 py-3 border-2 border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition"
+              sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
             >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+              <DirectionsBus sx={{ mr: 0.5 }} fontSize="small" />
+              Dashboard
+            </Link>
+            <Typography color="text.primary" sx={{ display: 'flex', alignItems: 'center' }}>
+              Edit Bus
+            </Typography>
+          </Breadcrumbs>
+
+          {/* Header Card */}
+          <HeaderCard elevation={0}>
+            <CardContent sx={{ py: 4 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <IconButton 
+                  onClick={() => navigate('/traveler')}
+                  sx={{ 
+                    color: 'white',
+                    bgcolor: 'rgba(255,255,255,0.2)',
+                    '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' }
+                  }}
+                >
+                  <ArrowBack />
+                </IconButton>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="h4" fontWeight="700" gutterBottom>
+                    Edit Bus Details
+                  </Typography>
+                  <Typography variant="body1" sx={{ opacity: 0.95 }}>
+                    Update your bus information and amenities
+                  </Typography>
+                </Box>
+                <DirectionsBus sx={{ fontSize: 80, opacity: 0.3 }} />
+              </Box>
+            </CardContent>
+          </HeaderCard>
+
+          {/* Form */}
+          <StyledPaper>
+            <form onSubmit={handleSubmit}>
+              <Grid container spacing={4}>
+                {/* Bus Number - Disabled */}
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Bus Number"
+                    name="bus_number"
+                    value={formData.bus_number}
+                    disabled
+                    variant="outlined"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <DirectionsBus color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
+                    helperText="Bus number cannot be changed"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 2,
+                        bgcolor: '#f5f5f5',
+                      }
+                    }}
+                  />
+                </Grid>
+
+                {/* Bus Type */}
+                <Grid item xs={12} md={6}>
+                  <FormControl fullWidth variant="outlined">
+                    <InputLabel>Bus Type *</InputLabel>
+                    <Select
+                      name="bus_type"
+                      value={formData.bus_type}
+                      onChange={handleChange}
+                      label="Bus Type *"
+                      required
+                      sx={{ borderRadius: 2 }}
+                    >
+                      {busTypes.map(type => (
+                        <MenuItem key={type.value} value={type.value}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <span>{type.icon}</span>
+                            <span>{type.label}</span>
+                          </Box>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                {/* From Location */}
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="From Location"
+                    name="from_location"
+                    value={formData.from_location}
+                    onChange={handleChange}
+                    required
+                    variant="outlined"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <LocationOn color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                  />
+                </Grid>
+
+                {/* To Location */}
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="To Location"
+                    name="to_location"
+                    value={formData.to_location}
+                    onChange={handleChange}
+                    required
+                    variant="outlined"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <LocationOn color="error" />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                  />
+                </Grid>
+
+                {/* Departure Time */}
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Departure Time"
+                    name="departure_time"
+                    type="time"
+                    value={formData.departure_time}
+                    onChange={handleChange}
+                    required
+                    variant="outlined"
+                    InputLabelProps={{ shrink: true }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Schedule color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                  />
+                </Grid>
+
+                {/* Arrival Time */}
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Arrival Time"
+                    name="arrival_time"
+                    type="time"
+                    value={formData.arrival_time}
+                    onChange={handleChange}
+                    required
+                    variant="outlined"
+                    InputLabelProps={{ shrink: true }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Schedule color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                  />
+                </Grid>
+
+                {/* Total Seats */}
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Total Seats"
+                    name="total_seats"
+                    type="number"
+                    value={formData.total_seats}
+                    onChange={handleChange}
+                    required
+                    inputProps={{ min: 1, max: 100 }}
+                    variant="outlined"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <EventSeat color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                  />
+                </Grid>
+
+                {/* Fare */}
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Fare per Seat"
+                    name="fare"
+                    type="number"
+                    value={formData.fare}
+                    onChange={handleChange}
+                    required
+                    inputProps={{ min: 1, step: 0.01 }}
+                    variant="outlined"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <AttachMoney color="success" />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                  />
+                </Grid>
+
+                {/* Amenities Section */}
+                <Grid item xs={12}>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="h6" fontWeight="600" gutterBottom sx={{ mb: 3 }}>
+                    🎯 Bus Amenities
+                  </Typography>
+                  <Paper 
+                    elevation={0} 
+                    sx={{ 
+                      p: 3, 
+                      bgcolor: '#f8f9fa',
+                      borderRadius: 2,
+                      border: '2px dashed #e0e0e0'
+                    }}
+                  >
+                    <FormGroup>
+                      <Grid container spacing={2}>
+                        {amenityOptions.map(amenity => (
+                          <Grid item xs={12} sm={6} md={4} key={amenity.name}>
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  checked={formData.amenities?.includes(amenity.name)}
+                                  onChange={() => handleAmenityToggle(amenity.name)}
+                                  sx={{
+                                    color: '#667eea',
+                                    '&.Mui-checked': {
+                                      color: '#667eea',
+                                    },
+                                  }}
+                                />
+                              }
+                              label={
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  {amenity.icon}
+                                  <Typography variant="body2" fontWeight="500">
+                                    {amenity.name}
+                                  </Typography>
+                                </Box>
+                              }
+                              sx={{
+                                border: '1px solid #e0e0e0',
+                                borderRadius: 2,
+                                px: 2,
+                                py: 1,
+                                m: 0,
+                                bgcolor: 'white',
+                                transition: 'all 0.2s',
+                                '&:hover': {
+                                  bgcolor: '#f5f5f5',
+                                  transform: 'translateY(-2px)',
+                                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                }
+                              }}
+                            />
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </FormGroup>
+                  </Paper>
+
+                  {/* Selected Amenities Preview */}
+                  {formData.amenities && formData.amenities.length > 0 && (
+                    <Box sx={{ mt: 3 }}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Selected Amenities:
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                        {formData.amenities.map(amenity => (
+                          <AmenityChip
+                            key={amenity}
+                            label={amenity}
+                            color="primary"
+                            variant="outlined"
+                            onDelete={() => handleAmenityToggle(amenity)}
+                          />
+                        ))}
+                      </Box>
+                    </Box>
+                  )}
+                </Grid>
+
+                {/* Action Buttons */}
+                <Grid item xs={12}>
+                  <Divider sx={{ my: 2 }} />
+                  <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', pt: 2 }}>
+                    <StyledButton
+                      variant="outlined"
+                      size="large"
+                      startIcon={<Cancel />}
+                      onClick={() => navigate('/traveler')}
+                      sx={{
+                        borderColor: '#e0e0e0',
+                        color: 'text.secondary',
+                        '&:hover': {
+                          borderColor: '#bdbdbd',
+                          bgcolor: '#f5f5f5',
+                        }
+                      }}
+                    >
+                      Cancel
+                    </StyledButton>
+                    <StyledButton
+                      type="submit"
+                      variant="contained"
+                      size="large"
+                      disabled={submitting}
+                      startIcon={submitting ? <CircularProgress size={20} color="inherit" /> : <Save />}
+                      sx={{
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, #5568d3 0%, #65408b 100%)',
+                        }
+                      }}
+                    >
+                      {submitting ? 'Updating...' : 'Update Bus'}
+                    </StyledButton>
+                  </Box>
+                </Grid>
+              </Grid>
+            </form>
+          </StyledPaper>
+
+          {/* Info Alert */}
+          <Alert 
+            severity="info" 
+            sx={{ 
+              mt: 3, 
+              borderRadius: 2,
+              '& .MuiAlert-icon': {
+                fontSize: 28
+              }
+            }}
+          >
+            <Typography variant="body2">
+              <strong>Note:</strong> All changes will be reflected immediately after updating. 
+              Make sure to verify all details before saving.
+            </Typography>
+          </Alert>
+        </Box>
+      </Fade>
+    </Container>
   );
 };
 

@@ -3,7 +3,6 @@ import mongoose from "mongoose"
 const busSchema = new mongoose.Schema({
   bus_id: {
     type: String,
-    required: true,
     unique: true,
     trim: true
   },
@@ -64,11 +63,11 @@ const busSchema = new mongoose.Schema({
 
 // Auto-generate bus_id
 busSchema.pre('save', async function(next) {
-  if (this.bus_id) return next();
+  // if (this.bus_id) return next();
   
   const count = await this.constructor.countDocuments();
   this.bus_id = `BUS${String(count + 1).padStart(6, '0')}`;
-  next();
+  // next();
 });
 
 // Validate from and to locations are different
@@ -76,7 +75,7 @@ busSchema.pre('save', function(next) {
   if (this.from_location === this.to_location) {
     next(new Error('From and To locations must be different'));
   }
-  next();
+  // next();
 });
 
 export default mongoose.model('Bus', busSchema);
