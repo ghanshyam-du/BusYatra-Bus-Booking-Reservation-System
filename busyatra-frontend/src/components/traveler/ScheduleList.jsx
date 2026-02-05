@@ -1,17 +1,111 @@
-// List all schedules with add/edit/cancel
-// ----------------------------------------------------------------
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Calendar, Bus as BusIcon, MapPin, Clock, Users } from 'lucide-react';
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Container,
+  Grid,
+  Typography,
+  CircularProgress,
+  IconButton,
+  Stack,
+  Divider,
+  Alert,
+  Avatar,
+  Paper,
+  Tooltip,
+  Fade,
+  ButtonGroup,
+} from '@mui/material';
+import {
+  Add as AddIcon,
+  DirectionsBus as BusIcon,
+  CalendarToday as CalendarIcon,
+  AccessTime as ClockIcon,
+  People as PeopleIcon,
+  LocationOn as LocationIcon,
+  Cancel as CancelIcon,
+  EventAvailable as EventAvailableIcon,
+  History as HistoryIcon,
+  ViewList as ViewListIcon,
+} from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
 import travelerService from '../../services/travelerService';
 import { formatDate, formatTime, getStatusColor } from '../../utils/formatters';
 import toast from 'react-hot-toast';
 
+// Styled Components
+const StyledCard = styled(Card)(({ theme }) => ({
+  borderRadius: theme.spacing(2),
+  transition: 'all 0.3s ease-in-out',
+  border: '1px solid',
+  borderColor: theme.palette.divider,
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: theme.shadows[8],
+    borderColor: theme.palette.primary.main,
+  },
+}));
+
+const HeaderBox = styled(Box)(({ theme }) => ({
+  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+  borderRadius: theme.spacing(2),
+  padding: theme.spacing(4),
+  marginBottom: theme.spacing(4),
+  color: 'white',
+}));
+
+const InfoBox = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1.5),
+  padding: theme.spacing(1.5),
+  borderRadius: theme.spacing(1),
+  backgroundColor: theme.palette.grey[50],
+  transition: 'all 0.2s',
+  '&:hover': {
+    backgroundColor: theme.palette.grey[100],
+  },
+}));
+
+const StyledChip = styled(Chip)(({ theme, status }) => {
+  const getColors = () => {
+    switch (status?.toLowerCase()) {
+      case 'active':
+        return {
+          bg: theme.palette.success.light,
+          color: theme.palette.success.dark,
+        };
+      case 'cancelled':
+        return {
+          bg: theme.palette.error.light,
+          color: theme.palette.error.dark,
+        };
+      default:
+        return {
+          bg: theme.palette.grey[300],
+          color: theme.palette.grey[700],
+        };
+    }
+  };
+
+  const colors = getColors();
+  return {
+    backgroundColor: colors.bg,
+    color: colors.color,
+    fontWeight: 600,
+    borderRadius: theme.spacing(1),
+    padding: theme.spacing(0.5, 1),
+  };
+});
+
 const ScheduleList = () => {
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all, upcoming, past
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
     fetchSchedules();
@@ -50,139 +144,281 @@ const ScheduleList = () => {
     return true;
   });
 
+  const getFilterCount = (filterType) => {
+    if (filterType === 'all') return schedules.length;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return schedules.filter(schedule => {
+      const journeyDate = new Date(schedule.journey_date);
+      if (filterType === 'upcoming') return journeyDate >= today && schedule.schedule_status === 'ACTIVE';
+      if (filterType === 'past') return journeyDate < today || schedule.schedule_status !== 'ACTIVE';
+      return true;
+    }).length;
+  };
+
   if (loading) {
-    return <div className="bg-white rounded-lg shadow-sm p-8 text-center">Loading...</div>;
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <CircularProgress size={60} thickness={4} />
+        </Box>
+      </Container>
+    );
   }
 
   return (
-    <div>
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold">Bus Schedules</h2>
-          <p className="text-gray-600 mt-1">Manage your bus schedules</p>
-        </div>
-        <Link
-          to="/traveler/add-schedule"
-          className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-        >
-          <Plus className="w-5 h-5" />
-          Create Schedule
-        </Link>
-      </div>
-
-      {/* Filters */}
-      <div className="flex gap-2 mb-6">
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-lg font-medium transition ${
-            filter === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          All ({schedules.length})
-        </button>
-        <button
-          onClick={() => setFilter('upcoming')}
-          className={`px-4 py-2 rounded-lg font-medium transition ${
-            filter === 'upcoming' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          Upcoming
-        </button>
-        <button
-          onClick={() => setFilter('past')}
-          className={`px-4 py-2 rounded-lg font-medium transition ${
-            filter === 'past' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          Past/Cancelled
-        </button>
-      </div>
-
-      {/* Schedule List */}
-      {filteredSchedules.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-          <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No schedules found</h3>
-          <p className="text-gray-600 mb-6">Create your first schedule to start accepting bookings</p>
-          <Link
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      {/* Header Section */}
+      <HeaderBox>
+        <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={2}>
+          <Box>
+            <Typography variant="h3" fontWeight="bold" gutterBottom>
+              Bus Schedules
+            </Typography>
+            <Typography variant="body1" sx={{ opacity: 0.9 }}>
+              Manage and monitor all your bus schedules in one place
+            </Typography>
+          </Box>
+          <Button
+            component={Link}
             to="/traveler/add-schedule"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
+            variant="contained"
+            size="large"
+            startIcon={<AddIcon />}
+            sx={{
+              bgcolor: 'white',
+              color: 'primary.main',
+              fontWeight: 'bold',
+              px: 4,
+              py: 1.5,
+              borderRadius: 2,
+              '&:hover': {
+                bgcolor: 'grey.100',
+                transform: 'scale(1.05)',
+              },
+              transition: 'all 0.2s',
+            }}
           >
-            <Plus className="w-5 h-5" />
             Create Schedule
-          </Link>
-        </div>
+          </Button>
+        </Stack>
+      </HeaderBox>
+
+      {/* Filter Buttons */}
+      <Paper elevation={0} sx={{ p: 2, mb: 4, borderRadius: 2, bgcolor: 'grey.50' }}>
+        <ButtonGroup variant="outlined" size="large" fullWidth sx={{ bgcolor: 'white' }}>
+          <Button
+            onClick={() => setFilter('all')}
+            startIcon={<ViewListIcon />}
+            variant={filter === 'all' ? 'contained' : 'outlined'}
+            sx={{
+              borderRadius: '8px 0 0 8px',
+              fontWeight: filter === 'all' ? 'bold' : 'medium',
+            }}
+          >
+            All Schedules ({getFilterCount('all')})
+          </Button>
+          <Button
+            onClick={() => setFilter('upcoming')}
+            startIcon={<EventAvailableIcon />}
+            variant={filter === 'upcoming' ? 'contained' : 'outlined'}
+            sx={{
+              borderRadius: 0,
+              fontWeight: filter === 'upcoming' ? 'bold' : 'medium',
+            }}
+          >
+            Upcoming ({getFilterCount('upcoming')})
+          </Button>
+          <Button
+            onClick={() => setFilter('past')}
+            startIcon={<HistoryIcon />}
+            variant={filter === 'past' ? 'contained' : 'outlined'}
+            sx={{
+              borderRadius: '0 8px 8px 0',
+              fontWeight: filter === 'past' ? 'bold' : 'medium',
+            }}
+          >
+            Past/Cancelled ({getFilterCount('past')})
+          </Button>
+        </ButtonGroup>
+      </Paper>
+
+      {/* Schedule List or Empty State */}
+      {filteredSchedules.length === 0 ? (
+        <Fade in={true}>
+          <Card sx={{ borderRadius: 3, textAlign: 'center', py: 8, px: 4 }}>
+            <Avatar
+              sx={{
+                width: 120,
+                height: 120,
+                bgcolor: 'primary.light',
+                mx: 'auto',
+                mb: 3,
+              }}
+            >
+              <CalendarIcon sx={{ fontSize: 60, color: 'primary.main' }} />
+            </Avatar>
+            <Typography variant="h4" fontWeight="bold" gutterBottom>
+              No Schedules Found
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 500, mx: 'auto' }}>
+              Create your first bus schedule to start accepting bookings and managing your routes effectively
+            </Typography>
+            <Button
+              component={Link}
+              to="/traveler/add-schedule"
+              variant="contained"
+              size="large"
+              startIcon={<AddIcon />}
+              sx={{
+                px: 5,
+                py: 1.5,
+                borderRadius: 2,
+                fontWeight: 'bold',
+                fontSize: '1rem',
+              }}
+            >
+              Create Your First Schedule
+            </Button>
+          </Card>
+        </Fade>
       ) : (
-        <div className="grid gap-4">
-          {filteredSchedules.map((schedule) => (
-            <div key={schedule.schedule_id} className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    <BusIcon className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg">{schedule.bus_number}</h3>
-                    <p className="text-sm text-gray-600">
-                      {schedule.from_location} → {schedule.to_location}
-                    </p>
-                  </div>
-                </div>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(schedule.schedule_status)}`}>
-                  {schedule.schedule_status}
-                </span>
-              </div>
+        <Grid container spacing={3}>
+          {filteredSchedules.map((schedule, index) => (
+            <Grid item xs={12} key={schedule.schedule_id}>
+              <Fade in={true} timeout={300 + index * 100}>
+                <StyledCard>
+                  <CardContent sx={{ p: 3 }}>
+                    {/* Header Row */}
+                    <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={3}>
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <Avatar
+                          sx={{
+                            width: 56,
+                            height: 56,
+                            bgcolor: 'primary.main',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                          }}
+                        >
+                          <BusIcon sx={{ fontSize: 30 }} />
+                        </Avatar>
+                        <Box>
+                          <Typography variant="h5" fontWeight="bold" gutterBottom>
+                            {schedule.bus_number}
+                          </Typography>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <LocationIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                            <Typography variant="body2" color="text.secondary" fontWeight="medium">
+                              {schedule.from_location} → {schedule.to_location}
+                            </Typography>
+                          </Stack>
+                        </Box>
+                      </Stack>
+                      <StyledChip
+                        label={schedule.schedule_status}
+                        status={schedule.schedule_status}
+                        size="medium"
+                      />
+                    </Stack>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-gray-400" />
-                  <div>
-                    <p className="text-xs text-gray-500">Journey Date</p>
-                    <p className="font-medium">{formatDate(schedule.journey_date)}</p>
-                  </div>
-                </div>
+                    <Divider sx={{ my: 2 }} />
 
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-gray-400" />
-                  <div>
-                    <p className="text-xs text-gray-500">Departure</p>
-                    <p className="font-medium">{formatTime(schedule.departure_time)}</p>
-                  </div>
-                </div>
+                    {/* Info Grid */}
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={6} md={3}>
+                        <InfoBox>
+                          <CalendarIcon color="primary" />
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              Journey Date
+                            </Typography>
+                            <Typography variant="body1" fontWeight="bold">
+                              {formatDate(schedule.journey_date)}
+                            </Typography>
+                          </Box>
+                        </InfoBox>
+                      </Grid>
 
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-gray-400" />
-                  <div>
-                    <p className="text-xs text-gray-500">Available</p>
-                    <p className="font-medium">{schedule.available_seats}/{schedule.total_seats}</p>
-                  </div>
-                </div>
+                      <Grid item xs={12} sm={6} md={3}>
+                        <InfoBox>
+                          <ClockIcon color="primary" />
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              Departure Time
+                            </Typography>
+                            <Typography variant="body1" fontWeight="bold">
+                              {formatTime(schedule.departure_time)}
+                            </Typography>
+                          </Box>
+                        </InfoBox>
+                      </Grid>
 
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-gray-400" />
-                  <div>
-                    <p className="text-xs text-gray-500">Booked</p>
-                    <p className="font-medium">{schedule.booked_seats || 0} seats</p>
-                  </div>
-                </div>
-              </div>
+                      <Grid item xs={12} sm={6} md={3}>
+                        <InfoBox>
+                          <PeopleIcon color="success" />
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              Available Seats
+                            </Typography>
+                            <Typography variant="body1" fontWeight="bold" color="success.main">
+                              {schedule.available_seats} / {schedule.total_seats}
+                            </Typography>
+                          </Box>
+                        </InfoBox>
+                      </Grid>
 
-              {schedule.schedule_status === 'ACTIVE' && schedule.booked_seats === 0 && (
-                <div className="mt-4 pt-4 border-t">
-                  <button
-                    onClick={() => handleCancelSchedule(schedule.schedule_id)}
-                    className="px-4 py-2 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition text-sm font-medium"
-                  >
-                    Cancel Schedule
-                  </button>
-                </div>
-              )}
-            </div>
+                      <Grid item xs={12} sm={6} md={3}>
+                        <InfoBox>
+                          <PeopleIcon color="info" />
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              Booked Seats
+                            </Typography>
+                            <Typography variant="body1" fontWeight="bold" color="info.main">
+                              {schedule.booked_seats || 0} seats
+                            </Typography>
+                          </Box>
+                        </InfoBox>
+                      </Grid>
+                    </Grid>
+
+                    {/* Cancel Button */}
+                    {schedule.schedule_status === 'ACTIVE' && schedule.booked_seats === 0 && (
+                      <>
+                        <Divider sx={{ my: 3 }} />
+                        <Box display="flex" justifyContent="flex-end">
+                          <Tooltip title="Cancel this schedule (only available when no bookings exist)">
+                            <Button
+                              variant="outlined"
+                              color="error"
+                              startIcon={<CancelIcon />}
+                              onClick={() => handleCancelSchedule(schedule.schedule_id)}
+                              sx={{
+                                borderRadius: 2,
+                                px: 3,
+                                fontWeight: 'bold',
+                                '&:hover': {
+                                  bgcolor: 'error.light',
+                                  color: 'white',
+                                  borderColor: 'error.main',
+                                },
+                              }}
+                            >
+                              Cancel Schedule
+                            </Button>
+                          </Tooltip>
+                        </Box>
+                      </>
+                    )}
+                  </CardContent>
+                </StyledCard>
+              </Fade>
+            </Grid>
           ))}
-        </div>
+        </Grid>
       )}
-    </div>
+    </Container>
   );
 };
 
