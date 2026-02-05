@@ -3,7 +3,7 @@ import mongoose from "mongoose"
 const busScheduleSchema = new mongoose.Schema({
   schedule_id: {
     type: String,
-    required: true,
+    // required: true,
     unique: true,
     trim: true
   },
@@ -59,7 +59,7 @@ busScheduleSchema.pre('save', async function(next) {
   
   const count = await this.constructor.countDocuments();
   this.schedule_id = `SCH${String(count + 1).padStart(6, '0')}`;
-  next();
+  // next();
 });
 
 // Validate available_seats <= total_seats
@@ -67,7 +67,7 @@ busScheduleSchema.pre('save', function(next) {
   if (this.available_seats > this.total_seats) {
     next(new Error('Available seats cannot exceed total seats'));
   }
-  next();
+  // next();
 });
 
 export default mongoose.model('BusSchedule', busScheduleSchema);

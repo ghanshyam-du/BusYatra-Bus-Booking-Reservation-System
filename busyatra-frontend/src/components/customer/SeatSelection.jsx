@@ -25,6 +25,7 @@ import {
   Skeleton,
   useTheme,
   useMediaQuery,
+  Alert,
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -40,6 +41,7 @@ import {
   Male as MaleIcon,
   Female as FemaleIcon,
   Wc as OtherIcon,
+  Error as ErrorIcon,
 } from '@mui/icons-material';
 import bookingService from '../../services/bookingService';
 import { formatCurrency, formatTime, formatDate } from '../../utils/formatters';
@@ -57,16 +59,77 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
   const [passengers, setPassengers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
+  const [error, setError] = useState(null);
 
+  // Validate bus data
   useEffect(() => {
+    console.log('SeatSelection received bus data:', bus);
+    
+    if (!bus) {
+      setError('Bus information is missing');
+      setLoading(false);
+      return;
+    }
+
+    if (!bus.schedule_id) {
+      setError('Schedule ID is missing');
+      setLoading(false);
+      return;
+    }
+
     fetchSeats();
   }, []);
 
   const fetchSeats = async () => {
     try {
+      console.log('Fetching seats for schedule_id:', bus.schedule_id);
       const response = await bookingService.getSeats(bus.schedule_id);
-      setSeats(response.data || []);
+      console.log('Seats API response:', response);
+      console.log('Full response.data structure:', response.data);
+      
+      // Handle different API response structures
+      let seatsData = [];
+      
+      if (response.data) {
+        // Check if seats are directly in response.data
+        if (Array.isArray(response.data)) {
+          seatsData = response.data;
+        }
+        // Check if seats are nested in response.data.seats
+        else if (response.data.seats && Array.isArray(response.data.seats)) {
+          seatsData = response.data.seats;
+        }
+        // Check if seats are in response.data.data
+        else if (response.data.data && Array.isArray(response.data.data)) {
+          seatsData = response.data.data;
+        }
+        // If response.data is an object with seat properties, convert to array
+        else if (typeof response.data === 'object' && !Array.isArray(response.data)) {
+          console.log('Data is object, checking for seats array inside...');
+          // Try to find seats array in any property
+          const possibleSeatsKeys = ['seats', 'seatList', 'seatData', 'availableSeats'];
+          for (const key of possibleSeatsKeys) {
+            if (response.data[key] && Array.isArray(response.data[key])) {
+              seatsData = response.data[key];
+              console.log(`Found seats in response.data.${key}`);
+              break;
+            }
+          }
+        }
+      }
+      
+      console.log('Extracted seats data:', seatsData);
+      
+      if (!Array.isArray(seatsData) || seatsData.length === 0) {
+        console.warn('No seats found or invalid format. Full response:', response);
+        throw new Error('No seats data available');
+      }
+      
+      setSeats(seatsData);
+      setError(null);
     } catch (error) {
+      console.error('Fetch seats error:', error);
+      setError(error.message || 'Failed to load seats');
       toast.error('Failed to load seats');
     } finally {
       setLoading(false);
@@ -99,6 +162,12 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
         toast.error(`Please fill all details for passenger ${i + 1}`);
         return;
       }
+      
+      // Validate age is a number
+      if (isNaN(passengers[i].age) || passengers[i].age < 1 || passengers[i].age > 120) {
+        toast.error(`Please enter a valid age for passenger ${i + 1}`);
+        return;
+      }
     }
 
     setBooking(true);
@@ -106,19 +175,80 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
       const bookingData = {
         schedule_id: bus.schedule_id,
         seat_ids: selectedSeats.map((s) => s.seat_id),
-        passengers: passengers
+        passengers: passengers.map(p => ({
+          name: p.name.trim(),
+          age: parseInt(p.age), // Ensure age is a number
+          gender: p.gender
+        }))
       };
 
-      await bookingService.createBooking(bookingData);
+      console.log('📤 Submitting booking:', bookingData);
+      console.log('📋 Details:', {
+        schedule_id: bookingData.schedule_id,
+        seat_ids_count: bookingData.seat_ids.length,
+        seat_ids_sample: bookingData.seat_ids[0],
+        passengers_count: bookingData.passengers.length,
+        first_passenger: bookingData.passengers[0],
+        age_type: typeof bookingData.passengers[0]?.age
+      });
+      console.log('🎫 Selected seats objects:', selectedSeats);
+      console.log('👥 Passenger input data:', passengers);
+      
+      const response = await bookingService.createBooking(bookingData);
+      console.log('✅ Booking response:', response);
+      
+      toast.success('Booking successful!');
       onBookingComplete();
     } catch (error) {
-      toast.error(error.message || 'Booking failed');
+      console.error('❌ Booking error:', error);
+      console.error('❌ Error.response:', error.response);
+      console.error('❌ Error.response.data:', error.response?.data);
+      console.error('❌ Error message:', error.message);
+      
+      // Show the actual error message from backend
+      const errorMessage = error.response?.data?.message 
+        || error.message 
+        || 'Booking failed. Please try again.';
+      
+      toast.error(errorMessage);
     } finally {
       setBooking(false);
     }
   };
 
-  const totalAmount = selectedSeats.length * bus.fare;
+  // Safe getters with fallbacks
+  const getBusNumber = () => {
+    return bus?.bus_number || bus?.busNumber || 'N/A';
+  };
+
+  const getFromLocation = () => {
+    return bus?.from_location || bus?.fromLocation || 'Origin';
+  };
+
+  const getToLocation = () => {
+    return bus?.to_location || bus?.toLocation || 'Destination';
+  };
+
+  const getJourneyDate = () => {
+    try {
+      return bus?.journey_date ? formatDate(bus.journey_date) : 'N/A';
+    } catch (e) {
+      console.error('Date format error:', e);
+      return 'Invalid Date';
+    }
+  };
+
+  const getFare = () => {
+    const fare = bus?.fare || 0;
+    try {
+      return formatCurrency(fare);
+    } catch (e) {
+      console.error('Currency format error:', e);
+      return `₹${fare}`;
+    }
+  };
+
+  const totalAmount = selectedSeats.length * (bus?.fare || 0);
 
   const getGenderIcon = (gender) => {
     switch (gender) {
@@ -127,6 +257,43 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
       default: return <OtherIcon fontSize="small" />;
     }
   };
+
+  // Error state
+  if (error && !loading) {
+    return (
+      <Dialog
+        open={true}
+        onClose={onClose}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogContent sx={{ p: 4 }}>
+          <Stack spacing={3} alignItems="center" textAlign="center">
+            <Avatar sx={{ width: 80, height: 80, bgcolor: 'error.light' }}>
+              <ErrorIcon sx={{ fontSize: 48, color: 'error.main' }} />
+            </Avatar>
+            <Typography variant="h5" fontWeight="bold">
+              Unable to Load Seats
+            </Typography>
+            <Alert severity="error" sx={{ width: '100%' }}>
+              {error}
+            </Alert>
+            <Typography variant="body2" color="text.secondary">
+              Please try again or contact support if the problem persists.
+            </Typography>
+            <Stack direction="row" spacing={2}>
+              <Button variant="outlined" onClick={onClose}>
+                Close
+              </Button>
+              <Button variant="contained" onClick={fetchSeats}>
+                Retry
+              </Button>
+            </Stack>
+          </Stack>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog
@@ -175,7 +342,7 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 3 }} mt={2}>
               <Chip
                 icon={<LocationIcon />}
-                label={`${bus.from_location} → ${bus.to_location}`}
+                label={`${getFromLocation()} → ${getToLocation()}`}
                 sx={{
                   bgcolor: alpha('#fff', 0.2),
                   color: 'white',
@@ -186,7 +353,7 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
               />
               <Chip
                 icon={<CalendarIcon />}
-                label={formatDate(bus.journey_date)}
+                label={getJourneyDate()}
                 sx={{
                   bgcolor: alpha('#fff', 0.2),
                   color: 'white',
@@ -197,7 +364,7 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
               />
               <Chip
                 icon={<MoneyIcon />}
-                label={`${formatCurrency(bus.fare)} per seat`}
+                label={`${getFare()} per seat`}
                 sx={{
                   bgcolor: alpha('#fff', 0.2),
                   color: 'white',
@@ -323,6 +490,8 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
                     </Grid>
                   ))}
                 </Grid>
+              ) : seats.length === 0 ? (
+                <Alert severity="info">No seats available for this schedule</Alert>
               ) : (
                 <Grid container spacing={1.5}>
                   {seats.map((seat) => {
@@ -580,7 +749,7 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
                         Fare per Seat:
                       </Typography>
                       <Typography variant="h6" fontWeight={700}>
-                        {formatCurrency(bus.fare)}
+                        {getFare()}
                       </Typography>
                     </Stack>
 

@@ -222,7 +222,6 @@ export const deleteBus = asyncHandler(async (req, res, next) => {
 // @route   POST /api/traveler/schedules
 // @access  Private (Traveler only)
 
-
 export const createSchedule = asyncHandler(async (req, res, next) => {
   const { bus_id, journey_date, departure_time, arrival_time } = req.body;
 
@@ -294,6 +293,9 @@ export const createSchedule = asyncHandler(async (req, res, next) => {
 
     const scheduleId = schedule[0].schedule_id;
 
+    // Get current seat count for proper seat_id generation
+    const currentSeatCount = await Seat.countDocuments();
+
     // Auto-generate seats based on total_seats
     const seats = [];
     const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
@@ -306,7 +308,11 @@ export const createSchedule = asyncHandler(async (req, res, next) => {
       const row = rows[rowIndex];
       
       for (let col = 1; col <= seatsPerRow && seatCounter <= bus.total_seats; col++) {
+        // Generate seat_id manually for insertMany
+        const seat_id = `SEAT${String(currentSeatCount + seatCounter).padStart(6, '0')}`;
+        
         seats.push({
+          seat_id, // ✅ Manually generated seat_id
           schedule_id: scheduleId,
           seat_number: `${row}${col}`,
           seat_type: rowIndex < 4 ? 'SLEEPER' : 'SEATER', // First 4 rows SLEEPER, rest SEATER
@@ -322,7 +328,7 @@ export const createSchedule = asyncHandler(async (req, res, next) => {
       }
     }
 
-    // Insert all seats
+    // Insert all seats with manually generated seat_ids
     await Seat.insertMany(seats, { session });
 
     await session.commitTransaction();
@@ -343,6 +349,7 @@ export const createSchedule = asyncHandler(async (req, res, next) => {
     session.endSession();
   }
 });
+
 
 
 

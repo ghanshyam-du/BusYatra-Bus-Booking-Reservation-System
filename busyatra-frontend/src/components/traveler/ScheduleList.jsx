@@ -5,20 +5,18 @@ import {
   Button,
   Card,
   CardContent,
-  Chip,
   Container,
   Grid,
   Typography,
   CircularProgress,
-  IconButton,
   Stack,
   Divider,
-  Alert,
-  Avatar,
   Paper,
-  Tooltip,
+  Chip,
+  Avatar,
   Fade,
   ButtonGroup,
+  Tooltip,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -114,8 +112,11 @@ const ScheduleList = () => {
   const fetchSchedules = async () => {
     try {
       const response = await travelerService.getSchedules();
+      console.log('Schedules response:', response);
+      console.log('First schedule structure:', response.data?.[0]);
       setSchedules(response.data || []);
     } catch (error) {
+      console.error('Fetch schedules error:', error);
       toast.error('Failed to load schedules');
     } finally {
       setLoading(false);
@@ -155,6 +156,46 @@ const ScheduleList = () => {
       if (filterType === 'past') return journeyDate < today || schedule.schedule_status !== 'ACTIVE';
       return true;
     }).length;
+  };
+
+  // Helper function to get bus info from schedule
+  const getBusInfo = (schedule) => {
+    console.log('Processing schedule:', schedule);
+    
+    // Default values
+    let busInfo = {
+      bus_number: 'Bus',
+      from_location: 'Origin',
+      to_location: 'Destination',
+    };
+
+    // Check if bus_id is an object with nested data
+    if (schedule.bus_id && typeof schedule.bus_id === 'object') {
+      busInfo = {
+        bus_number: schedule.bus_id.bus_number || schedule.bus_id.busNumber || busInfo.bus_number,
+        from_location: schedule.bus_id.from_location || schedule.bus_id.fromLocation || busInfo.from_location,
+        to_location: schedule.bus_id.to_location || schedule.bus_id.toLocation || busInfo.to_location,
+      };
+    } 
+    // Check direct properties on schedule
+    else if (schedule.bus_number || schedule.from_location || schedule.to_location) {
+      busInfo = {
+        bus_number: schedule.bus_number || schedule.busNumber || busInfo.bus_number,
+        from_location: schedule.from_location || schedule.fromLocation || busInfo.from_location,
+        to_location: schedule.to_location || schedule.toLocation || busInfo.to_location,
+      };
+    }
+    // Check if there's a bus property
+    else if (schedule.bus && typeof schedule.bus === 'object') {
+      busInfo = {
+        bus_number: schedule.bus.bus_number || schedule.bus.busNumber || busInfo.bus_number,
+        from_location: schedule.bus.from_location || schedule.bus.fromLocation || busInfo.from_location,
+        to_location: schedule.bus.to_location || schedule.bus.toLocation || busInfo.to_location,
+      };
+    }
+
+    console.log('Extracted bus info:', busInfo);
+    return busInfo;
   };
 
   if (loading) {
@@ -285,137 +326,141 @@ const ScheduleList = () => {
         </Fade>
       ) : (
         <Grid container spacing={3}>
-          {filteredSchedules.map((schedule, index) => (
-            <Grid item xs={12} key={schedule.schedule_id}>
-              <Fade in={true} timeout={300 + index * 100}>
-                <StyledCard>
-                  <CardContent sx={{ p: 3 }}>
-                    {/* Header Row */}
-                    <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={3}>
-                      <Stack direction="row" spacing={2} alignItems="center">
-                        <Avatar
-                          sx={{
-                            width: 56,
-                            height: 56,
-                            bgcolor: 'primary.main',
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                          }}
-                        >
-                          <BusIcon sx={{ fontSize: 30 }} />
-                        </Avatar>
-                        <Box>
-                          <Typography variant="h5" fontWeight="bold" gutterBottom>
-                            {schedule.bus_number}
-                          </Typography>
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <LocationIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                            <Typography variant="body2" color="text.secondary" fontWeight="medium">
-                              {schedule.from_location} → {schedule.to_location}
+          {filteredSchedules.map((schedule, index) => {
+            const busInfo = getBusInfo(schedule);
+            
+            return (
+              <Grid item xs={12} key={schedule.schedule_id}>
+                <Fade in={true} timeout={300 + index * 100}>
+                  <StyledCard>
+                    <CardContent sx={{ p: 3 }}>
+                      {/* Header Row */}
+                      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={3}>
+                        <Stack direction="row" spacing={2} alignItems="center">
+                          <Avatar
+                            sx={{
+                              width: 56,
+                              height: 56,
+                              bgcolor: 'primary.main',
+                              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            }}
+                          >
+                            <BusIcon sx={{ fontSize: 30 }} />
+                          </Avatar>
+                          <Box>
+                            <Typography variant="h5" fontWeight="bold" gutterBottom>
+                              {busInfo.bus_number}
                             </Typography>
-                          </Stack>
-                        </Box>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                              <LocationIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                              <Typography variant="body2" color="text.secondary" fontWeight="medium">
+                                {busInfo.from_location} → {busInfo.to_location}
+                              </Typography>
+                            </Stack>
+                          </Box>
+                        </Stack>
+                        <StyledChip
+                          label={schedule.schedule_status}
+                          status={schedule.schedule_status}
+                          size="medium"
+                        />
                       </Stack>
-                      <StyledChip
-                        label={schedule.schedule_status}
-                        status={schedule.schedule_status}
-                        size="medium"
-                      />
-                    </Stack>
 
-                    <Divider sx={{ my: 2 }} />
+                      <Divider sx={{ my: 2 }} />
 
-                    {/* Info Grid */}
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <InfoBox>
-                          <CalendarIcon color="primary" />
-                          <Box>
-                            <Typography variant="caption" color="text.secondary" display="block">
-                              Journey Date
-                            </Typography>
-                            <Typography variant="body1" fontWeight="bold">
-                              {formatDate(schedule.journey_date)}
-                            </Typography>
-                          </Box>
-                        </InfoBox>
+                      {/* Info Grid */}
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6} md={3}>
+                          <InfoBox>
+                            <CalendarIcon color="primary" />
+                            <Box>
+                              <Typography variant="caption" color="text.secondary" display="block">
+                                Journey Date
+                              </Typography>
+                              <Typography variant="body1" fontWeight="bold">
+                                {formatDate(schedule.journey_date)}
+                              </Typography>
+                            </Box>
+                          </InfoBox>
+                        </Grid>
+
+                        <Grid item xs={12} sm={6} md={3}>
+                          <InfoBox>
+                            <ClockIcon color="primary" />
+                            <Box>
+                              <Typography variant="caption" color="text.secondary" display="block">
+                                Departure Time
+                              </Typography>
+                              <Typography variant="body1" fontWeight="bold">
+                                {formatTime(schedule.departure_time)}
+                              </Typography>
+                            </Box>
+                          </InfoBox>
+                        </Grid>
+
+                        <Grid item xs={12} sm={6} md={3}>
+                          <InfoBox>
+                            <PeopleIcon color="success" />
+                            <Box>
+                              <Typography variant="caption" color="text.secondary" display="block">
+                                Available Seats
+                              </Typography>
+                              <Typography variant="body1" fontWeight="bold" color="success.main">
+                                {schedule.available_seats} / {schedule.total_seats}
+                              </Typography>
+                            </Box>
+                          </InfoBox>
+                        </Grid>
+
+                        <Grid item xs={12} sm={6} md={3}>
+                          <InfoBox>
+                            <PeopleIcon color="info" />
+                            <Box>
+                              <Typography variant="caption" color="text.secondary" display="block">
+                                Booked Seats
+                              </Typography>
+                              <Typography variant="body1" fontWeight="bold" color="info.main">
+                                {schedule.booked_seats || 0} seats
+                              </Typography>
+                            </Box>
+                          </InfoBox>
+                        </Grid>
                       </Grid>
 
-                      <Grid item xs={12} sm={6} md={3}>
-                        <InfoBox>
-                          <ClockIcon color="primary" />
-                          <Box>
-                            <Typography variant="caption" color="text.secondary" display="block">
-                              Departure Time
-                            </Typography>
-                            <Typography variant="body1" fontWeight="bold">
-                              {formatTime(schedule.departure_time)}
-                            </Typography>
+                      {/* Cancel Button */}
+                      {schedule.schedule_status === 'ACTIVE' && schedule.booked_seats === 0 && (
+                        <>
+                          <Divider sx={{ my: 3 }} />
+                          <Box display="flex" justifyContent="flex-end">
+                            <Tooltip title="Cancel this schedule (only available when no bookings exist)">
+                              <Button
+                                variant="outlined"
+                                color="error"
+                                startIcon={<CancelIcon />}
+                                onClick={() => handleCancelSchedule(schedule.schedule_id)}
+                                sx={{
+                                  borderRadius: 2,
+                                  px: 3,
+                                  fontWeight: 'bold',
+                                  '&:hover': {
+                                    bgcolor: 'error.light',
+                                    color: 'white',
+                                    borderColor: 'error.main',
+                                  },
+                                }}
+                              >
+                                Cancel Schedule
+                              </Button>
+                            </Tooltip>
                           </Box>
-                        </InfoBox>
-                      </Grid>
-
-                      <Grid item xs={12} sm={6} md={3}>
-                        <InfoBox>
-                          <PeopleIcon color="success" />
-                          <Box>
-                            <Typography variant="caption" color="text.secondary" display="block">
-                              Available Seats
-                            </Typography>
-                            <Typography variant="body1" fontWeight="bold" color="success.main">
-                              {schedule.available_seats} / {schedule.total_seats}
-                            </Typography>
-                          </Box>
-                        </InfoBox>
-                      </Grid>
-
-                      <Grid item xs={12} sm={6} md={3}>
-                        <InfoBox>
-                          <PeopleIcon color="info" />
-                          <Box>
-                            <Typography variant="caption" color="text.secondary" display="block">
-                              Booked Seats
-                            </Typography>
-                            <Typography variant="body1" fontWeight="bold" color="info.main">
-                              {schedule.booked_seats || 0} seats
-                            </Typography>
-                          </Box>
-                        </InfoBox>
-                      </Grid>
-                    </Grid>
-
-                    {/* Cancel Button */}
-                    {schedule.schedule_status === 'ACTIVE' && schedule.booked_seats === 0 && (
-                      <>
-                        <Divider sx={{ my: 3 }} />
-                        <Box display="flex" justifyContent="flex-end">
-                          <Tooltip title="Cancel this schedule (only available when no bookings exist)">
-                            <Button
-                              variant="outlined"
-                              color="error"
-                              startIcon={<CancelIcon />}
-                              onClick={() => handleCancelSchedule(schedule.schedule_id)}
-                              sx={{
-                                borderRadius: 2,
-                                px: 3,
-                                fontWeight: 'bold',
-                                '&:hover': {
-                                  bgcolor: 'error.light',
-                                  color: 'white',
-                                  borderColor: 'error.main',
-                                },
-                              }}
-                            >
-                              Cancel Schedule
-                            </Button>
-                          </Tooltip>
-                        </Box>
-                      </>
-                    )}
-                  </CardContent>
-                </StyledCard>
-              </Fade>
-            </Grid>
-          ))}
+                        </>
+                      )}
+                    </CardContent>
+                  </StyledCard>
+                </Fade>
+              </Grid>
+            );
+          })}
         </Grid>
       )}
     </Container>

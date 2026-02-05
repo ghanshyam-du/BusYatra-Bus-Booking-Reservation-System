@@ -3,7 +3,7 @@ import mongoose from "mongoose"
 const seatSchema = new mongoose.Schema({
   seat_id: {
     type: String,
-    required: true,
+    // required: true,
     unique: true,
     trim: true
   },
