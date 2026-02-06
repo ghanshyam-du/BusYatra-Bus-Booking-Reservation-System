@@ -2,7 +2,38 @@
 // ----------------------------------------------------------------
 
 import React, { useState, useEffect } from 'react';
-import { Plus, MessageSquare, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Grid,
+  Chip,
+  Stack,
+  Divider,
+  CircularProgress,
+  Paper,
+  Collapse,
+  IconButton,
+  Alert,
+  Avatar,
+} from '@mui/material';
+import {
+  Add,
+  MessageOutlined,
+  ErrorOutline,
+  CheckCircle,
+  AccessTime,
+  Close,
+  ConfirmationNumberOutlined,
+  PriorityHigh,
+} from '@mui/icons-material';
 import travelerService from '../../services/travelerService';
 import { formatDateTime, getStatusColor } from '../../utils/formatters';
 import toast from 'react-hot-toast';
@@ -18,8 +49,20 @@ const SupportTickets = () => {
     priority: 'MEDIUM'
   });
 
-  const ticketTypes = ['TECHNICAL', 'BOOKING', 'PAYMENT', 'SCHEDULE', 'OTHER'];
-  const priorities = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
+  const ticketTypes = [
+    { value: 'TECHNICAL', label: 'Technical Support' },
+    { value: 'BOOKING', label: 'Booking Issue' },
+    { value: 'PAYMENT', label: 'Payment Issue' },
+    { value: 'SCHEDULE', label: 'Schedule Inquiry' },
+    { value: 'OTHER', label: 'Other' }
+  ];
+
+  const priorities = [
+    { value: 'LOW', label: 'Low', color: '#10b981' },
+    { value: 'MEDIUM', label: 'Medium', color: '#f59e0b' },
+    { value: 'HIGH', label: 'High', color: '#f97316' },
+    { value: 'URGENT', label: 'Urgent', color: '#ef4444' }
+  ];
 
   useEffect(() => {
     fetchTickets();
@@ -55,185 +98,337 @@ const SupportTickets = () => {
   };
 
   const getPriorityIcon = (priority) => {
+    const iconProps = { sx: { fontSize: 20 } };
     switch (priority) {
       case 'URGENT':
+        return <ErrorOutline {...iconProps} sx={{ color: '#ef4444' }} />;
       case 'HIGH':
-        return <AlertCircle className="w-5 h-5 text-red-600" />;
+        return <PriorityHigh {...iconProps} sx={{ color: '#f97316' }} />;
       case 'MEDIUM':
-        return <Clock className="w-5 h-5 text-yellow-600" />;
+        return <AccessTime {...iconProps} sx={{ color: '#f59e0b' }} />;
       default:
-        return <CheckCircle className="w-5 h-5 text-green-600" />;
+        return <CheckCircle {...iconProps} sx={{ color: '#10b981' }} />;
+    }
+  };
+
+  const getPriorityColor = (priority) => {
+    const priorityObj = priorities.find(p => p.value === priority);
+    return priorityObj?.color || '#9ca3af';
+  };
+
+  const getTicketStatusColor = (status) => {
+    switch (status?.toUpperCase()) {
+      case 'OPEN':
+      case 'IN_PROGRESS':
+        return 'primary';
+      case 'RESOLVED':
+      case 'CLOSED':
+        return 'success';
+      case 'PENDING':
+        return 'warning';
+      default:
+        return 'default';
     }
   };
 
   if (loading) {
-    return <div className="bg-white rounded-lg shadow-sm p-8 text-center">Loading...</div>;
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress size={48} />
+      </Box>
+    );
   }
 
   return (
-    <div>
+    <Box>
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold">Support Tickets</h2>
-          <p className="text-gray-600 mt-1">Get help from our support team</p>
-        </div>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+        <Box>
+          <Typography variant="h4" fontWeight="bold" gutterBottom>
+            Support Tickets
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Get help from our support team
+          </Typography>
+        </Box>
         {!showCreateForm && (
-          <button
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<Add />}
             onClick={() => setShowCreateForm(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
+            sx={{ 
+              textTransform: 'none',
+              px: 3,
+              py: 1.5,
+              borderRadius: 2,
+              fontWeight: 600,
+            }}
           >
-            <Plus className="w-5 h-5" />
             Create Ticket
-          </button>
+          </Button>
         )}
-      </div>
+      </Box>
 
       {/* Create Ticket Form */}
-      {showCreateForm && (
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold">Create Support Ticket</h3>
-            <button
-              onClick={() => setShowCreateForm(false)}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              Cancel
-            </button>
-          </div>
+      <Collapse in={showCreateForm}>
+        <Card elevation={3} sx={{ mb: 4, borderRadius: 3 }}>
+          <CardContent sx={{ p: 4 }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+              <Typography variant="h6" fontWeight="bold">
+                Create Support Ticket
+              </Typography>
+              <IconButton onClick={() => setShowCreateForm(false)} size="small">
+                <Close />
+              </IconButton>
+            </Box>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Ticket Type *
-                </label>
-                <select
-                  value={formData.ticket_type}
-                  onChange={(e) => setFormData({ ...formData, ticket_type: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  required
-                >
-                  {ticketTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
+            <Box component="form" onSubmit={handleSubmit}>
+              <Grid container spacing={3}>
+                {/* Ticket Type */}
+                <Grid item xs={12} md={6}>
+                  <FormControl fullWidth required>
+                    <InputLabel>Ticket Type</InputLabel>
+                    <Select
+                      value={formData.ticket_type}
+                      label="Ticket Type"
+                      onChange={(e) => setFormData({ ...formData, ticket_type: e.target.value })}
+                    >
+                      {ticketTypes.map(type => (
+                        <MenuItem key={type.value} value={type.value}>
+                          {type.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Priority *
-                </label>
-                <select
-                  value={formData.priority}
-                  onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  required
-                >
-                  {priorities.map(priority => (
-                    <option key={priority} value={priority}>{priority}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
+                {/* Priority */}
+                <Grid item xs={12} md={6}>
+                  <FormControl fullWidth required>
+                    <InputLabel>Priority</InputLabel>
+                    <Select
+                      value={formData.priority}
+                      label="Priority"
+                      onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                    >
+                      {priorities.map(priority => (
+                        <MenuItem key={priority.value} value={priority.value}>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <Box
+                              sx={{
+                                width: 8,
+                                height: 8,
+                                borderRadius: '50%',
+                                bgcolor: priority.color
+                              }}
+                            />
+                            <Typography>{priority.label}</Typography>
+                          </Stack>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Subject *
-              </label>
-              <input
-                type="text"
-                value={formData.subject}
-                onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="Brief description of the issue"
-                required
-              />
-            </div>
+                {/* Subject */}
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    required
+                    label="Subject"
+                    placeholder="Brief description of the issue"
+                    value={formData.subject}
+                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                  />
+                </Grid>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description *
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows="5"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="Please provide detailed information about your issue..."
-                required
-              />
-            </div>
+                {/* Description */}
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    required
+                    multiline
+                    rows={5}
+                    label="Description"
+                    placeholder="Please provide detailed information about your issue..."
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  />
+                </Grid>
 
-            <button
-              type="submit"
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-            >
-              Submit Ticket
-            </button>
-          </form>
-        </div>
-      )}
+                {/* Submit Button */}
+                <Grid item xs={12}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    size="large"
+                    sx={{ 
+                      px: 4,
+                      py: 1.5,
+                      borderRadius: 2,
+                      fontWeight: 600,
+                    }}
+                  >
+                    Submit Ticket
+                  </Button>
+                </Grid>
+              </Grid>
+            </Box>
+          </CardContent>
+        </Card>
+      </Collapse>
 
       {/* Tickets List */}
       {tickets.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-          <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No support tickets</h3>
-          <p className="text-gray-600 mb-6">Create a ticket if you need help from our team</p>
-          {!showCreateForm && (
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-            >
-              <Plus className="w-5 h-5" />
-              Create Your First Ticket
-            </button>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {tickets.map((ticket) => (
-            <div key={ticket.ticket_id} className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    {getPriorityIcon(ticket.priority)}
-                    <h3 className="font-bold text-lg">{ticket.subject}</h3>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-3">{ticket.ticket_number}</p>
-                  <p className="text-gray-700">{ticket.description}</p>
-                </div>
-                <div className="ml-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(ticket.ticket_status)}`}>
-                    {ticket.ticket_status}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-6 text-sm text-gray-600">
-                <div className="flex items-center gap-1">
-                  <span className="font-medium">Type:</span> {ticket.ticket_type}
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="font-medium">Priority:</span> {ticket.priority}
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="font-medium">Created:</span> {formatDateTime(ticket.created_at)}
-                </div>
-              </div>
-
-              {ticket.resolution_notes && (
-                <div className="mt-4 pt-4 border-t">
-                  <p className="text-sm font-medium text-gray-700 mb-1">Resolution:</p>
-                  <p className="text-sm text-gray-600">{ticket.resolution_notes}</p>
-                </div>
+        <Card elevation={2} sx={{ borderRadius: 3 }}>
+          <CardContent>
+            <Box textAlign="center" py={8}>
+              <Avatar
+                sx={{
+                  width: 80,
+                  height: 80,
+                  bgcolor: 'primary.50',
+                  color: 'primary.main',
+                  mx: 'auto',
+                  mb: 3
+                }}
+              >
+                <MessageOutlined sx={{ fontSize: 48 }} />
+              </Avatar>
+              <Typography variant="h5" fontWeight="600" gutterBottom>
+                No support tickets
+              </Typography>
+              <Typography variant="body1" color="text.secondary" mb={4}>
+                Create a ticket if you need help from our team
+              </Typography>
+              {!showCreateForm && (
+                <Button
+                  variant="contained"
+                  size="large"
+                  startIcon={<Add />}
+                  onClick={() => setShowCreateForm(true)}
+                  sx={{ 
+                    px: 4,
+                    py: 1.5,
+                    borderRadius: 2,
+                    fontWeight: 600,
+                  }}
+                >
+                  Create Your First Ticket
+                </Button>
               )}
-            </div>
+            </Box>
+          </CardContent>
+        </Card>
+      ) : (
+        <Stack spacing={3}>
+          {tickets.map((ticket) => (
+            <Card key={ticket.ticket_id} elevation={2} sx={{ borderRadius: 3 }}>
+              <CardContent sx={{ p: 4 }}>
+                {/* Header Section */}
+                <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3}>
+                  <Box flex={1}>
+                    <Stack direction="row" spacing={2} alignItems="center" mb={1.5}>
+                      <Avatar
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          bgcolor: `${getPriorityColor(ticket.priority)}20`,
+                          color: getPriorityColor(ticket.priority)
+                        }}
+                      >
+                        {getPriorityIcon(ticket.priority)}
+                      </Avatar>
+                      <Box>
+                        <Typography variant="h6" fontWeight="bold">
+                          {ticket.subject}
+                        </Typography>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <ConfirmationNumberOutlined sx={{ fontSize: 16, color: 'text.secondary' }} />
+                          <Typography variant="caption" color="text.secondary">
+                            {ticket.ticket_number}
+                          </Typography>
+                        </Stack>
+                      </Box>
+                    </Stack>
+                  </Box>
+                  <Chip
+                    label={ticket.ticket_status}
+                    color={getTicketStatusColor(ticket.ticket_status)}
+                    sx={{ fontWeight: 600 }}
+                  />
+                </Box>
+
+                {/* Description */}
+                <Typography variant="body1" color="text.primary" mb={3} sx={{ lineHeight: 1.7 }}>
+                  {ticket.description}
+                </Typography>
+
+                {/* Metadata */}
+                <Stack 
+                  direction={{ xs: 'column', sm: 'row' }} 
+                  spacing={3}
+                  divider={<Divider orientation="vertical" flexItem />}
+                  mb={ticket.resolution_notes ? 3 : 0}
+                >
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Type
+                    </Typography>
+                    <Chip 
+                      label={ticket.ticket_type}
+                      size="small"
+                      variant="outlined"
+                      sx={{ mt: 0.5, fontWeight: 500 }}
+                    />
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Priority
+                    </Typography>
+                    <Chip
+                      label={ticket.priority}
+                      size="small"
+                      sx={{
+                        mt: 0.5,
+                        bgcolor: `${getPriorityColor(ticket.priority)}20`,
+                        color: getPriorityColor(ticket.priority),
+                        fontWeight: 600,
+                        borderColor: getPriorityColor(ticket.priority)
+                      }}
+                    />
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Created
+                    </Typography>
+                    <Typography variant="body2" fontWeight="500" sx={{ mt: 0.5 }}>
+                      {formatDateTime(ticket.created_at)}
+                    </Typography>
+                  </Box>
+                </Stack>
+
+                {/* Resolution Notes */}
+                {ticket.resolution_notes && (
+                  <>
+                    <Divider sx={{ my: 3 }} />
+                    <Alert severity="success" icon={<CheckCircle />}>
+                      <Typography variant="subtitle2" fontWeight="600" gutterBottom>
+                        Resolution
+                      </Typography>
+                      <Typography variant="body2">
+                        {ticket.resolution_notes}
+                      </Typography>
+                    </Alert>
+                  </>
+                )}
+              </CardContent>
+            </Card>
           ))}
-        </div>
+        </Stack>
       )}
-    </div>
+    </Box>
   );
 };
 
