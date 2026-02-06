@@ -2,7 +2,29 @@
 // ----------------------------------------------------------------
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, MapPin, Users, IndianRupee, TrendingUp, Ticket } from 'lucide-react';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  Chip,
+  Button,
+  ButtonGroup,
+  Divider,
+  CircularProgress,
+  Stack,
+  Avatar,
+  Paper,
+} from '@mui/material';
+import {
+  CalendarToday,
+  Place,
+  People,
+  CurrencyRupee,
+  TrendingUp,
+  ConfirmationNumber,
+} from '@mui/icons-material';
 import travelerService from '../../services/travelerService';
 import { formatCurrency, formatDate, formatTime, getStatusColor } from '../../utils/formatters';
 import toast from 'react-hot-toast';
@@ -34,159 +56,260 @@ const BookingAnalytics = () => {
     return booking.booking_status === filter.toUpperCase();
   });
 
+  // Helper function to get chip color based on status
+  const getChipColor = (status) => {
+    const statusUpper = status?.toUpperCase();
+    if (statusUpper === 'CONFIRMED' || statusUpper === 'PAID') return 'success';
+    if (statusUpper === 'CANCELLED') return 'error';
+    if (statusUpper === 'PENDING') return 'warning';
+    return 'default';
+  };
+
   if (loading) {
-    return <div className="bg-white rounded-lg shadow-sm p-8 text-center">Loading...</div>;
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (
-    <div>
+    <Box>
       {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold">Booking Analytics</h2>
-        <p className="text-gray-600 mt-1">View and manage bookings for your buses</p>
-      </div>
+      <Box mb={4}>
+        <Typography variant="h4" fontWeight="bold" gutterBottom>
+          Booking Analytics
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          View and manage bookings for your buses
+        </Typography>
+      </Box>
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center justify-between mb-2">
-              <Ticket className="w-8 h-8 text-blue-600" />
-              <span className="text-2xl font-bold">{stats.total_bookings || 0}</span>
-            </div>
-            <p className="text-sm text-gray-600">Total Bookings</p>
-          </div>
+        <Grid container spacing={3} mb={4}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card elevation={2}>
+              <CardContent>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+                  <Avatar sx={{ bgcolor: 'primary.main', width: 48, height: 48 }}>
+                    <ConfirmationNumber />
+                  </Avatar>
+                  <Typography variant="h4" fontWeight="bold">
+                    {stats.total_bookings || 0}
+                  </Typography>
+                </Stack>
+                <Typography variant="body2" color="text.secondary">
+                  Total Bookings
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center justify-between mb-2">
-              <TrendingUp className="w-8 h-8 text-green-600" />
-              <span className="text-2xl font-bold">{stats.confirmed || 0}</span>
-            </div>
-            <p className="text-sm text-gray-600">Confirmed</p>
-          </div>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card elevation={2}>
+              <CardContent>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+                  <Avatar sx={{ bgcolor: 'success.main', width: 48, height: 48 }}>
+                    <TrendingUp />
+                  </Avatar>
+                  <Typography variant="h4" fontWeight="bold">
+                    {stats.confirmed || 0}
+                  </Typography>
+                </Stack>
+                <Typography variant="body2" color="text.secondary">
+                  Confirmed
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center justify-between mb-2">
-              <Users className="w-8 h-8 text-purple-600" />
-              <span className="text-2xl font-bold">{stats.total_passengers || 0}</span>
-            </div>
-            <p className="text-sm text-gray-600">Total Passengers</p>
-          </div>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card elevation={2}>
+              <CardContent>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+                  <Avatar sx={{ bgcolor: 'secondary.main', width: 48, height: 48 }}>
+                    <People />
+                  </Avatar>
+                  <Typography variant="h4" fontWeight="bold">
+                    {stats.total_passengers || 0}
+                  </Typography>
+                </Stack>
+                <Typography variant="body2" color="text.secondary">
+                  Total Passengers
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center justify-between mb-2">
-              <IndianRupee className="w-8 h-8 text-orange-600" />
-              <span className="text-2xl font-bold">{formatCurrency(stats.total_revenue || 0).replace('₹', '')}</span>
-            </div>
-            <p className="text-sm text-gray-600">Total Revenue</p>
-          </div>
-        </div>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card elevation={2}>
+              <CardContent>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+                  <Avatar sx={{ bgcolor: 'warning.main', width: 48, height: 48 }}>
+                    <CurrencyRupee />
+                  </Avatar>
+                  <Typography variant="h4" fontWeight="bold">
+                    {formatCurrency(stats.total_revenue || 0).replace('₹', '')}
+                  </Typography>
+                </Stack>
+                <Typography variant="body2" color="text.secondary">
+                  Total Revenue
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
       )}
 
       {/* Filters */}
-      <div className="flex gap-2 mb-6">
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-lg font-medium transition ${
-            filter === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          All ({bookings.length})
-        </button>
-        <button
-          onClick={() => setFilter('confirmed')}
-          className={`px-4 py-2 rounded-lg font-medium transition ${
-            filter === 'confirmed' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          Confirmed
-        </button>
-        <button
-          onClick={() => setFilter('cancelled')}
-          className={`px-4 py-2 rounded-lg font-medium transition ${
-            filter === 'cancelled' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          Cancelled
-        </button>
-      </div>
+      <Box mb={4}>
+        <ButtonGroup variant="outlined" size="large">
+          <Button
+            onClick={() => setFilter('all')}
+            variant={filter === 'all' ? 'contained' : 'outlined'}
+          >
+            All ({bookings.length})
+          </Button>
+          <Button
+            onClick={() => setFilter('confirmed')}
+            variant={filter === 'confirmed' ? 'contained' : 'outlined'}
+          >
+            Confirmed
+          </Button>
+          <Button
+            onClick={() => setFilter('cancelled')}
+            variant={filter === 'cancelled' ? 'contained' : 'outlined'}
+          >
+            Cancelled
+          </Button>
+        </ButtonGroup>
+      </Box>
 
       {/* Bookings List */}
       {filteredBookings.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-          <Ticket className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No bookings found</h3>
-          <p className="text-gray-600">Bookings will appear here once customers start booking</p>
-        </div>
+        <Card elevation={2}>
+          <CardContent>
+            <Box textAlign="center" py={8}>
+              <ConfirmationNumber sx={{ fontSize: 80, color: 'text.disabled', mb: 2 }} />
+              <Typography variant="h5" fontWeight="600" gutterBottom>
+                No bookings found
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Bookings will appear here once customers start booking
+              </Typography>
+            </Box>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="space-y-4">
+        <Stack spacing={3}>
           {filteredBookings.map((booking) => (
-            <div key={booking.booking_id} className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="font-bold text-lg">{booking.booking_reference}</h3>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.booking_status)}`}>
-                      {booking.booking_status}
-                    </span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.payment_status)}`}>
-                      {booking.payment_status}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    Booked on {formatDate(booking.booking_date)}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(booking.total_amount)}</p>
-                  <p className="text-sm text-gray-600">{booking.number_of_seats} seats</p>
-                </div>
-              </div>
+            <Card key={booking.booking_id} elevation={2}>
+              <CardContent>
+                {/* Header Section */}
+                <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3}>
+                  <Box>
+                    <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                      <Typography variant="h6" fontWeight="bold">
+                        {booking.booking_reference}
+                      </Typography>
+                      <Chip
+                        label={booking.booking_status}
+                        color={getChipColor(booking.booking_status)}
+                        size="small"
+                      />
+                      <Chip
+                        label={booking.payment_status}
+                        color={getChipColor(booking.payment_status)}
+                        size="small"
+                      />
+                    </Stack>
+                    <Typography variant="body2" color="text.secondary">
+                      Booked on {formatDate(booking.booking_date)}
+                    </Typography>
+                  </Box>
+                  <Box textAlign="right">
+                    <Typography variant="h5" fontWeight="bold">
+                      {formatCurrency(booking.total_amount)}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {booking.number_of_seats} seats
+                    </Typography>
+                  </Box>
+                </Box>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-gray-400" />
-                  <div>
-                    <p className="text-xs text-gray-500">Route</p>
-                    <p className="font-medium">{booking.from_location} → {booking.to_location}</p>
-                  </div>
-                </div>
+                {/* Journey Details */}
+                <Grid container spacing={3} mb={3}>
+                  <Grid item xs={12} md={4}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Place color="action" fontSize="small" />
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Route
+                        </Typography>
+                        <Typography variant="body2" fontWeight="500">
+                          {booking.from_location} → {booking.to_location}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </Grid>
 
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-gray-400" />
-                  <div>
-                    <p className="text-xs text-gray-500">Journey Date</p>
-                    <p className="font-medium">{formatDate(booking.journey_date)}</p>
-                  </div>
-                </div>
+                  <Grid item xs={12} md={4}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <CalendarToday color="action" fontSize="small" />
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Journey Date
+                        </Typography>
+                        <Typography variant="body2" fontWeight="500">
+                          {formatDate(booking.journey_date)}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </Grid>
 
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-gray-400" />
-                  <div>
-                    <p className="text-xs text-gray-500">Seats</p>
-                    <p className="font-medium">{booking.seat_numbers?.join(', ')}</p>
-                  </div>
-                </div>
-              </div>
+                  <Grid item xs={12} md={4}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <People color="action" fontSize="small" />
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Seats
+                        </Typography>
+                        <Typography variant="body2" fontWeight="500">
+                          {booking.seat_numbers?.join(', ')}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </Grid>
+                </Grid>
 
-              {/* Passenger Details */}
-              {booking.passengers && booking.passengers.length > 0 && (
-                <div className="border-t pt-4">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Passengers:</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {booking.passengers.map((passenger, index) => (
-                      <div key={index} className="text-sm text-gray-600">
-                        {passenger.passenger_name} ({passenger.passenger_age}yrs, {passenger.passenger_gender})
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+                {/* Passenger Details */}
+                {booking.passengers && booking.passengers.length > 0 && (
+                  <>
+                    <Divider sx={{ mb: 2 }} />
+                    <Box>
+                      <Typography variant="body2" fontWeight="500" color="text.primary" mb={1}>
+                        Passengers:
+                      </Typography>
+                      <Grid container spacing={1}>
+                        {booking.passengers.map((passenger, index) => (
+                          <Grid item xs={12} md={6} key={index}>
+                            <Typography variant="body2" color="text.secondary">
+                              {passenger.passenger_name} ({passenger.passenger_age}yrs,{' '}
+                              {passenger.passenger_gender})
+                            </Typography>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Box>
+                  </>
+                )}
+              </CardContent>
+            </Card>
           ))}
-        </div>
+        </Stack>
       )}
-    </div>
+    </Box>
   );
 };
 
