@@ -145,7 +145,13 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
       setPassengers(passengers.filter((_, i) => i !== selectedSeats.indexOf(isSelected)));
     } else {
       setSelectedSeats([...selectedSeats, seat]);
-      setPassengers([...passengers, { name: '', age: '', gender: '' }]);
+      setPassengers([...passengers, { 
+        name: '', 
+        age: '', 
+        gender: '',
+        id_type: 'Aadhar',
+        id_number: 'N/A'
+      }]);
     }
   };
 
@@ -163,42 +169,60 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
         return;
       }
       
+      // Validate name
+      if (passengers[i].name.trim().length < 2) {
+        toast.error(`Please enter a valid name for passenger ${i + 1}`);
+        return;
+      }
+      
       // Validate age is a number
-      if (isNaN(passengers[i].age) || passengers[i].age < 1 || passengers[i].age > 120) {
-        toast.error(`Please enter a valid age for passenger ${i + 1}`);
+      const age = parseInt(passengers[i].age);
+      if (isNaN(age) || age < 1 || age > 120) {
+        toast.error(`Please enter a valid age (1-120) for passenger ${i + 1}`);
+        return;
+      }
+      
+      // Validate gender
+      if (!['Male', 'Female', 'Other'].includes(passengers[i].gender)) {
+        toast.error(`Please select a valid gender for passenger ${i + 1}`);
         return;
       }
     }
 
     setBooking(true);
     try {
+      // Prepare booking data exactly as backend expects
       const bookingData = {
         schedule_id: bus.schedule_id,
         seat_ids: selectedSeats.map((s) => s.seat_id),
         passengers: passengers.map(p => ({
           name: p.name.trim(),
-          age: parseInt(p.age), // Ensure age is a number
-          gender: p.gender
+          age: parseInt(p.age),
+          gender: p.gender,
+          id_type: p.id_type || 'Aadhar',
+          id_number: p.id_number || 'N/A'
         }))
       };
 
       console.log('📤 Submitting booking:', bookingData);
-      console.log('📋 Details:', {
+      console.log('📋 Booking Details:', {
         schedule_id: bookingData.schedule_id,
-        seat_ids_count: bookingData.seat_ids.length,
-        seat_ids_sample: bookingData.seat_ids[0],
-        passengers_count: bookingData.passengers.length,
-        first_passenger: bookingData.passengers[0],
-        age_type: typeof bookingData.passengers[0]?.age
+        number_of_seats: bookingData.seat_ids.length,
+        seat_ids: bookingData.seat_ids,
+        passengers: bookingData.passengers,
+        passenger_sample: bookingData.passengers[0]
       });
-      console.log('🎫 Selected seats objects:', selectedSeats);
-      console.log('👥 Passenger input data:', passengers);
       
       const response = await bookingService.createBooking(bookingData);
       console.log('✅ Booking response:', response);
       
-      toast.success('Booking successful!');
-      onBookingComplete();
+      toast.success('🎉 Booking successful!');
+      
+      // Close dialog and refresh
+      setTimeout(() => {
+        onBookingComplete();
+      }, 1000);
+      
     } catch (error) {
       console.error('❌ Booking error:', error);
       console.error('❌ Error.response:', error.response);
@@ -206,7 +230,8 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
       console.error('❌ Error message:', error.message);
       
       // Show the actual error message from backend
-      const errorMessage = error.response?.data?.message 
+      const errorMessage = error.response?.data?.error 
+        || error.response?.data?.message 
         || error.message 
         || 'Booking failed. Please try again.';
       
@@ -661,6 +686,7 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
                               placeholder="Enter passenger name"
                               value={passengers[index]?.name || ''}
                               onChange={(e) => updatePassenger(index, 'name', e.target.value)}
+                              required
                               InputProps={{
                                 startAdornment: <PersonIcon sx={{ mr: 1, color: 'action.active' }} fontSize="small" />,
                               }}
@@ -680,6 +706,7 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
                                   placeholder="Age"
                                   value={passengers[index]?.age || ''}
                                   onChange={(e) => updatePassenger(index, 'age', e.target.value)}
+                                  required
                                   inputProps={{ min: 1, max: 120 }}
                                   sx={{
                                     '& .MuiOutlinedInput-root': {
@@ -689,7 +716,7 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
                                 />
                               </Grid>
                               <Grid item xs={6}>
-                                <FormControl fullWidth size="small">
+                                <FormControl fullWidth size="small" required>
                                   <InputLabel>Gender</InputLabel>
                                   <Select
                                     value={passengers[index]?.gender || ''}
