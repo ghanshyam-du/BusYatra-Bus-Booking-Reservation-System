@@ -10,7 +10,7 @@ import mongoose from "mongoose";
 
 
 // @desc    Search buses by route and date
-// @route   GET /api/bookings/search-buses
+// @route   GET /api/bookings/search-buses 
 // @access  Public
 export const searchBuses = asyncHandler(async (req, res, next) => {
   const { from, to, date } = req.query;
