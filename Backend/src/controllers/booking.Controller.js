@@ -172,6 +172,7 @@ export const getAvailableSeats = asyncHandler(async (req, res, next) => {
 
 
 
+
 // @desc    Create booking (Book seats)
 // @route   POST /api/bookings
 // @access  Private (Customer)
@@ -191,10 +192,6 @@ export const createBooking = asyncHandler(async (req, res, next) => {
   if (!Array.isArray(passengers) || passengers.length !== seat_ids.length) {
     return next(new ErrorResponse('Number of passengers must match number of seats', 400));
   }
-
-//   if (seat_ids.length > 6) {
-//     return next(new ErrorResponse('Cannot book more than 6 seats at once', 400));
-//   }
 
   // Validate passenger details
   for (const passenger of passengers) {
@@ -267,8 +264,22 @@ export const createBooking = asyncHandler(async (req, res, next) => {
     // 5. Calculate total amount
     const total_amount = bus.fare * seat_ids.length;
 
-    // 6. Create booking
-    const booking = await Booking.create([{
+    // 6. Generate booking_id and booking_reference
+    const bookingCount = await Booking.countDocuments().session(session);
+    const booking_id = `BKG${String(bookingCount + 1).padStart(6, '0')}`;
+    
+    const date = new Date();
+    const dateStr = date.getFullYear() + 
+                    String(date.getMonth() + 1).padStart(2, '0') + 
+                    String(date.getDate()).padStart(2, '0');
+    const booking_reference = `BUS${dateStr}${String(bookingCount + 1).padStart(4, '0')}`;
+
+    console.log('📝 Generated Booking IDs:', { booking_id, booking_reference });
+
+    // 7. Create booking with generated IDs
+    const newBooking = new Booking({
+      booking_id,
+      booking_reference,
       user_id,
       schedule_id,
       traveler_id: bus.traveler_id,
@@ -276,15 +287,23 @@ export const createBooking = asyncHandler(async (req, res, next) => {
       seat_numbers: seats.map(s => s.seat_number),
       total_amount,
       booking_status: 'CONFIRMED',
-      payment_status: 'PAID', // In real app, integrate payment gateway   
+      payment_status: 'PAID',
       payment_method: 'UPI'
-    }], { session });
+    });
 
-    const bookingId = booking[0].booking_id;
+    await newBooking.save({ session });
 
-    // 7. Create booking seats (link passengers to seats)
+    console.log('✅ Booking created:', {
+      booking_id: newBooking.booking_id,
+      booking_reference: newBooking.booking_reference
+    });
+
+    // 8. Generate booking_seat_ids and create booking seats
+    const bookingSeatCount = await BookingSeat.countDocuments().session(session);
+    
     const bookingSeatData = seat_ids.map((seat_id, index) => ({
-      booking_id: bookingId,
+      booking_seat_id: `BKSEAT${String(bookingSeatCount + index + 1).padStart(6, '0')}`, // ✅ Generated manually
+      booking_id: booking_id,
       seat_id: seat_id,
       passenger_name: passengers[index].name,
       passenger_age: passengers[index].age,
@@ -293,21 +312,23 @@ export const createBooking = asyncHandler(async (req, res, next) => {
       passenger_id_number: passengers[index].id_number || 'N/A'
     }));
 
+    console.log('📝 Generated BookingSeat IDs:', bookingSeatData.map(b => b.booking_seat_id));
+
     await BookingSeat.insertMany(bookingSeatData, { session });
 
-    // 8. Mark seats as booked
+    // 9. Mark seats as booked
     await Seat.updateMany(
       { seat_id: { $in: seat_ids } },
       { 
         $set: { 
           is_booked: true,
-          booking_id: bookingId
+          booking_id: booking_id
         } 
       },
       { session }
     );
 
-    // 9. Update schedule availability
+    // 10. Update schedule availability
     await BusSchedule.updateOne(
       { schedule_id },
       {
@@ -323,8 +344,8 @@ export const createBooking = asyncHandler(async (req, res, next) => {
     await session.commitTransaction();
 
     // Get complete booking details
-    const completeBooking = await Booking.findOne({ booking_id: bookingId });
-    const bookingSeats = await BookingSeat.find({ booking_id: bookingId });
+    const completeBooking = await Booking.findOne({ booking_id: booking_id });
+    const bookingSeats = await BookingSeat.find({ booking_id: booking_id });
 
     res.status(201).json({
       success: true,
@@ -346,6 +367,7 @@ export const createBooking = asyncHandler(async (req, res, next) => {
 
   } catch (error) {
     await session.abortTransaction();
+    console.error('❌ Booking creation error:', error);
     throw error;
   } finally {
     session.endSession();

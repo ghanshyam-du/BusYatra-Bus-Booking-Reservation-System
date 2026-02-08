@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+
 const bookingSeatSchema = new mongoose.Schema({
   booking_seat_id: {
     type: String,
@@ -37,24 +38,19 @@ const bookingSeatSchema = new mongoose.Schema({
   passenger_id_type: {
     type: String,
     enum: ['Aadhar', 'PAN', 'Passport', 'Driving License', 'Voter ID'],
-    required: [true, 'ID type is required']
+    default: 'Aadhar'
   },
   passenger_id_number: {
     type: String,
-    required: [true, 'ID number is required'],
+    default: 'N/A',
     trim: true
   }
 }, {
   timestamps: true
 });
 
-// Auto-generate booking_seat_id
-bookingSeatSchema.pre('save', async function(next) {
-  if (this.booking_seat_id) return next();
-  
-  const count = await this.constructor.countDocuments();
-  this.booking_seat_id = `BKSEAT${String(count + 1).padStart(6, '0')}`;
-  next();
-});
+// Indexes for better query performance
+bookingSeatSchema.index({ booking_id: 1 });
+bookingSeatSchema.index({ seat_id: 1 });
 
 export default mongoose.model('BookingSeat', bookingSeatSchema);
