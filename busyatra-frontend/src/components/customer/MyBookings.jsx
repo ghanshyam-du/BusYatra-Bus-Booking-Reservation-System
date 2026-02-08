@@ -62,9 +62,18 @@ const MyBookings = () => {
 
   const fetchBookings = async () => {
     try {
+      console.log('📞 Fetching bookings...');
       const response = await bookingService.getMyBookings();
-      setBookings(response.data || []);
+      console.log('📦 Raw API Response:', response);
+      console.log('📊 Response.data:', response.data);
+      
+      // Handle the response structure properly
+      const bookingsData = response.data || [];
+      console.log('✅ Bookings Data:', bookingsData);
+      
+      setBookings(bookingsData);
     } catch (error) {
+      console.error('❌ Fetch bookings error:', error);
       toast.error('Failed to load bookings');
     } finally {
       setLoading(false);
@@ -213,11 +222,36 @@ const MyBookings = () => {
       {/* Bookings List */}
       <Stack spacing={4}>
         {bookings.map((booking, index) => {
-          const statusConfig = getStatusConfig(booking.booking_status);
-          const isExpanded = expandedBooking === booking.booking_id;
+          // ✅ FIXED: Safe data extraction with fallbacks
+          const journeyDetails = booking.journey_details || {};
+          const bookingInfo = booking.booking || {};
+          
+          // Extract journey information safely
+          const fromLocation = journeyDetails.from || bookingInfo.from_location || 'Unknown';
+          const toLocation = journeyDetails.to || bookingInfo.to_location || 'Unknown';
+          const departureTime = journeyDetails.departure_time || bookingInfo.departure_time;
+          const arrivalTime = journeyDetails.arrival_time || bookingInfo.arrival_time;
+          const journeyDate = journeyDetails.journey_date || bookingInfo.journey_date;
+          const busType = journeyDetails.bus_type || bookingInfo.bus_type || 'Standard';
+          const busNumber = journeyDetails.bus_number || bookingInfo.bus_number || 'N/A';
+          
+          // Extract booking information safely
+          const bookingId = bookingInfo.booking_id || booking.booking_id;
+          const bookingReference = bookingInfo.booking_reference || booking.booking_reference || 'N/A';
+          const bookingStatus = bookingInfo.booking_status || booking.booking_status || 'PENDING';
+          const bookingDate = bookingInfo.booking_date || booking.booking_date;
+          const numberOfSeats = bookingInfo.number_of_seats || booking.number_of_seats || 0;
+          const seatNumbers = bookingInfo.seat_numbers || booking.seat_numbers || [];
+          const totalAmount = bookingInfo.total_amount || booking.total_amount || 0;
+          
+          // Extract passenger information safely
+          const passengers = booking.passengers || [];
+          
+          const statusConfig = getStatusConfig(bookingStatus);
+          const isExpanded = expandedBooking === bookingId;
 
           return (
-            <Fade in={true} timeout={300 + index * 100} key={booking.booking_id}>
+            <Fade in={true} timeout={300 + index * 100} key={bookingId || index}>
               <Card
                 elevation={0}
                 sx={{
@@ -233,7 +267,6 @@ const MyBookings = () => {
                     transform: 'translateY(-8px)',
                     borderColor: 'primary.main',
                   },
-                  // Perforated edge effect
                   '&::before': {
                     content: '""',
                     position: 'absolute',
@@ -253,7 +286,7 @@ const MyBookings = () => {
                   }
                 }}
               >
-                {/* Ticket Header with Pattern */}
+                {/* Ticket Header */}
                 <Box
                   sx={{
                     background: `linear-gradient(135deg, ${alpha('#1e3c72', 0.05)} 0%, ${alpha('#2a5298', 0.05)} 100%)`,
@@ -283,7 +316,7 @@ const MyBookings = () => {
                     <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
                       <Chip
                         icon={<TicketIcon />}
-                        label={booking.booking_reference}
+                        label={bookingReference}
                         size="small"
                         sx={{
                           fontWeight: 700,
@@ -295,13 +328,15 @@ const MyBookings = () => {
                           color: 'primary.main',
                         }}
                       />
-                      <Chip
-                        icon={<CalendarIcon fontSize="small" />}
-                        label={formatDate(booking.journey_date)}
-                        size="small"
-                        variant="outlined"
-                        sx={{ fontWeight: 600 }}
-                      />
+                      {journeyDate && (
+                        <Chip
+                          icon={<CalendarIcon fontSize="small" />}
+                          label={formatDate(journeyDate)}
+                          size="small"
+                          variant="outlined"
+                          sx={{ fontWeight: 600 }}
+                        />
+                      )}
                     </Stack>
                     <Badge
                       badgeContent={statusConfig.icon}
@@ -315,7 +350,7 @@ const MyBookings = () => {
                       }}
                     >
                       <Chip
-                        label={booking.booking_status}
+                        label={bookingStatus}
                         color={statusConfig.color}
                         size="small"
                         sx={{ 
@@ -347,7 +382,6 @@ const MyBookings = () => {
                             >
                               <OriginIcon sx={{ fontSize: 24 }} />
                             </Avatar>
-                            {/* Connecting line */}
                             <Box
                               sx={{
                                 position: 'absolute',
@@ -365,19 +399,21 @@ const MyBookings = () => {
                               Departure
                             </Typography>
                             <Typography variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 0.5 }}>
-                              {booking.from_location}
+                              {fromLocation}
                             </Typography>
                             <Stack direction="row" spacing={2} alignItems="center">
-                              <Chip
-                                icon={<TimeIcon />}
-                                label={booking.departure_time ? formatTime(booking.departure_time) : 'TBD'}
-                                size="small"
-                                sx={{ 
-                                  bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                  color: 'primary.main',
-                                  fontWeight: 600,
-                                }}
-                              />
+                              {departureTime && (
+                                <Chip
+                                  icon={<TimeIcon />}
+                                  label={formatTime(departureTime)}
+                                  size="small"
+                                  sx={{ 
+                                    bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                    color: 'primary.main',
+                                    fontWeight: 600,
+                                  }}
+                                />
+                              )}
                             </Stack>
                           </Box>
                         </Stack>
@@ -404,16 +440,7 @@ const MyBookings = () => {
                               Bus Type
                             </Typography>
                             <Typography variant="body2" fontWeight={700} color="info.main">
-                              {booking.bus_type || 'Express AC'}
-                            </Typography>
-                          </Box>
-                          <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
-                          <Box>
-                            <Typography variant="caption" color="text.secondary">
-                              Duration
-                            </Typography>
-                            <Typography variant="body2" fontWeight={700}>
-                              {booking.duration || '6h 30m'}
+                              {busType}
                             </Typography>
                           </Box>
                         </Stack>
@@ -437,19 +464,21 @@ const MyBookings = () => {
                               Arrival
                             </Typography>
                             <Typography variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 0.5 }}>
-                              {booking.to_location}
+                              {toLocation}
                             </Typography>
                             <Stack direction="row" spacing={2} alignItems="center">
-                              <Chip
-                                icon={<TimeIcon />}
-                                label={booking.arrival_time ? formatTime(booking.arrival_time) : 'TBD'}
-                                size="small"
-                                sx={{ 
-                                  bgcolor: alpha(theme.palette.success.main, 0.1),
-                                  color: 'success.main',
-                                  fontWeight: 600,
-                                }}
-                              />
+                              {arrivalTime && (
+                                <Chip
+                                  icon={<TimeIcon />}
+                                  label={formatTime(arrivalTime)}
+                                  size="small"
+                                  sx={{ 
+                                    bgcolor: alpha(theme.palette.success.main, 0.1),
+                                    color: 'success.main',
+                                    fontWeight: 600,
+                                  }}
+                                />
+                              )}
                             </Stack>
                           </Box>
                         </Stack>
@@ -466,10 +495,10 @@ const MyBookings = () => {
                           </Typography>
                         </Stack>
                         <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
-                          {booking.seat_numbers && booking.seat_numbers.length > 0 ? (
-                            booking.seat_numbers.map((seat) => (
+                          {seatNumbers && seatNumbers.length > 0 ? (
+                            seatNumbers.map((seat, idx) => (
                               <Paper
-                                key={seat}
+                                key={idx}
                                 elevation={0}
                                 sx={{
                                   px: 2,
@@ -509,7 +538,7 @@ const MyBookings = () => {
                             ))
                           ) : (
                             <Chip
-                              label={`${booking.number_of_seats} ${booking.number_of_seats === 1 ? 'Seat' : 'Seats'}`}
+                              label={`${numberOfSeats} ${numberOfSeats === 1 ? 'Seat' : 'Seats'}`}
                               color="primary"
                               sx={{ fontWeight: 600 }}
                             />
@@ -557,12 +586,12 @@ const MyBookings = () => {
                                 letterSpacing: '-1px',
                               }}
                             >
-                              {formatCurrency(booking.total_amount)}
+                              {formatCurrency(totalAmount)}
                             </Typography>
                             <Stack direction="row" spacing={1} alignItems="center">
                               <Chip
                                 icon={<PersonIcon fontSize="small" />}
-                                label={`${booking.number_of_seats} Passenger${booking.number_of_seats > 1 ? 's' : ''}`}
+                                label={`${numberOfSeats} Passenger${numberOfSeats > 1 ? 's' : ''}`}
                                 size="small"
                                 sx={{ 
                                   bgcolor: 'white',
@@ -575,7 +604,7 @@ const MyBookings = () => {
 
                         {/* Quick Actions */}
                         <Stack spacing={1.5} sx={{ mt: 'auto' }}>
-                          {booking.booking_status === 'CONFIRMED' && (
+                          {bookingStatus === 'CONFIRMED' && (
                             <>
                               <Button
                                 fullWidth
@@ -642,7 +671,7 @@ const MyBookings = () => {
                                 variant="outlined"
                                 color="error"
                                 startIcon={<CancelIcon />}
-                                onClick={() => setCancelDialog({ open: true, bookingId: booking.booking_id })}
+                                onClick={() => setCancelDialog({ open: true, bookingId: bookingId })}
                                 sx={{
                                   borderRadius: 2,
                                   py: 1.2,
@@ -671,7 +700,7 @@ const MyBookings = () => {
                                 }}
                               />
                             }
-                            onClick={() => toggleExpand(booking.booking_id)}
+                            onClick={() => toggleExpand(bookingId)}
                             sx={{
                               borderRadius: 2,
                               py: 1.2,
@@ -708,7 +737,7 @@ const MyBookings = () => {
                               Booking Date
                             </Typography>
                             <Typography variant="body2" fontWeight={700}>
-                              {booking.booking_date ? formatDate(booking.booking_date) : 'N/A'}
+                              {bookingDate ? formatDate(bookingDate) : 'N/A'}
                             </Typography>
                           </Stack>
                         </Grid>
@@ -718,17 +747,17 @@ const MyBookings = () => {
                               PNR Number
                             </Typography>
                             <Typography variant="body2" fontWeight={700} fontFamily="monospace">
-                              {booking.pnr || booking.booking_reference}
+                              {bookingReference}
                             </Typography>
                           </Stack>
                         </Grid>
                         <Grid item xs={6} sm={3}>
                           <Stack spacing={0.5}>
                             <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                              Operator
+                              Bus Type
                             </Typography>
                             <Typography variant="body2" fontWeight={700}>
-                              {booking.operator || 'Express Travels'}
+                              {busType}
                             </Typography>
                           </Stack>
                         </Grid>
@@ -738,20 +767,20 @@ const MyBookings = () => {
                               Bus Number
                             </Typography>
                             <Typography variant="body2" fontWeight={700}>
-                              {booking.bus_number || 'GJ-01-AB-1234'}
+                              {busNumber}
                             </Typography>
                           </Stack>
                         </Grid>
                       </Grid>
 
                       {/* Passenger Details */}
-                      {booking.passengers && booking.passengers.length > 0 && (
+                      {passengers && passengers.length > 0 && (
                         <Box sx={{ mt: 3 }}>
                           <Typography variant="subtitle2" fontWeight={700} gutterBottom sx={{ mb: 2 }}>
                             👥 Passenger Details
                           </Typography>
                           <Stack spacing={1.5}>
-                            {booking.passengers.map((passenger, idx) => (
+                            {passengers.map((passenger, idx) => (
                               <Paper
                                 key={idx}
                                 elevation={0}
@@ -778,15 +807,15 @@ const MyBookings = () => {
                                   </Avatar>
                                   <Box flex={1}>
                                     <Typography variant="body2" fontWeight={700}>
-                                      {passenger.name}
+                                      {passenger.passenger_name || passenger.name}
                                     </Typography>
                                     <Typography variant="caption" color="text.secondary">
-                                      {passenger.age} years • {passenger.gender}
+                                      {passenger.passenger_age || passenger.age} years • {passenger.passenger_gender || passenger.gender}
                                     </Typography>
                                   </Box>
-                                  {booking.seat_numbers && booking.seat_numbers[idx] && (
+                                  {seatNumbers && seatNumbers[idx] && (
                                     <Chip
-                                      label={`Seat ${booking.seat_numbers[idx]}`}
+                                      label={`Seat ${seatNumbers[idx]}`}
                                       size="small"
                                       color="primary"
                                       sx={{ fontWeight: 600 }}
