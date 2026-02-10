@@ -1,98 +1,26 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Box,
-  Container,
-  Paper,
-  TextField,
-  Button,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  Chip,
-  Divider,
-  InputAdornment,
-  CircularProgress,
-  Stack,
-  Avatar,
-  Fade,
-  Skeleton,
-  useTheme,
-  useMediaQuery,
-  IconButton,
-  Tooltip,
-} from '@mui/material';
-import {
-  Search as SearchIcon,
-  LocationOn as LocationOnIcon,
-  CalendarToday as CalendarIcon,
-  DirectionsBus as BusIcon,
-  AccessTime as ClockIcon,
-  SwapHoriz as SwapIcon,
-  TrendingFlat as ArrowIcon,
-  EventSeat as SeatIcon,
-  AttachMoney as MoneyIcon,
-} from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
+  Search,
+  MapPin,
+  Calendar,
+  ArrowRightLeft,
+  Bus,
+  Clock,
+  Armchair,
+  Wifi,
+  Coffee,
+  BatteryHosting,
+  ArrowRight,
+  Filter
+} from 'lucide-react';
 import bookingService from '../../services/bookingService';
 import { formatCurrency, formatTime, formatDuration } from '../../utils/formatters';
 import toast from 'react-hot-toast';
 import SeatSelection from './SeatSelection';
-
-// Styled Components
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(4),
-  borderRadius: theme.spacing(2),
-  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    boxShadow: '0 6px 30px rgba(0,0,0,0.12)',
-  },
-}));
-
-const SearchButton = styled(Button)(({ theme }) => ({
-  padding: theme.spacing(1.5, 4),
-  borderRadius: theme.spacing(1.5),
-  fontSize: '1.1rem',
-  fontWeight: 600,
-  textTransform: 'none',
-  boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
-  '&:hover': {
-    boxShadow: '0 6px 20px rgba(25, 118, 210, 0.4)',
-    transform: 'translateY(-2px)',
-  },
-  transition: 'all 0.3s ease',
-}));
-
-const BusCard = styled(Card)(({ theme }) => ({
-  borderRadius: theme.spacing(2),
-  boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-  transition: 'all 0.3s ease',
-  border: `1px solid ${theme.palette.divider}`,
-  '&:hover': {
-    boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-    transform: 'translateY(-4px)',
-  },
-}));
-
-const StyledTextField = styled(TextField)(({ theme }) => ({
-  '& .MuiOutlinedInput-root': {
-    borderRadius: theme.spacing(1.5),
-    backgroundColor: theme.palette.background.paper,
-    transition: 'all 0.3s ease',
-    '&:hover': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    '&.Mui-focused': {
-      backgroundColor: theme.palette.background.paper,
-    },
-  },
-}));
+import { cn } from '../../utils/cn';
 
 const BusSearch = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
   const [searchParams, setSearchParams] = useState({
     from: '',
     to: '',
@@ -133,385 +61,262 @@ const BusSearch = () => {
     });
   };
 
-  const handleSelectSeats = (bus) => {
-    setSelectedBus(bus);
-    setShowSeatSelection(true);
-  };
+  const amenities = [
+    { icon: Wifi, label: 'WiFi' },
+    { icon: Coffee, label: 'Snacks' },
+    { icon: BatteryHosting, label: 'Charging' }
+  ];
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Search Form */}
-      <StyledPaper elevation={0}>
-        <Stack spacing={3}>
-          <Box>
-            <Typography 
-              variant="h4" 
-              fontWeight={700}
-              color="primary"
-              gutterBottom
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 1.5,
-                mb: 1
-              }}
-            >
-              <BusIcon sx={{ fontSize: 40 }} />
-              Search Buses
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Find the best buses for your journey
-            </Typography>
-          </Box>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto space-y-8">
 
-          <form onSubmit={handleSearch}>
-            <Grid container spacing={2} alignItems="center">
-              {/* From Location */}
-              <Grid size={{xs:12, md:4}}>
-                <StyledTextField
-                  fullWidth
-                  label="From"
-                  placeholder="e.g., Ahmedabad"
-                  value={searchParams.from}
-                  onChange={(e) => setSearchParams({ ...searchParams, from: e.target.value })}
-                  required
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LocationOnIcon color="primary" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
+        {/* Search Header & Form */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-linear-to-br from-teal-500 to-emerald-600 rounded-2xl shadow-lg shadow-teal-500/20">
+              <Bus className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Search Buses</h1>
+              <p className="text-gray-500 dark:text-gray-400">Find the perfect ride for your journey</p>
+            </div>
+          </div>
+
+          <form onSubmit={handleSearch} className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-xl shadow-gray-200/50 dark:shadow-black/20 border border-gray-100 dark:border-gray-800">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
+
+              {/* From */}
+              <div className="md:col-span-4 space-y-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">From</label>
+                <div className="relative group">
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-teal-500 transition-colors" />
+                  <input
+                    type="text"
+                    value={searchParams.from}
+                    onChange={(e) => setSearchParams({ ...searchParams, from: e.target.value })}
+                    placeholder="Source City"
+                    required
+                    className="w-full pl-12 pr-4 py-3.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all dark:text-white"
+                  />
+                </div>
+              </div>
 
               {/* Swap Button */}
-              {!isMobile && (
-                <Grid item md="auto" sx={{ display: 'flex', justifyContent: 'center' }}>
-                  <Tooltip title="Swap locations">
-                    <IconButton
-                      onClick={handleSwapLocations}
-                      sx={{
-                        bgcolor: 'primary.50',
-                        '&:hover': { bgcolor: 'primary.100' },
-                      }}
-                    >
-                      <SwapIcon color="primary" />
-                    </IconButton>
-                  </Tooltip>
-                </Grid>
-              )}
-
-              {/* To Location */}
-              <Grid size={{xs:12, md:4}}>
-                <StyledTextField
-                  fullWidth
-                  label="To"
-                  placeholder="e.g., Mumbai"
-                  value={searchParams.to}
-                  onChange={(e) => setSearchParams({ ...searchParams, to: e.target.value })}
-                  required
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LocationOnIcon color="error" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-
-              {/* Journey Date */}
-              <Grid item xs={12} md={isMobile ? 12 : 3}>
-                <StyledTextField
-                  fullWidth
-                  type="date"
-                  label="Journey Date"
-                  value={searchParams.date}
-                  onChange={(e) => setSearchParams({ ...searchParams, date: e.target.value })}
-                  required
-                  InputLabelProps={{ shrink: true }}
-                  inputProps={{ min: today }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <CalendarIcon color="action" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-
-              {/* Search Button */}
-              <Grid item xs={12}>
-                <SearchButton
-                  type="submit"
-                  variant="contained"
-                  size="large"
-                  fullWidth={isMobile}
-                  disabled={loading}
-                  startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SearchIcon />}
+              <div className="md:col-span-1 flex justify-center pb-2">
+                <button
+                  type="button"
+                  onClick={handleSwapLocations}
+                  className="p-3 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-teal-50 dark:hover:bg-teal-900/30 text-gray-500 hover:text-teal-600 transition-colors"
                 >
-                  {loading ? 'Searching...' : 'Search Buses'}
-                </SearchButton>
-              </Grid>
-            </Grid>
+                  <ArrowRightLeft className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* To */}
+              <div className="md:col-span-4 space-y-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">To</label>
+                <div className="relative group">
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
+                  <input
+                    type="text"
+                    value={searchParams.to}
+                    onChange={(e) => setSearchParams({ ...searchParams, to: e.target.value })}
+                    placeholder="Destination City"
+                    required
+                    className="w-full pl-12 pr-4 py-3.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all dark:text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Date */}
+              <div className="md:col-span-3 space-y-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">Journey Date</label>
+                <div className="relative group">
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-teal-500 transition-colors" />
+                  <input
+                    type="date"
+                    value={searchParams.date}
+                    min={today}
+                    onChange={(e) => setSearchParams({ ...searchParams, date: e.target.value })}
+                    required
+                    className="w-full pl-12 pr-4 py-3.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all dark:text-white cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              {/* Submit - Full width on mobile */}
+              <div className="col-span-1 md:col-span-12">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-4 bg-linear-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <Search className="w-5 h-5" />
+                  )}
+                  <span>{loading ? 'Searching buses...' : 'Search Buses'}</span>
+                </button>
+              </div>
+            </div>
           </form>
-        </Stack>
-      </StyledPaper>
+        </motion.div>
 
-      {/* Loading State */}
-      {loading && (
-        <Box sx={{ mt: 4 }}>
-          {[1, 2, 3].map((item) => (
-            <Skeleton
-              key={item}
-              variant="rectangular"
-              height={200}
-              sx={{ mb: 2, borderRadius: 2 }}
-            />
-          ))}
-        </Box>
-      )}
-
-      {/* Search Results */}
-      {!loading && buses.length > 0 && (
-        <Fade in timeout={500}>
-          <Box sx={{ mt: 4 }}>
-            <Stack 
-              direction="row" 
-              alignItems="center" 
-              justifyContent="space-between"
-              sx={{ mb: 3 }}
+        {/* Results Section */}
+        <AnimatePresence>
+          {!loading && buses.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="space-y-6"
             >
-              <Typography variant="h5" fontWeight={700}>
-                Available Buses
-              </Typography>
-              <Chip 
-                label={`${buses.length} buses found`} 
-                color="primary" 
-                variant="outlined"
-              />
-            </Stack>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  Available Buses
+                  <span className="px-3 py-1 bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 text-sm rounded-full">
+                    {buses.length} Found
+                  </span>
+                </h2>
+                <button className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
+                  <Filter className="w-4 h-4" />
+                  Filter Results
+                </button>
+              </div>
 
-            <Stack spacing={3}>
-              {buses.map((bus) => (
-                <BusCard key={bus.schedule_id}>
-                  <CardContent sx={{ p: 3 }}>
-                    <Grid container spacing={3}>
+              <div className="grid gap-6">
+                {buses.map((bus, index) => (
+                  <motion.div
+                    key={bus.schedule_id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="group bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800 hover:border-teal-500/30 hover:shadow-xl hover:shadow-teal-900/5 transition-all duration-300"
+                  >
+                    <div className="flex flex-col lg:flex-row gap-6 lg:items-center justify-between">
+
                       {/* Bus Info */}
-                      <Grid item xs={12}>
-                        <Stack 
-                          direction={isMobile ? 'column' : 'row'} 
-                          spacing={2} 
-                          alignItems={isMobile ? 'flex-start' : 'center'}
-                        >
-                          <Avatar
-                            sx={{
-                              bgcolor: 'primary.100',
-                              width: 56,
-                              height: 56,
-                            }}
-                          >
-                            <BusIcon sx={{ fontSize: 32, color: 'primary.main' }} />
-                          </Avatar>
-                          
-                          <Box sx={{ flex: 1 }}>
-                            <Typography variant="h6" fontWeight={700}>
-                              {bus.bus_number}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {bus.company_name}
-                            </Typography>
-                          </Box>
+                      <div className="flex items-start gap-4 min-w-[200px]">
+                        <div className="p-3 bg-teal-50 dark:bg-teal-900/20 rounded-xl text-teal-600 dark:text-teal-400">
+                          <Bus className="w-8 h-8" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-teal-600 transition-colors">
+                            {bus.company_name}
+                          </h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2">
+                            {bus.bus_number}
+                            <span className="w-1 h-1 bg-gray-300 rounded-full" />
+                            {bus.bus_type}
+                          </p>
+                          <div className="flex gap-2 mt-3">
+                            {amenities.map(({ icon: Icon, label }) => (
+                              <div key={label} className="p-1.5 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-400" title={label}>
+                                <Icon className="w-3.5 h-3.5" />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
 
-                          <Chip
-                            label={bus.bus_type}
-                            color="info"
-                            size="medium"
-                            sx={{ fontWeight: 600 }}
-                          />
+                      {/* Timeline */}
+                      <div className="flex-1 flex items-center justify-between px-4 lg:px-12">
+                        <div className="text-center">
+                          <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Departure</p>
+                          <p className="text-xl font-bold text-gray-900 dark:text-white">{formatTime(bus.departure_time)}</p>
+                          <p className="text-sm text-gray-500">{bus.from_location}</p>
+                        </div>
 
-                          <Chip
-                            icon={<SeatIcon />}
-                            label={`${bus.available_seats} seats`}
-                            color={bus.available_seats > 10 ? 'success' : 'warning'}
-                            variant="outlined"
-                          />
-                        </Stack>
-                      </Grid>
+                        <div className="flex-1 px-4 flex flex-col items-center">
+                          <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
+                            <Clock className="w-3 h-3" />
+                            {formatDuration(bus.departure_time, bus.arrival_time)}
+                          </div>
+                          <div className="w-full h-0.5 bg-gray-200 dark:bg-gray-700 relative">
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-gray-300 dark:bg-gray-600 rounded-full" />
+                            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-teal-500 rounded-full" />
+                            <Bus className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 text-teal-500" />
+                          </div>
+                        </div>
 
-                      <Grid item xs={12}>
-                        <Divider />
-                      </Grid>
+                        <div className="text-center">
+                          <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Arrival</p>
+                          <p className="text-xl font-bold text-gray-900 dark:text-white">{formatTime(bus.arrival_time)}</p>
+                          <p className="text-sm text-gray-500">{bus.to_location}</p>
+                        </div>
+                      </div>
 
-                      {/* Journey Details */}
-                      <Grid item xs={12} md={9}>
-                        <Grid container spacing={2} alignItems="center">
-                          {/* Departure */}
-                          <Grid item xs={12} sm={4}>
-                            <Box>
-                              <Typography 
-                                variant="caption" 
-                                color="text.secondary"
-                                fontWeight={600}
-                                textTransform="uppercase"
-                              >
-                                Departure
-                              </Typography>
-                              <Typography variant="h5" fontWeight={700} sx={{ my: 0.5 }}>
-                                {formatTime(bus.departure_time)}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                {bus.from_location}
-                              </Typography>
-                            </Box>
-                          </Grid>
+                      {/* Price & Action */}
+                      <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-center lg:gap-4 pl-0 lg:pl-6 border-t lg:border-t-0 lg:border-l border-gray-100 dark:border-gray-800 pt-4 lg:pt-0">
+                        <div className="text-left lg:text-right">
+                          <p className="text-xs text-gray-500 mb-0.5">Starting from</p>
+                          <p className="text-2xl font-bold text-teal-600 dark:text-teal-400">
+                            {formatCurrency(bus.fare)}
+                          </p>
+                          <p className={`text-xs font-medium mt-1 ${bus.available_seats < 10 ? 'text-amber-500' : 'text-emerald-500'
+                            }`}>
+                            {bus.available_seats} Seats Left
+                          </p>
+                        </div>
 
-                          {/* Duration */}
-                          <Grid item xs={12} sm={4}>
-                            <Box sx={{ textAlign: 'center' }}>
-                              <Typography 
-                                variant="caption" 
-                                color="text.secondary"
-                                fontWeight={600}
-                                textTransform="uppercase"
-                              >
-                                Duration
-                              </Typography>
-                              <Stack 
-                                direction="row" 
-                                alignItems="center" 
-                                justifyContent="center"
-                                spacing={1}
-                                sx={{ my: 0.5 }}
-                              >
-                                <Box sx={{ width: 40, height: 2, bgcolor: 'divider' }} />
-                                <ClockIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-                                <Box sx={{ width: 40, height: 2, bgcolor: 'divider' }} />
-                              </Stack>
-                              <Typography variant="body2" fontWeight={600}>
-                                {formatDuration(bus.departure_time, bus.arrival_time)}
-                              </Typography>
-                            </Box>
-                          </Grid>
-
-                          {/* Arrival */}
-                          <Grid item xs={12} sm={4}>
-                            <Box sx={{ textAlign: isMobile ? 'left' : 'right' }}>
-                              <Typography 
-                                variant="caption" 
-                                color="text.secondary"
-                                fontWeight={600}
-                                textTransform="uppercase"
-                              >
-                                Arrival
-                              </Typography>
-                              <Typography variant="h5" fontWeight={700} sx={{ my: 0.5 }}>
-                                {formatTime(bus.arrival_time)}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                {bus.to_location}
-                              </Typography>
-                            </Box>
-                          </Grid>
-                        </Grid>
-                      </Grid>
-
-                      {/* Price & Book Button */}
-                      <Grid item xs={12} md={3}>
-                        <Stack 
-                          spacing={2} 
-                          sx={{ 
-                            height: '100%',
-                            justifyContent: 'center',
-                            alignItems: isMobile ? 'flex-start' : 'flex-end'
+                        <button
+                          onClick={() => {
+                            setSelectedBus(bus);
+                            setShowSeatSelection(true);
                           }}
+                          className="px-6 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold rounded-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
                         >
-                          <Box sx={{ textAlign: isMobile ? 'left' : 'right' }}>
-                            <Typography variant="caption" color="text.secondary">
-                              Starting from
-                            </Typography>
-                            <Typography 
-                              variant="h4" 
-                              fontWeight={700}
-                              color="primary.main"
-                              sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                            >
-                              {formatCurrency(bus.fare)}
-                            </Typography>
-                          </Box>
+                          Select Seats
+                          <ArrowRight className="w-4 h-4" />
+                        </button>
+                      </div>
 
-                          <Button
-                            variant="contained"
-                            size="large"
-                            fullWidth={isMobile}
-                            onClick={() => handleSelectSeats(bus)}
-                            endIcon={<ArrowIcon />}
-                            sx={{
-                              py: 1.5,
-                              px: 4,
-                              borderRadius: 2,
-                              textTransform: 'none',
-                              fontSize: '1rem',
-                              fontWeight: 600,
-                              boxShadow: 2,
-                              '&:hover': {
-                                boxShadow: 4,
-                              },
-                            }}
-                          >
-                            Select Seats
-                          </Button>
-                        </Stack>
-                      </Grid>
-                    </Grid>
-                  </CardContent>
-                </BusCard>
-              ))}
-            </Stack>
-          </Box>
-        </Fade>
-      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
 
-      {/* No Results */}
-      {!loading && buses.length === 0 && searchParams.from && searchParams.to && searchParams.date && (
-        <Fade in timeout={500}>
-          <Box 
-            sx={{ 
-              mt: 6, 
-              textAlign: 'center',
-              py: 8,
+          {/* No Results */}
+          {!loading && buses.length === 0 && searchParams.from && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-20 bg-white dark:bg-gray-900 rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-800"
+            >
+              <div className="w-20 h-20 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Bus className="w-10 h-10 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No Buses Found</h3>
+              <p className="text-gray-500">We couldn't find any buses for this route on the selected date.</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {showSeatSelection && selectedBus && (
+          <SeatSelection
+            bus={selectedBus}
+            onClose={() => {
+              setShowSeatSelection(false);
+              setSelectedBus(null);
             }}
-          >
-            <BusIcon sx={{ fontSize: 80, color: 'text.disabled', mb: 2 }} />
-            <Typography variant="h6" color="text.secondary" gutterBottom>
-              No buses found
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Try searching with different locations or dates
-            </Typography>
-          </Box>
-        </Fade>
-      )}
-
-      {/* Seat Selection Modal */}
-      {showSeatSelection && selectedBus && (
-        <SeatSelection
-          bus={selectedBus}
-          onClose={() => {
-            setShowSeatSelection(false);
-            setSelectedBus(null);
-          }}
-          onBookingComplete={() => {
-            setShowSeatSelection(false);
-            setSelectedBus(null);
-            setBuses([]);
-            toast.success('Booking completed! Check My Bookings');
-          }}
-        />
-      )}
-    </Container>
+            onBookingComplete={() => {
+              setShowSeatSelection(false);
+              setSelectedBus(null);
+              setBuses([]);
+              toast.success('Booking completed! Check My Bookings');
+            }}
+          />
+        )}
+      </div>
+    </div>
   );
 };
 

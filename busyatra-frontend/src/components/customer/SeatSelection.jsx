@@ -1,59 +1,27 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Dialog,
-  DialogContent,
-  Box,
-  Typography,
-  Button,
-  TextField,
-  Grid,
-  IconButton,
-  Chip,
-  Stack,
-  Card,
-  CardContent,
-  Divider,
-  Avatar,
-  FormControl,
-  Select,
-  MenuItem,
-  InputLabel,
-  Fade,
-  Slide,
-  Paper,
-  alpha,
-  Skeleton,
-  useTheme,
-  useMediaQuery,
-  Alert,
-} from '@mui/material';
-import {
-  Close as CloseIcon,
-  Person as PersonIcon,
-  CalendarMonth as CalendarIcon,
-  LocationOn as LocationIcon,
-  DirectionsBus as BusIcon,
-  EventSeat as SeatIcon,
-  CheckCircle as CheckCircleIcon,
-  Cancel as CancelIcon,
-  AttachMoney as MoneyIcon,
-  ArrowForward as ArrowIcon,
-  Male as MaleIcon,
-  Female as FemaleIcon,
-  Wc as OtherIcon,
-  Error as ErrorIcon,
-} from '@mui/icons-material';
+  X,
+  User,
+  Calendar,
+  MapPin,
+  Bus,
+  Armchair,
+  CheckCircle,
+  Ban,
+  ArrowRight,
+  MonitorStop,
+  AlertCircle,
+  CreditCard,
+  Trash2,
+  ChevronDown
+} from 'lucide-react';
 import bookingService from '../../services/bookingService';
-import { formatCurrency, formatTime, formatDate } from '../../utils/formatters';
+import { formatCurrency, formatDate } from '../../utils/formatters';
 import toast from 'react-hot-toast';
-
-const Transition = React.forwardRef(function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
+import { cn } from '../../utils/cn';
 
 const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [seats, setSeats] = useState([]);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [passengers, setPassengers] = useState([]);
@@ -63,72 +31,45 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
 
   // Validate bus data
   useEffect(() => {
-    console.log('SeatSelection received bus data:', bus);
-    
-    if (!bus) {
+    if (!bus || !bus.schedule_id) {
       setError('Bus information is missing');
       setLoading(false);
       return;
     }
-
-    if (!bus.schedule_id) {
-      setError('Schedule ID is missing');
-      setLoading(false);
-      return;
-    }
-
     fetchSeats();
-  }, []);
+  }, [bus]);
 
   const fetchSeats = async () => {
     try {
-      console.log('Fetching seats for schedule_id:', bus.schedule_id);
       const response = await bookingService.getSeats(bus.schedule_id);
-      console.log('Seats API response:', response);
-      console.log('Full response.data structure:', response.data);
-      
-      // Handle different API response structures
+
+      // Handle different API response structures (Preserved Logic)
       let seatsData = [];
-      
       if (response.data) {
-        // Check if seats are directly in response.data
         if (Array.isArray(response.data)) {
           seatsData = response.data;
-        }
-        // Check if seats are nested in response.data.seats
-        else if (response.data.seats && Array.isArray(response.data.seats)) {
+        } else if (response.data.seats && Array.isArray(response.data.seats)) {
           seatsData = response.data.seats;
-        }
-        // Check if seats are in response.data.data
-        else if (response.data.data && Array.isArray(response.data.data)) {
+        } else if (response.data.data && Array.isArray(response.data.data)) {
           seatsData = response.data.data;
-        }
-        // If response.data is an object with seat properties, convert to array
-        else if (typeof response.data === 'object' && !Array.isArray(response.data)) {
-          console.log('Data is object, checking for seats array inside...');
-          // Try to find seats array in any property
+        } else if (typeof response.data === 'object' && !Array.isArray(response.data)) {
           const possibleSeatsKeys = ['seats', 'seatList', 'seatData', 'availableSeats'];
           for (const key of possibleSeatsKeys) {
             if (response.data[key] && Array.isArray(response.data[key])) {
               seatsData = response.data[key];
-              console.log(`Found seats in response.data.${key}`);
               break;
             }
           }
         }
       }
-      
-      console.log('Extracted seats data:', seatsData);
-      
+
       if (!Array.isArray(seatsData) || seatsData.length === 0) {
-        console.warn('No seats found or invalid format. Full response:', response);
         throw new Error('No seats data available');
       }
-      
+
       setSeats(seatsData);
       setError(null);
     } catch (error) {
-      console.error('Fetch seats error:', error);
       setError(error.message || 'Failed to load seats');
       toast.error('Failed to load seats');
     } finally {
@@ -145,9 +86,9 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
       setPassengers(passengers.filter((_, i) => i !== selectedSeats.indexOf(isSelected)));
     } else {
       setSelectedSeats([...selectedSeats, seat]);
-      setPassengers([...passengers, { 
-        name: '', 
-        age: '', 
+      setPassengers([...passengers, {
+        name: '',
+        age: '',
         gender: '',
         id_type: 'Aadhar',
         id_number: 'N/A'
@@ -168,30 +109,23 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
         toast.error(`Please fill all details for passenger ${i + 1}`);
         return;
       }
-      
-      // Validate name
       if (passengers[i].name.trim().length < 2) {
-        toast.error(`Please enter a valid name for passenger ${i + 1}`);
+        toast.error(`Valid name required for passenger ${i + 1}`);
         return;
       }
-      
-      // Validate age is a number
       const age = parseInt(passengers[i].age);
       if (isNaN(age) || age < 1 || age > 120) {
-        toast.error(`Please enter a valid age (1-120) for passenger ${i + 1}`);
+        toast.error(`Valid age (1-120) required for passenger ${i + 1}`);
         return;
       }
-      
-      // Validate gender
       if (!['Male', 'Female', 'Other'].includes(passengers[i].gender)) {
-        toast.error(`Please select a valid gender for passenger ${i + 1}`);
+        toast.error(`Select gender for passenger ${i + 1}`);
         return;
       }
     }
 
     setBooking(true);
     try {
-      // Prepare booking data exactly as backend expects
       const bookingData = {
         schedule_id: bus.schedule_id,
         seat_ids: selectedSeats.map((s) => s.seat_id),
@@ -204,640 +138,310 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
         }))
       };
 
-      console.log('📤 Submitting booking:', bookingData);
-      console.log('📋 Booking Details:', {
-        schedule_id: bookingData.schedule_id,
-        number_of_seats: bookingData.seat_ids.length,
-        seat_ids: bookingData.seat_ids,
-        passengers: bookingData.passengers,
-        passenger_sample: bookingData.passengers[0]
-      });
-      
-      const response = await bookingService.createBooking(bookingData);
-      console.log('✅ Booking response:', response);
-      
+      await bookingService.createBooking(bookingData);
       toast.success('🎉 Booking successful!');
-      
-      // Close dialog and refresh
       setTimeout(() => {
         onBookingComplete();
       }, 1000);
-      
+
     } catch (error) {
-      console.error('❌ Booking error:', error);
-      console.error('❌ Error.response:', error.response);
-      console.error('❌ Error.response.data:', error.response?.data);
-      console.error('❌ Error message:', error.message);
-      
-      // Show the actual error message from backend
-      const errorMessage = error.response?.data?.error 
-        || error.response?.data?.message 
-        || error.message 
+      const errorMessage = error.response?.data?.error
+        || error.response?.data?.message
+        || error.message
         || 'Booking failed. Please try again.';
-      
       toast.error(errorMessage);
     } finally {
       setBooking(false);
     }
   };
 
-  // Safe getters with fallbacks
-  const getBusNumber = () => {
-    return bus?.bus_number || bus?.busNumber || 'N/A';
-  };
-
-  const getFromLocation = () => {
-    return bus?.from_location || bus?.fromLocation || 'Origin';
-  };
-
-  const getToLocation = () => {
-    return bus?.to_location || bus?.toLocation || 'Destination';
-  };
-
-  const getJourneyDate = () => {
-    try {
-      return bus?.journey_date ? formatDate(bus.journey_date) : 'N/A';
-    } catch (e) {
-      console.error('Date format error:', e);
-      return 'Invalid Date';
-    }
-  };
-
-  const getFare = () => {
-    const fare = bus?.fare || 0;
-    try {
-      return formatCurrency(fare);
-    } catch (e) {
-      console.error('Currency format error:', e);
-      return `₹${fare}`;
-    }
-  };
-
+  // derived state
   const totalAmount = selectedSeats.length * (bus?.fare || 0);
 
-  const getGenderIcon = (gender) => {
-    switch (gender) {
-      case 'Male': return <MaleIcon fontSize="small" />;
-      case 'Female': return <FemaleIcon fontSize="small" />;
-      default: return <OtherIcon fontSize="small" />;
-    }
-  };
-
-  // Error state
   if (error && !loading) {
     return (
-      <Dialog
-        open={true}
-        onClose={onClose}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogContent sx={{ p: 4 }}>
-          <Stack spacing={3} alignItems="center" textAlign="center">
-            <Avatar sx={{ width: 80, height: 80, bgcolor: 'error.light' }}>
-              <ErrorIcon sx={{ fontSize: 48, color: 'error.main' }} />
-            </Avatar>
-            <Typography variant="h5" fontWeight="bold">
-              Unable to Load Seats
-            </Typography>
-            <Alert severity="error" sx={{ width: '100%' }}>
-              {error}
-            </Alert>
-            <Typography variant="body2" color="text.secondary">
-              Please try again or contact support if the problem persists.
-            </Typography>
-            <Stack direction="row" spacing={2}>
-              <Button variant="outlined" onClick={onClose}>
-                Close
-              </Button>
-              <Button variant="contained" onClick={fetchSeats}>
-                Retry
-              </Button>
-            </Stack>
-          </Stack>
-        </DialogContent>
-      </Dialog>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 max-w-md w-full text-center space-y-4">
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto text-red-600 dark:text-red-400">
+            <AlertCircle className="w-8 h-8" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Unable to Load Seats</h3>
+          <p className="text-gray-500 dark:text-gray-400">{error}</p>
+          <div className="flex gap-3 justify-center pt-2">
+            <button onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 rounded-lg transition-colors">Close</button>
+            <button onClick={fetchSeats} className="px-4 py-2 bg-teal-600 text-white hover:bg-teal-700 rounded-lg transition-colors">Retry</button>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Dialog
-      open={true}
-      onClose={onClose}
-      maxWidth="lg"
-      fullWidth
-      fullScreen={isMobile}
-      TransitionComponent={Transition}
-      PaperProps={{
-        sx: {
-          borderRadius: isMobile ? 0 : 4,
-          maxHeight: '95vh',
-          background: 'linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%)',
-        }
-      }}
-    >
-      {/* Header */}
-      <Box
-        sx={{
-          background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-          color: 'white',
-          p: 3,
-          position: 'relative',
-          overflow: 'hidden',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: '-50%',
-            right: '-10%',
-            width: '400px',
-            height: '400px',
-            background: alpha('#fff', 0.1),
-            borderRadius: '50%',
-          }
-        }}
-      >
-        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ position: 'relative', zIndex: 1 }}>
-          <Box>
-            <Stack direction="row" spacing={1} alignItems="center" mb={1}>
-              <BusIcon sx={{ fontSize: 28 }} />
-              <Typography variant="h4" fontWeight="800" letterSpacing="-0.5px">
-                Select Your Seats
-              </Typography>
-            </Stack>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 3 }} mt={2}>
-              <Chip
-                icon={<LocationIcon />}
-                label={`${getFromLocation()} → ${getToLocation()}`}
-                sx={{
-                  bgcolor: alpha('#fff', 0.2),
-                  color: 'white',
-                  fontWeight: 600,
-                  backdropFilter: 'blur(10px)',
-                  '& .MuiChip-icon': { color: 'white' }
-                }}
-              />
-              <Chip
-                icon={<CalendarIcon />}
-                label={getJourneyDate()}
-                sx={{
-                  bgcolor: alpha('#fff', 0.2),
-                  color: 'white',
-                  fontWeight: 600,
-                  backdropFilter: 'blur(10px)',
-                  '& .MuiChip-icon': { color: 'white' }
-                }}
-              />
-              <Chip
-                icon={<MoneyIcon />}
-                label={`${getFare()} per seat`}
-                sx={{
-                  bgcolor: alpha('#fff', 0.2),
-                  color: 'white',
-                  fontWeight: 600,
-                  backdropFilter: 'blur(10px)',
-                  '& .MuiChip-icon': { color: 'white' }
-                }}
-              />
-            </Stack>
-          </Box>
-          <IconButton
-            onClick={onClose}
-            sx={{
-              bgcolor: alpha('#fff', 0.2),
-              color: 'white',
-              '&:hover': {
-                bgcolor: alpha('#fff', 0.3),
-                transform: 'rotate(90deg)',
-              },
-              transition: 'all 0.3s',
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </Stack>
-      </Box>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
 
-      <DialogContent sx={{ p: { xs: 2, md: 4 } }}>
-        <Grid container spacing={4}>
-          {/* Seat Layout Section */}
-          <Grid item xs={12} md={7}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: 3,
-                borderRadius: 3,
-                border: '2px solid',
-                borderColor: 'divider',
-                background: 'white',
-              }}
-            >
-              <Stack direction="row" spacing={1} alignItems="center" mb={3}>
-                <SeatIcon color="primary" />
-                <Typography variant="h6" fontWeight="700">
-                  Choose Your Seats
-                </Typography>
-              </Stack>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="relative w-full max-w-6xl max-h-[90vh] bg-white dark:bg-gray-950 rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+      >
+
+        {/* Header */}
+        <div className="relative bg-linear-to-r from-gray-900 via-gray-900 to-gray-800 p-6 sm:p-8 shrink-0">
+          <div className="absolute top-0 right-0 p-4">
+            <button onClick={onClose} className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition-colors">
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-6 relative z-10">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2 text-white/60 text-sm font-medium">
+                <Bus className="w-4 h-4" />
+                <span>Seat Selection</span>
+              </div>
+              <h2 className="text-3xl font-bold text-white mb-4">Select Your Seats</h2>
+
+              <div className="flex flex-wrap gap-3">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-lg text-white/90 text-sm backdrop-blur-md border border-white/5">
+                  <MapPin className="w-4 h-4 text-teal-400" />
+                  <span>{bus?.from_location}</span>
+                  <ArrowRight className="w-3 h-3 text-white/40" />
+                  <span>{bus?.to_location}</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-lg text-white/90 text-sm backdrop-blur-md border border-white/5">
+                  <Calendar className="w-4 h-4 text-emerald-400" />
+                  <span>{bus?.journey_date ? formatDate(bus.journey_date) : 'N/A'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="sm:text-right">
+              <p className="text-white/60 text-sm mb-1">Price per seat</p>
+              <div className="text-4xl font-bold text-transparent bg-clip-text bg-linear-to-r from-teal-400 to-emerald-400">
+                {formatCurrency(bus?.fare || 0)}
+              </div>
+            </div>
+          </div>
+
+          {/* Decorative Circles */}
+          <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-teal-500/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
+
+          {/* Left: Seat Map */}
+          <div className="flex-1 overflow-y-auto p-6 sm:p-8 bg-gray-50 dark:bg-gray-900 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-800">
+            <div className="max-w-md mx-auto">
 
               {/* Legend */}
-              <Stack direction="row" spacing={3} mb={4} flexWrap="wrap" gap={1}>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Box
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      border: '3px solid',
-                      borderColor: 'success.main',
-                      borderRadius: 1.5,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  />
-                  <Typography variant="body2" fontWeight={600} color="text.secondary">
-                    Available
-                  </Typography>
-                </Stack>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Box
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      bgcolor: 'primary.main',
-                      borderRadius: 1.5,
-                      boxShadow: '0 4px 12px rgba(30, 60, 114, 0.3)',
-                    }}
-                  />
-                  <Typography variant="body2" fontWeight={600} color="text.secondary">
-                    Selected
-                  </Typography>
-                </Stack>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Box
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      bgcolor: 'action.disabledBackground',
-                      borderRadius: 1.5,
-                    }}
-                  />
-                  <Typography variant="body2" fontWeight={600} color="text.secondary">
-                    Booked
-                  </Typography>
-                </Stack>
-              </Stack>
+              <div className="flex flex-wrap justify-center gap-4 mb-8">
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="w-5 h-5 rounded border-2 border-emerald-500 bg-white dark:bg-gray-800" />
+                  <span>Available</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="w-5 h-5 rounded bg-teal-500 shadow-md shadow-teal-500/30" />
+                  <span>Selected</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="w-5 h-5 rounded bg-gray-300 dark:bg-gray-700" />
+                  <span>Booked</span>
+                </div>
+              </div>
 
-              <Divider sx={{ mb: 3 }} />
+              {/* Driver */}
+              <div className="flex justify-end mb-6 pr-4">
+                <div className="w-14 h-14 rounded-full border-2 border-gray-300 dark:border-gray-700 flex items-center justify-center opacity-50">
+                  <MonitorStop className="w-6 h-6 rotate-90" />
+                </div>
+              </div>
 
-              {/* Bus Front Indicator */}
-              <Box sx={{ mb: 3, textAlign: 'center' }}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    display: 'inline-flex',
-                    px: 4,
-                    py: 1,
-                    borderRadius: 2,
-                    bgcolor: 'action.hover',
-                  }}
-                >
-                  <Typography variant="caption" fontWeight={700} color="text.secondary">
-                    🚌 DRIVER
-                  </Typography>
-                </Paper>
-              </Box>
-
-              {/* Seats Grid */}
+              {/* Grid */}
               {loading ? (
-                <Grid container spacing={1.5}>
+                <div className="grid grid-cols-5 gap-3">
                   {[...Array(20)].map((_, i) => (
-                    <Grid item xs={2.4} key={i}>
-                      <Skeleton variant="rectangular" height={56} sx={{ borderRadius: 1.5 }} />
-                    </Grid>
+                    <div key={i} className="h-12 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
                   ))}
-                </Grid>
-              ) : seats.length === 0 ? (
-                <Alert severity="info">No seats available for this schedule</Alert>
+                </div>
               ) : (
-                <Grid container spacing={1.5}>
-                  {seats.map((seat) => {
-                    const isSelected = selectedSeats.find((s) => s.seat_id === seat.seat_id);
+                <div className="grid grid-cols-5 gap-3">
+                  {seats.map((seat, i) => {
+                    const isSelected = selectedSeats.find(s => s.seat_id === seat.seat_id);
+                    const isBooked = seat.is_booked;
+
                     return (
-                      <Grid item xs={2.4} key={seat.seat_id}>
-                        <Button
-                          onClick={() => toggleSeat(seat)}
-                          disabled={seat.is_booked}
-                          fullWidth
-                          sx={{
-                            height: 56,
-                            borderRadius: 1.5,
-                            fontSize: '0.95rem',
-                            fontWeight: 700,
-                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                            ...(seat.is_booked
-                              ? {
-                                  bgcolor: 'action.disabledBackground',
-                                  color: 'text.disabled',
-                                  cursor: 'not-allowed',
-                                  '&:hover': {
-                                    bgcolor: 'action.disabledBackground',
-                                  }
-                                }
-                              : isSelected
-                              ? {
-                                  bgcolor: 'primary.main',
-                                  color: 'white',
-                                  boxShadow: '0 4px 12px rgba(30, 60, 114, 0.3)',
-                                  transform: 'translateY(-2px)',
-                                  '&:hover': {
-                                    bgcolor: 'primary.dark',
-                                    boxShadow: '0 6px 16px rgba(30, 60, 114, 0.4)',
-                                  }
-                                }
-                              : {
-                                  border: '3px solid',
-                                  borderColor: 'success.main',
-                                  color: 'success.main',
-                                  bgcolor: 'background.paper',
-                                  '&:hover': {
-                                    bgcolor: alpha(theme.palette.success.main, 0.1),
-                                    transform: 'translateY(-2px)',
-                                    boxShadow: '0 4px 12px rgba(76, 175, 80, 0.2)',
-                                  }
-                                }),
-                          }}
-                        >
+                      <button
+                        key={seat.seat_id}
+                        onClick={() => toggleSeat(seat)}
+                        disabled={isBooked}
+                        className={cn(
+                          "relative h-12 rounded-lg text-sm font-bold transition-all duration-200 flex items-center justify-center group",
+                          isBooked
+                            ? "bg-gray-200 dark:bg-gray-800 text-gray-400 cursor-not-allowed"
+                            : isSelected
+                              ? "bg-teal-600 text-white shadow-lg shadow-teal-500/30 scale-105"
+                              : "bg-white dark:bg-gray-800 border-2 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                        )}
+                      >
+                        <Armchair className={cn(
+                          "w-5 h-5",
+                          isSelected ? "fill-current" : ""
+                        )} />
+                        <span className="absolute -top-2 -right-2 text-[10px] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-1 rounded-full text-gray-500">
                           {seat.seat_number}
-                        </Button>
-                      </Grid>
+                        </span>
+                      </button>
                     );
                   })}
-                </Grid>
+                </div>
               )}
 
               {/* Selected Seats Summary */}
               {selectedSeats.length > 0 && (
-                <Box
-                  sx={{
-                    mt: 3,
-                    p: 2,
-                    borderRadius: 2,
-                    bgcolor: alpha(theme.palette.primary.main, 0.08),
-                    border: '1px solid',
-                    borderColor: alpha(theme.palette.primary.main, 0.2),
-                  }}
-                >
-                  <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
-                    <Typography variant="body2" fontWeight={600} color="primary.main">
-                      Selected:
-                    </Typography>
+                <div className="mt-6 p-4 rounded-xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-semibold text-teal-700 dark:text-teal-300">Selected Seats:</span>
                     {selectedSeats.map((seat) => (
-                      <Chip
+                      <div
                         key={seat.seat_id}
-                        label={seat.seat_number}
-                        size="small"
-                        color="primary"
-                        onDelete={() => toggleSeat(seat)}
-                        sx={{ fontWeight: 600 }}
-                      />
+                        className="flex items-center gap-1 bg-teal-100 dark:bg-teal-800 text-teal-800 dark:text-teal-200 text-xs font-medium px-2 py-1 rounded-full"
+                      >
+                        <span>{seat.seat_number}</span>
+                        <button onClick={() => toggleSeat(seat)} className="text-teal-600 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-200">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
                     ))}
-                  </Stack>
-                </Box>
+                  </div>
+                </div>
               )}
-            </Paper>
-          </Grid>
+            </div>
+          </div>
 
-          {/* Passenger Details Section */}
-          <Grid item xs={12} md={5}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: 3,
-                borderRadius: 3,
-                border: '2px solid',
-                borderColor: 'divider',
-                background: 'white',
-                position: 'sticky',
-                top: 20,
-              }}
-            >
-              <Stack direction="row" spacing={1} alignItems="center" mb={3}>
-                <PersonIcon color="primary" />
-                <Typography variant="h6" fontWeight="700">
-                  Passenger Details
-                </Typography>
-              </Stack>
+          {/* Right: Passenger Details */}
+          <div className="flex-1 overflow-y-auto p-6 sm:p-8 bg-white dark:bg-gray-950">
+            <div className="max-w-md mx-auto h-full flex flex-col">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                <User className="w-5 h-5 text-teal-500" />
+                Passenger Details
+              </h3>
 
               {selectedSeats.length === 0 ? (
-                <Box
-                  sx={{
-                    textAlign: 'center',
-                    py: 6,
-                  }}
-                >
-                  <SeatIcon sx={{ fontSize: 64, color: 'action.disabled', mb: 2 }} />
-                  <Typography variant="body1" color="text.secondary" fontWeight={500}>
-                    Select seats to enter passenger details
-                  </Typography>
-                </Box>
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl">
+                  <div className="w-16 h-16 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center justify-center mb-4">
+                    <Armchair className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-500 dark:text-gray-400 font-medium">Select seats to add passengers</p>
+                </div>
               ) : (
-                <Stack spacing={3}>
-                  {selectedSeats.map((seat, index) => (
-                    <Fade in={true} key={seat.seat_id} timeout={300 + index * 100}>
-                      <Card
-                        variant="outlined"
-                        sx={{
-                          borderRadius: 2,
-                          borderWidth: 2,
-                          borderColor: 'divider',
-                          transition: 'all 0.3s',
-                          '&:hover': {
-                            borderColor: 'primary.main',
-                            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
-                          }
-                        }}
+                <div className="flex-1 space-y-4 mb-8">
+                  <AnimatePresence>
+                    {selectedSeats.map((seat, index) => (
+                      <motion.div
+                        key={seat.seat_id}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 border border-gray-100 dark:border-gray-800 hover:border-teal-500/30 transition-colors"
                       >
-                        <CardContent sx={{ p: 2.5 }}>
-                          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-                            <Chip
-                              icon={<SeatIcon />}
-                              label={`Seat ${seat.seat_number}`}
-                              color="primary"
-                              size="small"
-                              sx={{ fontWeight: 700 }}
-                            />
-                            <Avatar
-                              sx={{
-                                width: 32,
-                                height: 32,
-                                bgcolor: 'primary.main',
-                                fontSize: '0.875rem',
-                                fontWeight: 700,
-                              }}
-                            >
-                              {index + 1}
-                            </Avatar>
-                          </Stack>
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-sm font-semibold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 px-2 py-1 rounded-md">
+                            Seat {seat.seat_number}
+                          </span>
+                          <button
+                            onClick={() => toggleSeat(seat)}
+                            className="text-gray-400 hover:text-red-500 transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
 
-                          <Stack spacing={2}>
-                            <TextField
-                              fullWidth
-                              size="small"
-                              label="Full Name"
-                              placeholder="Enter passenger name"
+                        <div className="space-y-3">
+                          <div>
+                            <input
+                              type="text"
+                              placeholder="Passenger Name"
                               value={passengers[index]?.name || ''}
                               onChange={(e) => updatePassenger(index, 'name', e.target.value)}
-                              required
-                              InputProps={{
-                                startAdornment: <PersonIcon sx={{ mr: 1, color: 'action.active' }} fontSize="small" />,
-                              }}
-                              sx={{
-                                '& .MuiOutlinedInput-root': {
-                                  borderRadius: 1.5,
-                                }
-                              }}
+                              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none"
                             />
-                            <Grid container spacing={2}>
-                              <Grid item xs={6}>
-                                <TextField
-                                  fullWidth
-                                  size="small"
-                                  type="number"
-                                  label="Age"
-                                  placeholder="Age"
-                                  value={passengers[index]?.age || ''}
-                                  onChange={(e) => updatePassenger(index, 'age', e.target.value)}
-                                  required
-                                  inputProps={{ min: 1, max: 120 }}
-                                  sx={{
-                                    '& .MuiOutlinedInput-root': {
-                                      borderRadius: 1.5,
-                                    }
-                                  }}
-                                />
-                              </Grid>
-                              <Grid item xs={6}>
-                                <FormControl fullWidth size="small" required>
-                                  <InputLabel>Gender</InputLabel>
-                                  <Select
-                                    value={passengers[index]?.gender || ''}
-                                    label="Gender"
-                                    onChange={(e) => updatePassenger(index, 'gender', e.target.value)}
-                                    sx={{
-                                      borderRadius: 1.5,
-                                    }}
-                                  >
-                                    <MenuItem value="Male">
-                                      <Stack direction="row" spacing={1} alignItems="center">
-                                        <MaleIcon fontSize="small" />
-                                        <span>Male</span>
-                                      </Stack>
-                                    </MenuItem>
-                                    <MenuItem value="Female">
-                                      <Stack direction="row" spacing={1} alignItems="center">
-                                        <FemaleIcon fontSize="small" />
-                                        <span>Female</span>
-                                      </Stack>
-                                    </MenuItem>
-                                    <MenuItem value="Other">
-                                      <Stack direction="row" spacing={1} alignItems="center">
-                                        <OtherIcon fontSize="small" />
-                                        <span>Other</span>
-                                      </Stack>
-                                    </MenuItem>
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-                            </Grid>
-                          </Stack>
-                        </CardContent>
-                      </Card>
-                    </Fade>
-                  ))}
-                </Stack>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <input
+                              type="number"
+                              placeholder="Age"
+                              value={passengers[index]?.age || ''}
+                              onChange={(e) => updatePassenger(index, 'age', e.target.value)}
+                              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none"
+                            />
+                            <div className="relative">
+                              <select
+                                value={passengers[index]?.gender || ''}
+                                onChange={(e) => updatePassenger(index, 'gender', e.target.value)}
+                                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none appearance-none"
+                              >
+                                <option value="">Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                              </select>
+                              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
               )}
 
-              {/* Total & Book Button */}
+              {/* Footer / Total */}
               {selectedSeats.length > 0 && (
-                <Box sx={{ mt: 4 }}>
-                  <Divider sx={{ mb: 3 }} />
-                  
-                  <Stack spacing={2}>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="body1" fontWeight={600} color="text.secondary">
-                        Seats Selected:
-                      </Typography>
-                      <Typography variant="h6" fontWeight={700}>
-                        {selectedSeats.length}
-                      </Typography>
-                    </Stack>
-                    
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="body1" fontWeight={600} color="text.secondary">
-                        Fare per Seat:
-                      </Typography>
-                      <Typography variant="h6" fontWeight={700}>
-                        {getFare()}
-                      </Typography>
-                    </Stack>
+                <div className="border-t border-gray-100 dark:border-gray-800 pt-6 mt-auto">
+                  <div className="flex items-end justify-between mb-6">
+                    <div>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">Total Amount</p>
+                      <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{formatCurrency(totalAmount)}</h3>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-teal-600 font-medium">{selectedSeats.length} Seats Selected</p>
+                    </div>
+                  </div>
 
-                    <Divider />
-                    
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="h6" fontWeight={700}>
-                        Total Amount:
-                      </Typography>
-                      <Typography
-                        variant="h4"
-                        fontWeight={800}
-                        sx={{
-                          background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                        }}
-                      >
-                        {formatCurrency(totalAmount)}
-                      </Typography>
-                    </Stack>
-
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      size="large"
-                      endIcon={<ArrowIcon />}
-                      onClick={handleBooking}
-                      disabled={booking}
-                      sx={{
-                        mt: 2,
-                        py: 2,
-                        borderRadius: 2,
-                        fontSize: '1.1rem',
-                        fontWeight: 700,
-                        textTransform: 'none',
-                        background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-                        boxShadow: '0 8px 24px rgba(30, 60, 114, 0.3)',
-                        transition: 'all 0.3s',
-                        '&:hover': {
-                          boxShadow: '0 12px 32px rgba(30, 60, 114, 0.4)',
-                          transform: 'translateY(-2px)',
-                        },
-                        '&:active': {
-                          transform: 'translateY(0)',
-                        },
-                        '&:disabled': {
-                          background: 'linear-gradient(135deg, #9e9e9e 0%, #757575 100%)',
-                        }
-                      }}
-                    >
-                      {booking ? 'Processing Booking...' : 'Confirm Booking'}
-                    </Button>
-                  </Stack>
-                </Box>
+                  <button
+                    onClick={handleBooking}
+                    disabled={booking}
+                    className="w-full py-4 bg-linear-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {booking ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Processing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Confirm Booking</span>
+                        <CheckCircle className="w-5 h-5" />
+                      </>
+                    )}
+                  </button>
+                </div>
               )}
-            </Paper>
-          </Grid>
-        </Grid>
-      </DialogContent>
-    </Dialog>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </div>
   );
 };
 

@@ -1,154 +1,81 @@
 import React from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import {
-  AppBar,
-  Toolbar,
-  Box,
-  Button,
-  Container,
-  Typography,
-  Paper,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Divider,
-} from '@mui/material';
-import {
-  Search,
-  ConfirmationNumber,
-  Person,
-  Logout,
-  DirectionsBus,
-} from '@mui/icons-material';
-import { useAuth } from '../context/AuthContext';
+import { Search, Ticket, User, LogOut, LayoutDashboard } from 'lucide-react';
+import Navbar from '../components/common/Navbar';
 import BusSearch from '../components/customer/BusSearch';
 import MyBookings from '../components/customer/MyBookings';
 import UserProfile from '../components/customer/UserProfile';
+import { useAuth } from '../context/AuthContext';
+import { cn } from '../utils/cn';
 
 const CustomerDashboard = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
 
-  const isActive = (path) => location.pathname.includes(path);
+  const isActive = (path) => {
+    if (path === '/customer' && location.pathname === '/customer') return true;
+    return location.pathname.includes(path) && path !== '/customer';
+  };
+
+  const navItems = [
+    { name: 'Search Buses', path: '/customer', icon: Search },
+    { name: 'My Bookings', path: '/customer/bookings', icon: Ticket },
+    { name: 'My Profile', path: '/customer/profile', icon: User },
+  ];
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
-      {/* NAVBAR */}
-      <AppBar position="static" elevation={1} sx={{ bgcolor: '#fff', color: '#000' }}>
-        <Container maxWidth="lg">
-          <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
-            <Box display="flex" alignItems="center" gap={1}>
-              <DirectionsBus color="primary" sx={{ fontSize: 32 }} />
-              <Typography variant="h5" fontWeight={700}>
-                BusYatra
-              </Typography>
-            </Box>
+    <div className="min-h-screen bg-background">
+      <Navbar />
 
-            <Box display="flex" alignItems="center" gap={3}>
-              <Typography color="text.secondary">
-                Hi, <strong>{user?.full_name}</strong>
-              </Typography>
+      <div className="pt-24 container mx-auto px-4 md:px-6 flex flex-col md:flex-row gap-8 min-h-[calc(100vh-100px)]">
+        {/* Sidebar */}
+        <aside className="w-full md:w-64 shrink-0">
+          <div className="sticky top-24 bg-card border border-border rounded-2xl p-4 shadow-sm">
+            <div className="mb-6 px-4">
+              <h2 className="text-lg font-bold">Dashboard</h2>
+              <p className="text-sm text-muted-foreground">Welcome, {user?.full_name?.split(' ')[0]}</p>
+            </div>
 
-              <Button
-                color="error"
-                startIcon={<Logout />}
+            <nav className="space-y-2">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
+                    isActive(item.path)
+                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                      : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <item.icon size={20} />
+                  <span className="font-medium">{item.name}</span>
+                </Link>
+              ))}
+
+              <div className="h-px bg-border my-2 mx-4" />
+
+              <button
                 onClick={logout}
-                sx={{ fontWeight: 600 }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 text-red-600 transition-colors"
               >
-                Logout
-              </Button>
-            </Box>
-          </Toolbar>
-        </Container>
-      </AppBar>
+                <LogOut size={20} />
+                <span className="font-medium">Logout</span>
+              </button>
+            </nav>
+          </div>
+        </aside>
 
-      {/* CONTENT */}
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Box display="flex" gap={3}>
-          {/* SIDEBAR */}
-          <Paper
-            elevation={2}
-            sx={{
-              width: 260,
-              borderRadius: 2,
-              p: 1,
-              height: 'fit-content',
-            }}
-          >
-            <List>
-              <ListItemButton
-                component={Link}
-                to="/customer"
-                selected={location.pathname === '/customer'}
-                sx={{
-                  borderRadius: 2,
-                  mb: 1,
-                  '&.Mui-selected': {
-                    bgcolor: 'primary.main',
-                    color: '#fff',
-                    '& .MuiListItemIcon-root': { color: '#fff' },
-                  },
-                }}
-              >
-                <ListItemIcon>
-                  <Search />
-                </ListItemIcon>
-                <ListItemText primary="Search Buses" />
-              </ListItemButton>
-
-              <ListItemButton
-                component={Link}
-                to="/customer/bookings"
-                selected={isActive('/bookings')}
-                sx={{
-                  borderRadius: 2,
-                  mb: 1,
-                  '&.Mui-selected': {
-                    bgcolor: 'primary.main',
-                    color: '#fff',
-                    '& .MuiListItemIcon-root': { color: '#fff' },
-                  },
-                }}
-              >
-                <ListItemIcon>
-                  <ConfirmationNumber />
-                </ListItemIcon>
-                <ListItemText primary="My Bookings" />
-              </ListItemButton>
-
-              <ListItemButton
-                component={Link}
-                to="/customer/profile"
-                selected={isActive('/profile')}
-                sx={{
-                  borderRadius: 2,
-                  '&.Mui-selected': {
-                    bgcolor: 'primary.main',
-                    color: '#fff',
-                    '& .MuiListItemIcon-root': { color: '#fff' },
-                  },
-                }}
-              >
-                <ListItemIcon>
-                  <Person />
-                </ListItemIcon>
-                <ListItemText primary="Profile" />
-              </ListItemButton>
-            </List>
-          </Paper>
-
-          {/* MAIN CONTENT */}
-          <Box flex={1}>
-            <Routes>
-              <Route index element={<BusSearch />} />
-              <Route path="bookings" element={<MyBookings />} />
-              <Route path="profile" element={<UserProfile />} />
-            </Routes>
-          </Box>
-        </Box>
-      </Container>
-    </Box>
+        {/* Main Content */}
+        <main className="flex-1 bg-card/50 border border-border/50 rounded-2xl p-6 shadow-sm min-h-[500px]">
+          <Routes>
+            <Route index element={<BusSearch />} />
+            <Route path="bookings" element={<MyBookings />} />
+            <Route path="profile" element={<UserProfile />} />
+          </Routes>
+        </main>
+      </div>
+    </div>
   );
 };
 

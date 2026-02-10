@@ -7,6 +7,11 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  resolve: {
+    alias: {
+      "@": `${process.cwd()}/src`,
+    },
+  },
   server: {
     port: 3001,
     open: true,

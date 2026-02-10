@@ -1,7 +1,31 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import authService from '../services/authService';
 
-const AuthContext = createContext(null);
+interface User {
+  role: 'CUSTOMER' | 'TRAVELER' | 'ADMIN';
+  [key: string]: any;
+}
+
+interface Credentials {
+  email: string;
+  password: string;
+  [key: string]: any;
+}
+
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  login: (credentials: Credentials) => Promise<any>;
+  register: (userData: any) => Promise<any>;
+  logout: () => void;
+  updateUser: (userData: User) => void;
+  isAuthenticated: boolean;
+  isCustomer: boolean;
+  isTraveler: boolean;
+  isAdmin: boolean;
+}
+
+const AuthContext = createContext<AuthContextType | null>(null);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -11,8 +35,12 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+interface AuthProviderProps {
+  children: React.ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,7 +50,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (credentials) => {
+  const login = async (credentials: Credentials) => {
     const response = await authService.login(credentials);
     const userData = response.user;
     setUser(userData);
@@ -30,9 +58,9 @@ export const AuthProvider = ({ children }) => {
     return response;
   };
 
- 
 
-  const register = async (userData) => {
+
+  const register = async (userData: any) => {
     const response = await authService.register(userData);
     setUser(response.data);
     return response;
@@ -43,7 +71,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  const updateUser = (userData) => {
+  const updateUser = (userData: User) => {
     setUser(userData);
   };
 
