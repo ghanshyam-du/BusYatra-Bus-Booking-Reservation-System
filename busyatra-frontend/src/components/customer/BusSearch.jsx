@@ -10,7 +10,7 @@ import {
   Armchair,
   Wifi,
   Coffee,
-  BatteryHosting,
+  BatteryCharging,
   ArrowRight,
   Filter
 } from 'lucide-react';
@@ -64,7 +64,7 @@ const BusSearch = () => {
   const amenities = [
     { icon: Wifi, label: 'WiFi' },
     { icon: Coffee, label: 'Snacks' },
-    { icon: BatteryHosting, label: 'Charging' }
+    { icon: BatteryCharging, label: 'Charging' }
   ];
 
   return (
