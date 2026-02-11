@@ -104,7 +104,7 @@ const HomePage = () => {
               transition={{ duration: 0.8, delay: 0.3 }}
               className="w-full max-w-3xl"
             >
-              <div className="p-2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl ring-1 ring-black/5 dark:ring-white/10">
+              <div className="p-2 bg-white backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl ring-1 ring-black/5 dark:ring-white/10">
                 <div className="flex flex-col md:flex-row gap-2">
                   <div className="flex-1 relative group">
                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">

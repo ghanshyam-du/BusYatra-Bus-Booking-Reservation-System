@@ -1,23 +1,19 @@
 @import "tailwindcss";
 
-@theme {
-  --color-primary: #3b82f6;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #64748b;
-  --color-accent: #8b5cf6;
-  --color-background: #ffffff;
-  --color-foreground: #0f172a;
-  --color-card: #ffffff;
-  --color-card-foreground: #0f172a;
-  --color-popover: #ffffff;
-  --color-popover-foreground: #0f172a;
-  --color-muted: #f1f5f9;
-  --color-muted-foreground: #64748b;
-  --color-border: #e2e8f0;
-  --color-input: #e2e8f0;
-  --color-ring: #3b82f6;
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-  --font-sans: 'Outfit', sans-serif;
+@theme {
+  --color-primary: #f97415;
+  --color-primary-foreground: #ffffff;
+  --color-accent: #ec4899;
+  --color-background-dark: #0f0b09;
+  --color-card-dark: #1a120e;
+
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
 }
 
 /* Custom Utilities */
@@ -33,6 +29,21 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.125);
+}
+
+@utility input-dark {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  transition-property: all;
+  transition-duration: 300ms;
+}
+
+@utility glass-panel {
+  background: rgba(15, 11, 9, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 @utility text-gradient {
