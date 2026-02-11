@@ -26,7 +26,9 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await login(formData.email, formData.password);
+            // ✅ FIXED: Pass the entire formData object instead of individual fields
+            await login(formData);
+            
             toast.custom((t) => (
                 <div
                     className={`${t.visible ? 'animate-enter' : 'animate-leave'
@@ -54,7 +56,9 @@ const Login = () => {
             navigate('/');
         } catch (error) {
             console.error('Login failed:', error);
-            toast.error(error.message || 'Invalid email or password');
+            // ✅ IMPROVED: Better error message extraction
+            const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || 'Invalid email or password';
+            toast.error(errorMessage);
         }
     };
 
@@ -62,7 +66,7 @@ const Login = () => {
         <div className="font-display bg-background-dark text-slate-100 antialiased min-h-screen flex flex-col md:flex-row h-full w-full overflow-hidden">
             {/* Left Side - Visuals (Consistent with Register) */}
             <div className="hidden md:flex md:w-5/12 lg:w-1/2 relative flex-col justify-between p-12 bg-cover bg-center" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuC-3Sr8nEhKbkT0xERB8IFz5pkBFAyzWtAXqMJfk_6Tc7cPcQlNeOarYWjQArNLU-ivtkc8xnt0vZ98f9w8XcmsnMHM3v8oazaxYhPBCYYls4Nrde1xyXk01yNORZD_L5CIJEgzlKHq4KBrKFm2xnNQK3HT8-5Q6h0nqEjwh1QmBA2SQskN8UeQ-K0n1WAMLM9cGH230e3ZxH4yMcGDw40n4q-M9tiMYivakIKwP08emc0qkezX6KGVE6tjdSZIn_0J4qabfkQqCnfn')" }}>
-                <div className="absolute inset-0 bg-gradient-to-br from-black/90 via-black/60 to-background-dark/80"></div>
+                <div className="absolute inset-0 bg-linear-to-br from-black/90 via-black/60 to-background-dark/80"></div>
                 <div className="relative z-10">
                     <Link to="/" className="block w-fit">
                         <img
