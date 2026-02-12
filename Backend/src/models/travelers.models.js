@@ -1,9 +1,8 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
 const travelerSchema = new mongoose.Schema({
   traveler_id: {
     type: String,
-    required: true,
     unique: true,
     trim: true
   },
@@ -58,13 +57,33 @@ const travelerSchema = new mongoose.Schema({
   timestamps: true
 });
 
-
+// Pre-save hook to auto-generate traveler_id
 travelerSchema.pre('save', async function(next) {
-  if (this.traveler_id) return next();
+  // Only generate for new documents
+  if (!this.isNew || this.traveler_id) {
+    return next();
+  }
   
-  const count = await this.constructor.countDocuments();
-  this.traveler_id = `TRV${String(count + 1).padStart(6, '0')}`;
-  next();
+  try {
+    // Find the last traveler by sorting traveler_id descending
+    const lastTraveler = await this.constructor
+      .findOne()
+      .sort({ traveler_id: -1 })
+      .select('traveler_id')
+      .lean();
+    
+    let nextNumber = 1;
+    
+    if (lastTraveler && lastTraveler.traveler_id) {
+      const lastNumber = parseInt(lastTraveler.traveler_id.replace('TRV', ''), 10);
+      nextNumber = lastNumber + 1;
+    }
+    
+    this.traveler_id = `TRV${String(nextNumber).padStart(6, '0')}`;
+    // next();
+  } catch (error) {
+    next(error);
+  }
 });
 
 export default mongoose.model('Traveler', travelerSchema);
