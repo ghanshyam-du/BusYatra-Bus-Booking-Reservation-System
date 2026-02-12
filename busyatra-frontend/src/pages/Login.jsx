@@ -53,7 +53,7 @@ const Login = () => {
                     </div>
                 </div>
             ));
-            navigate('/');
+            navigate('/customer');
         } catch (error) {
             console.error('Login failed:', error);
             // ✅ IMPROVED: Better error message extraction
