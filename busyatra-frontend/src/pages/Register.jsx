@@ -10,7 +10,7 @@ const Register = () => {
     full_name: '',
     email: '',
     mobile_number: '',
-    gender: 'male',
+    gender: 'Male', // Backend expects 'Male' not 'male'
     date_of_birth: '',
     password: '',
   });
@@ -21,7 +21,6 @@ const Register = () => {
 
   const handleChange = (e) => {
     const { id, name, value, type } = e.target;
-    // Handle both 'id' (from prompt HTML) and 'name' attributes for compatibility
     const fieldName = name || id;
 
     setFormData((prev) => ({
@@ -33,8 +32,20 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    
     try {
-      await register(formData);
+      // Backend expects snake_case field names
+      const registrationData = {
+        full_name: formData.full_name,
+        email: formData.email,
+        mobile_number: formData.mobile_number,
+        password: formData.password,
+        gender: formData.gender,
+        date_of_birth: formData.date_of_birth,
+      };
+      
+      await register(registrationData);
+      
       toast.custom((t) => (
         <div
           className={`${t.visible ? 'animate-enter' : 'animate-leave'
@@ -62,7 +73,11 @@ const Register = () => {
       navigate('/login');
     } catch (error) {
       console.error('Registration failed:', error);
-      toast.error(error.message || 'Registration failed');
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.message || 
+                          error.message || 
+                          'Registration failed';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -127,7 +142,7 @@ const Register = () => {
       <div className="w-full md:w-7/12 lg:w-1/2 h-full bg-background-dark overflow-y-auto border-l border-white/5">
         <div className="w-full max-w-xl mx-auto px-6 py-12 md:px-16 md:py-20 flex flex-col justify-center min-h-full">
           <div className="md:hidden flex items-center gap-2 mb-10">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center text-white font-bold">B</div>
+            <div className="w-8 h-8 bg-linear-to-br from-primary to-accent rounded-lg flex items-center justify-center text-white font-bold">B</div>
             <span className="text-white font-bold text-xl tracking-tight">BusYatra</span>
           </div>
 
@@ -178,8 +193,10 @@ const Register = () => {
                   name="mobile_number"
                   value={formData.mobile_number}
                   onChange={handleChange}
-                  placeholder="+91 90000 00000"
+                  placeholder="9099583268"
                   type="tel"
+                  pattern="[0-9]{10}"
+                  title="Please enter a valid 10-digit mobile number"
                   required
                 />
               </div>
@@ -206,8 +223,8 @@ const Register = () => {
                       className="peer sr-only"
                       name="gender"
                       type="radio"
-                      value="male"
-                      checked={formData.gender === 'male'}
+                      value="Male"
+                      checked={formData.gender === 'Male'}
                       onChange={handleChange}
                     />
                     <div className="text-center py-4 rounded-xl border border-white/10 bg-white/5 text-slate-400 peer-checked:bg-primary/20 peer-checked:border-primary peer-checked:text-primary cursor-pointer hover:bg-white/10 transition-all font-semibold text-sm">
@@ -219,8 +236,8 @@ const Register = () => {
                       className="peer sr-only"
                       name="gender"
                       type="radio"
-                      value="female"
-                      checked={formData.gender === 'female'}
+                      value="Female"
+                      checked={formData.gender === 'Female'}
                       onChange={handleChange}
                     />
                     <div className="text-center py-4 rounded-xl border border-white/10 bg-white/5 text-slate-400 peer-checked:bg-primary/20 peer-checked:border-primary peer-checked:text-primary cursor-pointer hover:bg-white/10 transition-all font-semibold text-sm">
@@ -242,6 +259,7 @@ const Register = () => {
                   onChange={handleChange}
                   placeholder="••••••••"
                   type={showPassword ? "text" : "password"}
+                  minLength={6}
                   required
                 />
                 <button
@@ -252,7 +270,7 @@ const Register = () => {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-              <p className="text-xs text-slate-500 font-medium">Use 8 or more characters with a mix of letters & numbers.</p>
+              <p className="text-xs text-slate-500 font-medium">Use 6 or more characters with a mix of letters & numbers.</p>
             </div>
 
             <div className="pt-4">

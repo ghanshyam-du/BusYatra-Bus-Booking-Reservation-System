@@ -16,7 +16,7 @@ import RegisterPage from './pages/Register';
 import HomePage from './pages/Home';
 import CustomerDashboard from './pages/CustomerDashboard';
 import TravelerDashboard from './pages/TravelerDashboard';
-// import AdminDashboard from './pages/AdminDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   const location = useLocation();
@@ -95,7 +95,7 @@ function App() {
             element={
               <PageTransition>
                 <PrivateRoute allowedRoles={['ADMIN']}>
-                  {/* <AdminDashboard /> */}
+                  <AdminDashboard />
                   <div className="p-10 text-center">Admin Dashboard Coming Soon</div>
                 </PrivateRoute>
               </PageTransition>
