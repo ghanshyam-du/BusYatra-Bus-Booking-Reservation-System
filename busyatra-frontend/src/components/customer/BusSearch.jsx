@@ -1,18 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Search,
-  MapPin,
-  Calendar,
-  ArrowRightLeft,
-  Bus,
-  Clock,
-  Armchair,
-  Wifi,
-  Coffee,
-  BatteryCharging,
-  ArrowRight,
-  Filter
+  Search, MapPin, Calendar, ArrowRightLeft, Bus, 
+  Clock, Wifi, Coffee, BatteryCharging, ArrowRight, 
+  Filter, Star, Info, ChevronRight, ShieldCheck
 } from 'lucide-react';
 import bookingService from '../../services/bookingService';
 import { formatCurrency, formatTime, formatDuration } from '../../utils/formatters';
@@ -21,11 +12,7 @@ import SeatSelection from './SeatSelection';
 import { cn } from '../../utils/cn';
 
 const BusSearch = () => {
-  const [searchParams, setSearchParams] = useState({
-    from: '',
-    to: '',
-    date: ''
-  });
+  const [searchParams, setSearchParams] = useState({ from: '', to: '', date: '' });
   const [buses, setBuses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedBus, setSelectedBus] = useState(null);
@@ -36,288 +23,217 @@ const BusSearch = () => {
   const handleSearch = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const response = await bookingService.searchBuses(searchParams);
       setBuses(response.data || []);
-      if (response.data?.length === 0) {
-        toast.error('No buses found for this route');
-      } else {
-        toast.success(`Found ${response.data.length} buses!`);
-      }
+      if (response.data?.length === 0) toast.error('No buses found');
     } catch (error) {
-      toast.error(error.message || 'Failed to search buses');
-      setBuses([]);
+      toast.error('Search failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSwapLocations = () => {
-    setSearchParams({
-      ...searchParams,
-      from: searchParams.to,
-      to: searchParams.from,
-    });
+  const swapLocations = () => {
+    setSearchParams(prev => ({ ...prev, from: prev.to, to: prev.from }));
   };
 
-  const amenities = [
-    { icon: Wifi, label: 'WiFi' },
-    { icon: Coffee, label: 'Snacks' },
-    { icon: BatteryCharging, label: 'Charging' }
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#020617] transition-colors duration-500">
+      {/* Decorative Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-teal-500/5 blur-[120px]" />
+        <div className="absolute top-[20%] -right-[10%] w-[30%] h-[30%] rounded-full bg-indigo-500/5 blur-[120px]" />
+      </div>
 
-        {/* Search Header & Form */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-6"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-linear-to-br from-teal-500 to-emerald-600 rounded-2xl shadow-lg shadow-teal-500/20">
-              <Bus className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Search Buses</h1>
-              <p className="text-gray-500 dark:text-gray-400">Find the perfect ride for your journey</p>
-            </div>
+      <div className="relative max-w-6xl mx-auto px-4 py-12">
+        {/* --- Header Section --- */}
+        <header className="mb-12 text-center md:text-left flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 text-xs font-bold uppercase tracking-wider mb-4"
+            >
+              <ShieldCheck className="w-4 h-4" /> Secure Ticketing
+            </motion.div>
+            <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
+              Where to <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-emerald-500">Next?</span>
+            </h1>
           </div>
+          <p className="text-slate-500 dark:text-slate-400 max-w-md md:text-right">
+            Premium bus travel across 500+ cities. Relax, we'll get you there.
+          </p>
+        </header>
 
-          <form onSubmit={handleSearch} className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-xl shadow-gray-200/50 dark:shadow-black/20 border border-gray-100 dark:border-gray-800">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
+        {/* --- Modern Search Bar --- */}
+        <motion.div 
+          layout
+          className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-3 shadow-2xl shadow-slate-200/60 dark:shadow-black/40 border border-slate-100 dark:border-slate-800 mb-16"
+        >
+          <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
+            <div className="md:col-span-3 relative group">
+              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-teal-500" />
+              <input
+                className="w-full pl-12 pr-4 py-4 bg-transparent border-none focus:ring-0 text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
+                placeholder="From City"
+                value={searchParams.from}
+                onChange={e => setSearchParams({...searchParams, from: e.target.value})}
+              />
+            </div>
 
-              {/* From */}
-              <div className="md:col-span-4 space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">From</label>
-                <div className="relative group">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-teal-500 transition-colors" />
-                  <input
-                    type="text"
-                    value={searchParams.from}
-                    onChange={(e) => setSearchParams({ ...searchParams, from: e.target.value })}
-                    placeholder="Source City"
-                    required
-                    className="w-full pl-12 pr-4 py-3.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all dark:text-white"
-                  />
-                </div>
-              </div>
+            <div className="md:col-span-1 flex justify-center">
+              <button 
+                type="button" onClick={swapLocations}
+                className="p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl hover:bg-teal-500 hover:text-white transition-all transform hover:rotate-180"
+              >
+                <ArrowRightLeft className="w-5 h-5" />
+              </button>
+            </div>
 
-              {/* Swap Button */}
-              <div className="md:col-span-1 flex justify-center pb-2">
-                <button
-                  type="button"
-                  onClick={handleSwapLocations}
-                  className="p-3 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-teal-50 dark:hover:bg-teal-900/30 text-gray-500 hover:text-teal-600 transition-colors"
-                >
-                  <ArrowRightLeft className="w-5 h-5" />
-                </button>
-              </div>
+            <div className="md:col-span-3 relative group">
+              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-emerald-500" />
+              <input
+                className="w-full pl-12 pr-4 py-4 bg-transparent border-none focus:ring-0 text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
+                placeholder="To City"
+                value={searchParams.to}
+                onChange={e => setSearchParams({...searchParams, to: e.target.value})}
+              />
+            </div>
 
-              {/* To */}
-              <div className="md:col-span-4 space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">To</label>
-                <div className="relative group">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
-                  <input
-                    type="text"
-                    value={searchParams.to}
-                    onChange={(e) => setSearchParams({ ...searchParams, to: e.target.value })}
-                    placeholder="Destination City"
-                    required
-                    className="w-full pl-12 pr-4 py-3.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all dark:text-white"
-                  />
-                </div>
-              </div>
+            <div className="md:col-span-3 relative group lg:border-l border-slate-100 dark:border-slate-800">
+              <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-teal-500" />
+              <input
+                type="date"
+                min={today}
+                className="w-full pl-14 pr-4 py-4 bg-transparent border-none focus:ring-0 text-slate-900 dark:text-white font-medium cursor-pointer"
+                value={searchParams.date}
+                onChange={e => setSearchParams({...searchParams, date: e.target.value})}
+              />
+            </div>
 
-              {/* Date */}
-              <div className="md:col-span-3 space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">Journey Date</label>
-                <div className="relative group">
-                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-teal-500 transition-colors" />
-                  <input
-                    type="date"
-                    value={searchParams.date}
-                    min={today}
-                    onChange={(e) => setSearchParams({ ...searchParams, date: e.target.value })}
-                    required
-                    className="w-full pl-12 pr-4 py-3.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all dark:text-white cursor-pointer"
-                  />
-                </div>
-              </div>
-
-              {/* Submit - Full width on mobile */}
-              <div className="col-span-1 md:col-span-12">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-4 bg-linear-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
-                >
-                  {loading ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <Search className="w-5 h-5" />
-                  )}
-                  <span>{loading ? 'Searching buses...' : 'Search Buses'}</span>
-                </button>
-              </div>
+            <div className="md:col-span-2">
+              <button 
+                className="w-full h-full py-4 bg-teal-600 hover:bg-teal-500 text-white rounded-[1.8rem] font-bold shadow-lg shadow-teal-500/30 transition-all flex items-center justify-center gap-2 group"
+                disabled={loading}
+              >
+                {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Search className="w-5 h-5 group-hover:scale-110 transition-transform" />}
+                Search
+              </button>
             </div>
           </form>
         </motion.div>
 
-        {/* Results Section */}
-        <AnimatePresence>
-          {!loading && buses.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="space-y-6"
-            >
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  Available Buses
-                  <span className="px-3 py-1 bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 text-sm rounded-full">
-                    {buses.length} Found
-                  </span>
-                </h2>
-                <button className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
-                  <Filter className="w-4 h-4" />
-                  Filter Results
-                </button>
-              </div>
-
-              <div className="grid gap-6">
-                {buses.map((bus, index) => (
-                  <motion.div
-                    key={bus.schedule_id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="group bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800 hover:border-teal-500/30 hover:shadow-xl hover:shadow-teal-900/5 transition-all duration-300"
-                  >
-                    <div className="flex flex-col lg:flex-row gap-6 lg:items-center justify-between">
-
-                      {/* Bus Info */}
-                      <div className="flex items-start gap-4 min-w-[200px]">
-                        <div className="p-3 bg-teal-50 dark:bg-teal-900/20 rounded-xl text-teal-600 dark:text-teal-400">
-                          <Bus className="w-8 h-8" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-teal-600 transition-colors">
-                            {bus.company_name}
-                          </h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2">
-                            {bus.bus_number}
-                            <span className="w-1 h-1 bg-gray-300 rounded-full" />
-                            {bus.bus_type}
-                          </p>
-                          <div className="flex gap-2 mt-3">
-                            {amenities.map(({ icon: Icon, label }) => (
-                              <div key={label} className="p-1.5 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-400" title={label}>
-                                <Icon className="w-3.5 h-3.5" />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Timeline */}
-                      <div className="flex-1 flex items-center justify-between px-4 lg:px-12">
-                        <div className="text-center">
-                          <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Departure</p>
-                          <p className="text-xl font-bold text-gray-900 dark:text-white">{formatTime(bus.departure_time)}</p>
-                          <p className="text-sm text-gray-500">{bus.from_location}</p>
-                        </div>
-
-                        <div className="flex-1 px-4 flex flex-col items-center">
-                          <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
-                            <Clock className="w-3 h-3" />
-                            {formatDuration(bus.departure_time, bus.arrival_time)}
-                          </div>
-                          <div className="w-full h-0.5 bg-gray-200 dark:bg-gray-700 relative">
-                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-gray-300 dark:bg-gray-600 rounded-full" />
-                            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-teal-500 rounded-full" />
-                            <Bus className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 text-teal-500" />
-                          </div>
-                        </div>
-
-                        <div className="text-center">
-                          <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Arrival</p>
-                          <p className="text-xl font-bold text-gray-900 dark:text-white">{formatTime(bus.arrival_time)}</p>
-                          <p className="text-sm text-gray-500">{bus.to_location}</p>
-                        </div>
-                      </div>
-
-                      {/* Price & Action */}
-                      <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-center lg:gap-4 pl-0 lg:pl-6 border-t lg:border-t-0 lg:border-l border-gray-100 dark:border-gray-800 pt-4 lg:pt-0">
-                        <div className="text-left lg:text-right">
-                          <p className="text-xs text-gray-500 mb-0.5">Starting from</p>
-                          <p className="text-2xl font-bold text-teal-600 dark:text-teal-400">
-                            {formatCurrency(bus.fare)}
-                          </p>
-                          <p className={`text-xs font-medium mt-1 ${bus.available_seats < 10 ? 'text-amber-500' : 'text-emerald-500'
-                            }`}>
-                            {bus.available_seats} Seats Left
-                          </p>
-                        </div>
-
-                        <button
-                          onClick={() => {
-                            setSelectedBus(bus);
-                            setShowSeatSelection(true);
-                          }}
-                          className="px-6 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold rounded-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
-                        >
-                          Select Seats
-                          <ArrowRight className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                    </div>
-                  </motion.div>
+        {/* --- Results Section --- */}
+        <div className="space-y-6">
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <div key="loading" className="space-y-4">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="h-48 bg-slate-200/50 dark:bg-slate-800/50 animate-pulse rounded-3xl" />
                 ))}
               </div>
-            </motion.div>
-          )}
-
-          {/* No Results */}
-          {!loading && buses.length === 0 && searchParams.from && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="text-center py-20 bg-white dark:bg-gray-900 rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-800"
-            >
-              <div className="w-20 h-20 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Bus className="w-10 h-10 text-gray-400" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No Buses Found</h3>
-              <p className="text-gray-500">We couldn't find any buses for this route on the selected date.</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {showSeatSelection && selectedBus && (
-          <SeatSelection
-            bus={selectedBus}
-            onClose={() => {
-              setShowSeatSelection(false);
-              setSelectedBus(null);
-            }}
-            onBookingComplete={() => {
-              setShowSeatSelection(false);
-              setSelectedBus(null);
-              setBuses([]);
-              toast.success('Booking completed! Check My Bookings');
-            }}
-          />
-        )}
+            ) : buses.length > 0 ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid gap-6">
+                {buses.map((bus, idx) => (
+                  <BusCard key={bus.schedule_id} bus={bus} idx={idx} onSelect={() => { setSelectedBus(bus); setShowSeatSelection(true); }} />
+                ))}
+              </motion.div>
+            ) : (
+              <NoResults />
+            )}
+          </AnimatePresence>
+        </div>
       </div>
+
+      {showSeatSelection && selectedBus && (
+        <SeatSelection 
+          bus={selectedBus} 
+          onClose={() => setShowSeatSelection(false)} 
+          onBookingComplete={() => { /* logic */ }}
+        />
+      )}
     </div>
   );
 };
+
+const BusCard = ({ bus, idx, onSelect }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: idx * 0.1 }}
+    className="group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2rem] overflow-hidden hover:shadow-2xl hover:shadow-teal-500/10 transition-all duration-500"
+  >
+    <div className="p-6 md:p-8 flex flex-col lg:flex-row items-center gap-8">
+      {/* Operator Brand */}
+      <div className="flex flex-row lg:flex-col items-center gap-4 w-full lg:w-48 text-center lg:text-left">
+        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center group-hover:bg-teal-500 transition-colors duration-500">
+          <Bus className="w-8 h-8 text-teal-600 dark:text-teal-400 group-hover:text-white" />
+        </div>
+        <div>
+          <h3 className="font-black text-slate-900 dark:text-white text-lg leading-tight truncate">{bus.company_name}</h3>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{bus.bus_type}</p>
+        </div>
+      </div>
+
+      {/* Journey Timeline */}
+      <div className="flex-1 w-full grid grid-cols-3 items-center gap-4">
+        <div className="text-center md:text-left">
+          <p className="text-2xl font-black text-slate-900 dark:text-white">{formatTime(bus.departure_time)}</p>
+          <p className="text-sm font-medium text-slate-500 truncate">{bus.from_location}</p>
+        </div>
+
+        <div className="relative flex flex-col items-center">
+          <span className="text-[10px] font-bold text-slate-400 mb-2">{formatDuration(bus.departure_time, bus.arrival_time)}</span>
+          <div className="w-full flex items-center gap-1">
+            <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-slate-700" />
+            <Bus className="w-4 h-4 text-teal-500 animate-pulse" />
+            <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-slate-700" />
+          </div>
+          <span className="text-[10px] font-bold text-teal-500 mt-2 uppercase tracking-tighter italic">Direct</span>
+        </div>
+
+        <div className="text-center md:text-right">
+          <p className="text-2xl font-black text-slate-900 dark:text-white">{formatTime(bus.arrival_time)}</p>
+          <p className="text-sm font-medium text-slate-500 truncate">{bus.to_location}</p>
+        </div>
+      </div>
+
+      {/* Pricing and Action */}
+      <div className="w-full lg:w-auto flex lg:flex-col items-center justify-between gap-4 border-t lg:border-t-0 lg:border-l border-slate-100 dark:border-slate-800 pt-6 lg:pt-0 lg:pl-8">
+        <div className="text-left lg:text-right">
+          <div className="flex items-center lg:justify-end gap-1 mb-1">
+            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">4.8</span>
+          </div>
+          <p className="text-3xl font-black text-teal-600 dark:text-teal-400 leading-none">
+            {formatCurrency(bus.fare)}
+          </p>
+          <p className="text-[10px] font-bold text-slate-400 uppercase mt-2">Per Passenger</p>
+        </div>
+
+        <button 
+          onClick={onSelect}
+          className="px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black text-sm hover:bg-teal-600 dark:hover:bg-teal-500 dark:hover:text-white transition-all transform active:scale-95 flex items-center gap-2 shadow-xl shadow-slate-200 dark:shadow-none"
+        >
+          Book Now
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  </motion.div>
+);
+
+const NoResults = () => (
+  <motion.div 
+    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+    className="flex flex-col items-center justify-center py-20 text-center"
+  >
+    <div className="w-32 h-32 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mb-6">
+      <Bus className="w-12 h-12 text-slate-300" />
+    </div>
+    <h3 className="text-2xl font-black text-slate-900 dark:text-white">No rides available</h3>
+    <p className="text-slate-500 mt-2">Try adjusting your filters or checking a different date.</p>
+  </motion.div>
+);
 
 export default BusSearch;
