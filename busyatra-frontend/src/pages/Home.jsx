@@ -72,7 +72,7 @@ const HomePage = () => {
             >
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/50 dark:bg-white/5 border border-black/5 dark:border-white/10 text-sm font-medium text-muted-foreground backdrop-blur-sm shadow-sm">
                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                No Booking Fees on First Trip
+               Claim 10% Discount on your first ride.
               </span>
             </motion.div>
 
