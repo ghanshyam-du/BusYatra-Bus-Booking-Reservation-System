@@ -51,7 +51,9 @@ const Navbar = () => {
                             <img
                                 src="/logo.png"
                                 alt="BusYatra"
-                                className="h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                                className={cn(
+                                    "h-16 w-auto object-contain transition-all duration-300 group-hover:scale-105"
+                                )}
                             />
                         </Link>
 
@@ -62,8 +64,7 @@ const Navbar = () => {
                                     key={idx}
                                     to={item.link}
                                     className={cn(
-                                        "text-sm font-medium transition-colors relative group",
-                                        isScrolled ? "text-black hover:text-primary" : "text-black hover:text-primary"
+                                        "text-sm font-medium transition-colors relative group text-black hover:text-primary"
                                     )}
                                 >
                                     {item.name}
@@ -92,7 +93,7 @@ const Navbar = () => {
                         <div className="md:hidden">
                             <button
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                                className={cn("p-2 transition-colors", isScrolled ? "text-black hover:text-primary" : "text-black")}
+                                className={cn("text-black hover:text-primary")}
                             >
                                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                             </button>
@@ -163,10 +164,7 @@ const NavbarButton = ({ children, onClick, variant = "primary", className }) => 
                 variant === "primary"
                     ? "bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/25"
                     : cn(
-                        "border hover:bg-black/5 transition-colors",
-                        isScrolled
-                            ? "text-black border-black/10 hover:bg-black/5 hover:text-primary"
-                            : "text-black border-gray-200 dark:border-white/10 dark:hover:bg-white/10"
+                        "border hover:bg-black/5 transition-colors text-black border-black/10 hover:text-primary"
                     ),
                 className
             )}
