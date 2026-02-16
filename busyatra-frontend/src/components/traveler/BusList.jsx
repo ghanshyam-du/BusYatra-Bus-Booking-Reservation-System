@@ -66,8 +66,8 @@ const BusList = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white">My <span className="text-primary">Buses</span></h2>
-          <p className="text-gray-500 text-sm mt-1">Manage your fleet and routes</p>
+          <h2 className="text-2xl font-bold text-gray-900">My <span className="text-primary">Buses</span></h2>
+          <p className="text-gray-600 text-sm mt-1">Manage your fleet and routes</p>
         </div>
         <Link
           to="/traveler/add-bus"
@@ -79,25 +79,25 @@ const BusList = () => {
       </div>
 
       {/* Search & Filters */}
-      <div className="bg-[#12121c] rounded-2xl p-4 border border-white/5 flex flex-col md:flex-row gap-4">
+      <div className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm flex flex-col md:flex-row gap-4">
         <div className="flex-1 relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by bus number or route..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm placeholder:text-gray-600 focus:ring-1 focus:ring-primary/30 focus:border-primary/30 outline-none transition"
+            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm placeholder:text-gray-400 focus:ring-1 focus:ring-primary/30 focus:border-primary/30 outline-none transition"
           />
         </div>
-        <div className="flex gap-2 bg-white/5 p-1 rounded-xl overflow-x-auto custom-scrollbar">
+        <div className="flex gap-2 bg-gray-50 p-1 rounded-xl overflow-x-auto custom-scrollbar">
           {busTypes.map((type) => (
             <button
               key={type}
               onClick={() => setTypeFilter(type)}
               className={`px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${typeFilter === type
-                  ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+                ? 'bg-white text-primary shadow-sm ring-1 ring-gray-200'
+                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
                 }`}
             >
               {type === 'all' ? 'All Types' : type}
@@ -108,9 +108,9 @@ const BusList = () => {
 
       {/* Bus Grid */}
       {filteredBuses.length === 0 ? (
-        <div className="bg-[#12121c] rounded-2xl p-12 text-center border border-white/5">
-          <Bus className="w-16 h-16 text-gray-700 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-1">No buses found</h3>
+        <div className="bg-white rounded-2xl p-12 text-center border border-gray-200 shadow-sm">
+          <Bus className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">No buses found</h3>
           <p className="text-gray-500 text-sm">Add a bus to get started or adjust your filters</p>
         </div>
       ) : (
@@ -123,17 +123,17 @@ const BusList = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ delay: index * 0.05 }}
-                className="bg-[#12121c] rounded-2xl border border-white/5 overflow-hidden hover:border-primary/30 transition-all group flex flex-col"
+                className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-primary/30 hover:shadow-lg transition-all group flex flex-col"
               >
                 {/* Card Header */}
-                <div className="p-5 border-b border-white/5 flex justify-between items-start bg-gradient-to-br from-white/5 to-transparent">
+                <div className="p-5 border-b border-gray-100 flex justify-between items-start bg-gray-50/50">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                    <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center border border-orange-100">
                       <Bus className="w-6 h-6 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-white text-lg">{bus.bus_number}</h3>
-                      <p className="text-xs text-primary font-medium px-2 py-0.5 bg-primary/10 rounded-full inline-block mt-1 border border-primary/20">
+                      <h3 className="font-bold text-gray-900 text-lg">{bus.bus_number}</h3>
+                      <p className="text-xs text-primary font-medium px-2 py-0.5 bg-orange-50 rounded-full inline-block mt-1 border border-orange-100">
                         {bus.bus_type}
                       </p>
                     </div>
@@ -145,25 +145,25 @@ const BusList = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Capacity</p>
-                      <div className="flex items-center gap-2 text-gray-300">
-                        <Users className="w-4 h-4 text-gray-500" />
+                      <div className="flex items-center gap-2 text-gray-700">
+                        <Users className="w-4 h-4 text-gray-400" />
                         <span className="font-medium">{bus.total_seats} Seats</span>
                       </div>
                     </div>
                     <div>
                       <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Base Fare</p>
-                      <p className="font-bold text-white">{formatCurrency(bus.fare)}</p>
+                      <p className="font-bold text-gray-900">{formatCurrency(bus.fare)}</p>
                     </div>
                   </div>
 
-                  <div className="space-y-2 pt-2 border-t border-white/5">
+                  <div className="space-y-2 pt-2 border-t border-gray-100">
                     <div className="flex items-start gap-3">
-                      <div className="mt-0.5 w-4 h-4 rounded-full border border-gray-600 flex items-center justify-center shrink-0">
-                        <div className="w-1.5 h-1.5 rounded-full bg-gray-500" />
+                      <div className="mt-0.5 w-4 h-4 rounded-full border border-gray-300 flex items-center justify-center shrink-0">
+                        <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">From</p>
-                        <p className="text-sm font-medium text-white">{bus.from_location}</p>
+                        <p className="text-xs text-gray-500">From</p>
+                        <p className="text-sm font-medium text-gray-900">{bus.from_location}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
@@ -171,24 +171,24 @@ const BusList = () => {
                         <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">To</p>
-                        <p className="text-sm font-medium text-white">{bus.to_location}</p>
+                        <p className="text-xs text-gray-500">To</p>
+                        <p className="text-sm font-medium text-gray-900">{bus.to_location}</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Card Footer Actions */}
-                <div className="p-4 bg-white/5 border-t border-white/5 flex gap-2">
+                <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-2">
                   <Link
                     to={`/traveler/edit-bus/${bus.bus_id}`}
-                    className="flex-1 py-2 px-3 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm font-medium transition flex items-center justify-center gap-2 border border-white/5"
+                    className="flex-1 py-2 px-3 bg-white hover:bg-gray-50 text-gray-700 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2 border border-gray-200"
                   >
                     <Edit className="w-4 h-4" /> Edit
                   </Link>
                   <button
                     onClick={() => handleDelete(bus.bus_id)}
-                    className="flex-1 py-2 px-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2 border border-red-500/20"
+                    className="flex-1 py-2 px-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2 border border-red-100"
                   >
                     <Trash2 className="w-4 h-4" /> Delete
                   </button>

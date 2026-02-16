@@ -45,13 +45,13 @@ const TravelerDashboard = () => {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <div className="mb-8 px-2">
-        <h2 className="text-xl font-bold text-white tracking-tight">Traveler Portal</h2>
-        <div className="flex items-center gap-3 mt-4 p-3 bg-white/5 rounded-xl border border-white/5">
+        <h2 className="text-xl font-bold text-gray-900 tracking-tight">Traveler Portal</h2>
+        <div className="flex items-center gap-3 mt-4 p-3 bg-white border border-gray-200 rounded-xl shadow-sm">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-orange-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-primary/20">
             {user?.full_name?.[0] || 'T'}
           </div>
           <div className="overflow-hidden">
-            <p className="text-sm font-medium text-white truncate">{user?.full_name}</p>
+            <p className="text-sm font-medium text-gray-900 truncate">{user?.full_name}</p>
             <p className="text-xs text-primary font-medium">Bus Operator</p>
           </div>
         </div>
@@ -67,7 +67,7 @@ const TravelerDashboard = () => {
               "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group relative overflow-hidden",
               isActive(item.path)
                 ? "bg-gradient-to-r from-primary to-orange-600 text-white shadow-lg shadow-primary/25"
-                : "text-gray-400 hover:text-white hover:bg-white/5"
+                : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
             )}
           >
             <item.icon size={20} className={cn("transition-transform duration-300", isActive(item.path) ? "scale-110" : "group-hover:scale-110")} />
@@ -82,10 +82,10 @@ const TravelerDashboard = () => {
         ))}
       </nav>
 
-      <div className="mt-auto pt-6 border-t border-white/5">
+      <div className="mt-auto pt-6 border-t border-gray-200">
         <button
           onClick={logout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-all duration-300 group"
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 text-gray-500 hover:text-red-600 transition-all duration-300 group"
         >
           <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
           <span className="font-medium">Logout</span>
@@ -95,7 +95,7 @@ const TravelerDashboard = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-gray-100">
+    <div className="min-h-screen bg-gray-50 text-gray-900">
       <Navbar />
 
       <div className="pt-24 container mx-auto px-4 md:px-6 flex flex-col lg:flex-row gap-8 min-h-[calc(100vh-100px)]">
@@ -104,7 +104,7 @@ const TravelerDashboard = () => {
         <div className="lg:hidden mb-4">
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="flex items-center gap-2 text-white bg-white/5 border border-white/10 px-4 py-2 rounded-lg"
+            className="flex items-center gap-2 text-gray-700 bg-white border border-gray-200 px-4 py-2 rounded-lg shadow-sm"
           >
             {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             <span className="font-medium">Menu</span>
@@ -113,7 +113,7 @@ const TravelerDashboard = () => {
 
         {/* Desktop Sidebar */}
         <aside className="hidden lg:block w-72 shrink-0">
-          <div className="sticky top-24 bg-[#12121c] border border-white/5 rounded-2xl p-6 shadow-xl h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar">
+          <div className="sticky top-24 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar">
             <SidebarContent />
           </div>
         </aside>
@@ -127,10 +127,10 @@ const TravelerDashboard = () => {
               exit={{ opacity: 0, x: -100 }}
               className="fixed inset-0 z-50 lg:hidden"
             >
-              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
-              <div className="absolute left-0 top-0 bottom-0 w-3/4 max-w-xs bg-[#12121c] p-6 shadow-2xl border-r border-white/10">
+              <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
+              <div className="absolute left-0 top-0 bottom-0 w-3/4 max-w-xs bg-white p-6 shadow-2xl border-r border-gray-200">
                 <div className="flex justify-end mb-4">
-                  <button onClick={() => setIsMobileMenuOpen(false)} className="text-gray-400 hover:text-white">
+                  <button onClick={() => setIsMobileMenuOpen(false)} className="text-gray-400 hover:text-gray-900">
                     <X size={24} />
                   </button>
                 </div>
@@ -142,7 +142,7 @@ const TravelerDashboard = () => {
 
         {/* Main Content */}
         <main className="flex-1 w-full overflow-hidden">
-          <div className="bg-[#12121c]/50 backdrop-blur-md border border-white/5 rounded-3xl p-6 md:p-8 shadow-2xl min-h-[500px] relative">
+          <div className="bg-white/50 backdrop-blur-md border border-gray-200 rounded-3xl p-6 md:p-8 shadow-sm min-h-[500px] relative">
             {/* Background Decorations */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -z-10" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -z-10" />
@@ -153,16 +153,16 @@ const TravelerDashboard = () => {
                   <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 animate-pulse">
                     <LayoutDashboard className="w-10 h-10 text-primary" />
                   </div>
-                  <h2 className="text-3xl font-bold text-white mb-2">Welcome Back, {user?.full_name?.split(' ')[0]}!</h2>
-                  <p className="text-gray-400 max-w-md">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back, {user?.full_name?.split(' ')[0]}!</h2>
+                  <p className="text-gray-500 max-w-md">
                     Manage your fleet, check bookings, and track revenue all in one place.
                     Select an option from the sidebar to get started.
                   </p>
                   <Link
                     to="/traveler/bookings"
-                    className="mt-8 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white font-medium transition flex items-center gap-2"
+                    className="mt-8 px-6 py-3 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl text-gray-900 font-medium transition flex items-center gap-2 shadow-sm"
                   >
-                    View Analytics <BarChart3 size={18} />
+                    View Analytics <BarChart3 size={18} className="text-primary" />
                   </Link>
                 </div>
               } />
