@@ -1,4 +1,3 @@
-
 import api from './api';
 
 const travelerService = {
@@ -42,6 +41,11 @@ const travelerService = {
   createSchedule: async (scheduleData) => {
     const response = await api.post('/traveler/schedules', scheduleData);
     return response.data;
+  },
+
+  // ✅ ADDED: Alias for backward compatibility
+  addSchedule: async (scheduleData) => {
+    return travelerService.createSchedule(scheduleData);
   },
 
   // Update schedule
@@ -88,4 +92,3 @@ const travelerService = {
 };
 
 export default travelerService;
-

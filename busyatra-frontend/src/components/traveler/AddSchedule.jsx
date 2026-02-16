@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, IndianRupee, Save, Bus, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -17,7 +16,6 @@ const AddSchedule = () => {
     arrival_time: '',
     date: '',
     fare: '',
-    // Additional fields like recurring could be added here
   });
 
   useEffect(() => {
@@ -29,6 +27,7 @@ const AddSchedule = () => {
       const response = await travelerService.getBuses();
       setBuses(response.data || []);
     } catch (error) {
+      console.error('Failed to load buses:', error);
       toast.error('Failed to load buses');
     }
   };
@@ -40,37 +39,44 @@ const AddSchedule = () => {
 
   const selectedBus = buses.find(b => b.bus_id.toString() === formData.bus_id);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      // Validate dates
-      const depDate = new Date(`${formData.date}T${formData.departure_time}`);
-      const arrDate = new Date(`${formData.date}T${formData.arrival_time}`);
+  try {
+    // ✅ Backend expects journey_date, departure_time, arrival_time
+    const payload = {
+      bus_id: formData.bus_id, // Keep as string, backend will handle conversion
+      journey_date: formData.date, // YYYY-MM-DD format
+      departure_time: formData.departure_time, // HH:MM format
+      arrival_time: formData.arrival_time, // HH:MM format
+    };
 
-      // Handle overnight journeys (arrival next day) if arrival time is before departure
-      if (arrDate < depDate) {
-        arrDate.setDate(arrDate.getDate() + 1);
-      }
+    console.log('📤 Form Data:', formData);
+    console.log('📤 Sending payload:', payload);
+    console.log('📤 Payload keys:', Object.keys(payload));
+    console.log('📤 Payload values:', Object.values(payload));
 
-      const payload = {
-        bus_id: parseInt(formData.bus_id),
-        departure_time: depDate.toISOString(),
-        arrival_time: arrDate.toISOString(),
-        fare: parseFloat(formData.fare || selectedBus?.fare || 0),
-        status: 'SCHEDULED'
-      };
-
-      await travelerService.addSchedule(payload);
-      toast.success('Schedule created successfully!');
-      navigate('/traveler/schedules');
-    } catch (error) {
-      toast.error(error.message || 'Failed to create schedule');
-    } finally {
-      setLoading(false);
-    }
-  };
+    const response = await travelerService.createSchedule(payload);
+    console.log('✅ Response:', response);
+    
+    toast.success('Schedule created successfully!');
+    navigate('/traveler/schedules');
+  } catch (error) {
+    console.error('❌ Full error object:', error);
+    console.error('❌ Error response:', error.response);
+    console.error('❌ Error response data:', error.response?.data);
+    
+    const errorMessage = error.response?.data?.error
+      || error.response?.data?.message 
+      || error.message 
+      || 'Failed to create schedule';
+    
+    toast.error(errorMessage);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -129,7 +135,7 @@ const AddSchedule = () => {
                   </div>
                   <div className="text-right">
                     <span className="text-gray-400 text-xs uppercase">Base Fare</span>
-                    <div className="font-bold text-primary">{formData.fare || selectedBus.fare} INR</div>
+                    <div className="font-bold text-primary">{selectedBus.fare} INR</div>
                   </div>
                 </div>
               )}
@@ -172,6 +178,7 @@ const AddSchedule = () => {
                     className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary/50 outline-none transition"
                   />
                 </div>
+                <p className="text-xs text-gray-500 mt-1">Optional - Leave empty to use bus default fare</p>
               </div>
 
               <div>
