@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Calendar, LocationOn, EventSeat, DirectionsBus,
+  LocationOn, EventSeat, DirectionsBus,
   Cancel, ExpandMore, CheckCircle, Schedule,
   ConfirmationNumber, ArrowForward, Person,
-  AccessTime, FiberManualRecord, Download,
-  Print, Share, MapPin, Clock, Ticket,
-  Info, AlertCircle, ChevronDown, ChevronUp,
-  TrendingUp, Award
+  AccessTime, FiberManualRecord
 } from '@mui/icons-material';
+import {
+  Calendar, Download, Printer, Share,
+  MapPin, Clock, Ticket, Info, AlertCircle,
+  ChevronDown, ChevronUp, TrendingUp, Award
+} from 'lucide-react';
 import bookingService from '../../services/bookingService';
 import { formatCurrency, formatDate, formatTime } from '../../utils/formatters';
 import toast from 'react-hot-toast';
@@ -87,8 +89,8 @@ const MyBookings = () => {
     setExpandedBooking(expandedBooking === bookingId ? null : bookingId);
   };
 
-  const filteredBookings = filterStatus === 'ALL' 
-    ? bookings 
+  const filteredBookings = filterStatus === 'ALL'
+    ? bookings
     : bookings.filter(b => (b.booking?.booking_status || b.booking_status) === filterStatus);
 
   if (loading) {
@@ -96,7 +98,7 @@ const MyBookings = () => {
       <div className="p-8">
         <div className="space-y-6">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-64 bg-muted/30 animate-pulse rounded-3xl border border-border/50" />
+            <div key={i} className="h-64 bg-muted/30 animate-pulse rounded-3xl" />
           ))}
         </div>
       </div>
@@ -109,13 +111,14 @@ const MyBookings = () => {
         <div className="text-center max-w-md">
           <div className="w-32 h-32 mx-auto mb-6 bg-muted rounded-full flex items-center justify-center relative">
             <Ticket className="w-16 h-16 text-muted-foreground/30" />
-            <div className="absolute inset-0 rounded-full border-4 border-dashed border-muted-foreground/10" />
+            <div className="absolute inset-0 rounded-full border-4 border-dashed border-primary/15" />
+            <div className="absolute -inset-2 rounded-full bg-linear-to-br from-primary/5 to-orange-500/5 blur-xl" />
           </div>
           <h3 className="text-2xl font-black text-foreground mb-2">No Bookings Yet</h3>
           <p className="text-muted-foreground mb-6">
             Start your journey by booking your first bus ticket
           </p>
-          <button className="px-6 py-3 bg-linear-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white rounded-2xl font-bold shadow-lg shadow-teal-500/25 transition-all">
+          <button className="px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-2xl font-bold shadow-lg shadow-primary/25 transition-all">
             Book Now
           </button>
         </div>
@@ -130,7 +133,7 @@ const MyBookings = () => {
         <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
           <div>
             <h2 className="text-3xl font-black tracking-tight mb-2">
-              My <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-500 to-pink-500">Bookings</span>
+              My <span className="text-transparent bg-clip-text bg-linear-to-r from-primary via-purple-500 to-pink-500">Bookings</span>
             </h2>
             <p className="text-muted-foreground">
               {filteredBookings.length} {filteredBookings.length === 1 ? 'booking' : 'bookings'} found
@@ -161,7 +164,7 @@ const MyBookings = () => {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 rounded-2xl bg-linear-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/20">
+          <div className="p-4 rounded-2xl bg-linear-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/20 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
                 <Ticket className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -173,7 +176,7 @@ const MyBookings = () => {
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-linear-to-br from-emerald-500/10 to-emerald-600/10 border border-emerald-500/20">
+          <div className="p-4 rounded-2xl bg-linear-to-br from-emerald-500/10 to-emerald-600/10 border border-emerald-500/20 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                 <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
@@ -187,7 +190,7 @@ const MyBookings = () => {
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-linear-to-br from-purple-500/10 to-purple-600/10 border border-purple-500/20">
+          <div className="p-4 rounded-2xl bg-linear-to-br from-purple-500/10 to-purple-600/10 border border-purple-500/20 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -201,7 +204,7 @@ const MyBookings = () => {
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-linear-to-br from-amber-500/10 to-amber-600/10 border border-amber-500/20">
+          <div className="p-4 rounded-2xl bg-linear-to-br from-amber-500/10 to-amber-600/10 border border-amber-500/20 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-300">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
                 <Award className="w-5 h-5 text-amber-600 dark:text-amber-400" />
@@ -223,14 +226,14 @@ const MyBookings = () => {
           {filteredBookings.map((booking, index) => {
             const journeyDetails = booking.journey_details || {};
             const bookingInfo = booking.booking || {};
-            
+
             const fromLocation = journeyDetails.from || bookingInfo.from_location || 'Unknown';
             const toLocation = journeyDetails.to || bookingInfo.to_location || 'Unknown';
             const departureTime = journeyDetails.departure_time || bookingInfo.departure_time;
             const arrivalTime = journeyDetails.arrival_time || bookingInfo.arrival_time;
             const journeyDate = journeyDetails.journey_date || bookingInfo.journey_date;
             const busType = journeyDetails.bus_type || bookingInfo.bus_type || 'Standard';
-            
+
             const bookingId = bookingInfo.booking_id || booking.booking_id;
             const bookingReference = bookingInfo.booking_reference || booking.booking_reference || 'N/A';
             const bookingStatus = bookingInfo.booking_status || booking.booking_status || 'PENDING';
@@ -238,7 +241,7 @@ const MyBookings = () => {
             const seatNumbers = bookingInfo.seat_numbers || booking.seat_numbers || [];
             const totalAmount = bookingInfo.total_amount || booking.total_amount || 0;
             const passengers = booking.passengers || [];
-            
+
             const statusConfig = getStatusConfig(bookingStatus);
             const isExpanded = expandedBooking === bookingId;
             const StatusIcon = statusConfig.icon;
@@ -251,7 +254,7 @@ const MyBookings = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ delay: index * 0.05 }}
-                className="bg-card border border-border/50 rounded-3xl overflow-hidden hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 hover:border-primary/20"
+                className="bg-card rounded-3xl overflow-hidden shadow-lg ring-1 ring-black/5 dark:ring-white/10 hover:shadow-xl hover:shadow-primary/5 transition-all duration-500"
               >
                 {/* Header */}
                 <div className={cn(
@@ -275,7 +278,7 @@ const MyBookings = () => {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className={cn(
                       "flex items-center gap-2 px-4 py-2 rounded-2xl border",
                       statusConfig.border,
@@ -361,7 +364,7 @@ const MyBookings = () => {
                   <div className="flex items-center justify-between gap-4 pt-6 border-t border-border/50">
                     <div>
                       <p className="text-sm text-muted-foreground mb-1">Total Fare</p>
-                      <p className="text-3xl font-black text-transparent bg-clip-text bg-linear-to-r from-teal-600 to-emerald-600">
+                      <p className="text-3xl font-black text-transparent bg-clip-text bg-linear-to-r from-primary to-orange-500">
                         {formatCurrency(totalAmount)}
                       </p>
                     </div>
@@ -372,7 +375,7 @@ const MyBookings = () => {
                           <button className="p-3 rounded-xl bg-muted hover:bg-muted/80 transition-colors group">
                             <Download className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                           </button>
-                          <button 
+                          <button
                             onClick={() => setCancelDialog({ open: true, bookingId })}
                             className="px-6 py-3 rounded-xl border-2 border-red-500/20 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 font-bold hover:bg-red-100 dark:hover:bg-red-950/40 transition-colors"
                           >
@@ -380,7 +383,7 @@ const MyBookings = () => {
                           </button>
                         </>
                       )}
-                      
+
                       <button
                         onClick={() => toggleExpand(bookingId)}
                         className="px-6 py-3 rounded-xl bg-muted hover:bg-muted/80 font-bold transition-colors flex items-center gap-2"
@@ -408,7 +411,7 @@ const MyBookings = () => {
                               {passengers.map((passenger, idx) => (
                                 <div
                                   key={idx}
-                                  className="flex items-center gap-4 p-4 rounded-2xl bg-muted/30 border border-border/50"
+                                  className="flex items-center gap-4 p-4 rounded-2xl bg-muted/30 ring-1 ring-black/5 dark:ring-white/10"
                                 >
                                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold">
                                     {idx + 1}
@@ -454,7 +457,7 @@ const MyBookings = () => {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               onClick={e => e.stopPropagation()}
-              className="bg-card border border-border rounded-3xl p-8 max-w-md w-full shadow-2xl"
+              className="bg-card rounded-3xl p-8 max-w-md w-full shadow-2xl ring-1 ring-black/5 dark:ring-white/10"
             >
               <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-950/30 flex items-center justify-center mx-auto mb-6">
                 <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />

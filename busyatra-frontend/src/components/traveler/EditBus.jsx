@@ -1,128 +1,35 @@
+
 import React, { useState, useEffect } from 'react';
+import { Bus, MapPin, Users, IndianRupee, Wifi, Coffee, Music, BatteryCharging, ArrowRight, Save, ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  Box,
-  Container,
-  Paper,
-  Typography,
-  TextField,
-  Button,
-  Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Chip,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
-  InputAdornment,
-  IconButton,
-  Breadcrumbs,
-  Link,
-  Card,
-  CardContent,
-  Divider,
-  CircularProgress,
-  Alert,
-  Fade,
-  Skeleton
-} from '@mui/material';
-import {
-  ArrowBack,
-  DirectionsBus,
-  LocationOn,
-  Schedule,
-  AttachMoney,
-  EventSeat,
-  Wifi,
-  BatteryCharging80,
-  LocalDrink,
-  AcUnit,
-  Star,
-  Save,
-  Cancel,
-  NavigateNext
-} from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
 import travelerService from '../../services/travelerService';
 import toast from 'react-hot-toast';
 
-// Styled Components
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(4),
-  borderRadius: theme.spacing(2),
-  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-  background: 'linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%)',
-}));
-
-const HeaderCard = styled(Card)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-  color: 'white',
-  marginBottom: theme.spacing(4),
-  borderRadius: theme.spacing(2),
-  boxShadow: '0 8px 32px rgba(102, 126, 234, 0.35)',
-}));
-
-const StyledButton = styled(Button)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
-  padding: theme.spacing(1.5, 4),
-  textTransform: 'none',
-  fontWeight: 600,
-  fontSize: '1rem',
-  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: '0 6px 20px rgba(0,0,0,0.2)',
-  },
-}));
-
-const AmenityChip = styled(Chip)(({ theme }) => ({
-  margin: theme.spacing(0.5),
-  borderRadius: theme.spacing(1),
-  fontWeight: 500,
-  transition: 'all 0.2s ease',
-  '&:hover': {
-    transform: 'scale(1.05)',
-  },
-}));
-
 const EditBus = () => {
-  const { busId } = useParams();
   const navigate = useNavigate();
+  const { busId } = useParams();
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  const [saving, setSaving] = useState(false);
+
   const [formData, setFormData] = useState({
     bus_number: '',
-    bus_type: 'SEATER',
+    total_seats: '',
+    bus_type: 'AC Seater',
+    amenities: [],
     from_location: '',
     to_location: '',
-    departure_time: '',
-    arrival_time: '',
-    total_seats: 40,
     fare: '',
-    amenities: []
   });
 
-  const busTypes = [
-    { value: 'SEATER', label: 'Seater', icon: '🪑' },
-    { value: 'SLEEPER', label: 'Sleeper', icon: '🛏️' },
-    { value: 'SEMI_SLEEPER', label: 'Semi Sleeper', icon: '🛋️' },
-    { value: 'AC', label: 'AC', icon: '❄️' },
-    { value: 'NON_AC', label: 'Non AC', icon: '🌡️' },
-    { value: 'VOLVO', label: 'Volvo', icon: '⭐' }
+  const amenitiesList = [
+    { id: 'wifi', label: 'Wi-Fi', icon: Wifi },
+    { id: 'charging_point', label: 'Charging Point', icon: BatteryCharging },
+    { id: 'water_bottle', label: 'Water Bottle', icon: Coffee },
+    { id: 'entertainment', label: 'Entertainment', icon: Music },
   ];
 
-  const amenityOptions = [
-    { name: 'WiFi', icon: <Wifi /> },
-    { name: 'Charging Point', icon: <BatteryCharging80 /> },
-    { name: 'Water Bottle', icon: <LocalDrink /> },
-    { name: 'Blanket', icon: <AcUnit /> },
-    { name: 'Pillow', icon: <Star /> },
-    { name: 'Reading Light', icon: <Star /> },
-    { name: 'Emergency Exit', icon: <Star /> }
-  ];
+  const busTypes = ['AC Seater', 'AC Sleeper', 'Non-AC Seater', 'Non-AC Sleeper', 'Volvo'];
 
   useEffect(() => {
     fetchBusDetails();
@@ -130,27 +37,29 @@ const EditBus = () => {
 
   const fetchBusDetails = async () => {
     try {
-      const response = await travelerService.getBuses();
-      const bus = response.data?.find(b => b.bus_id === busId);
-      if (bus) {
-        setFormData({
-          bus_number: bus.bus_number,
-          bus_type: bus.bus_type,
-          from_location: bus.from_location,
-          to_location: bus.to_location,
-          departure_time: bus.departure_time,
-          arrival_time: bus.arrival_time,
-          total_seats: bus.total_seats,
-          fare: bus.fare,
-          amenities: bus.amenities || []
-        });
-      } else {
-        toast.error('Bus not found');
-        navigate('/traveler');
+      const response = await travelerService.getBus(busId);
+      const bus = response.data;
+
+      // Parse amenities if they are stored as string
+      let amenities = [];
+      if (typeof bus.amenities === 'string') {
+        amenities = bus.amenities.split(',').filter(Boolean);
+      } else if (Array.isArray(bus.amenities)) {
+        amenities = bus.amenities;
       }
+
+      setFormData({
+        bus_number: bus.bus_number,
+        total_seats: bus.total_seats,
+        bus_type: bus.bus_type,
+        amenities: amenities,
+        from_location: bus.from_location,
+        to_location: bus.to_location,
+        fare: bus.fare,
+      });
     } catch (error) {
       toast.error('Failed to load bus details');
-      navigate('/traveler');
+      navigate('/traveler/buses');
     } finally {
       setLoading(false);
     }
@@ -158,437 +67,215 @@ const EditBus = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAmenityToggle = (amenity) => {
-    const current = formData.amenities || [];
-    if (current.includes(amenity)) {
-      setFormData({ ...formData, amenities: current.filter(a => a !== amenity) });
-    } else {
-      setFormData({ ...formData, amenities: [...current, amenity] });
-    }
+  const handleAmenityToggle = (amenityId) => {
+    setFormData(prev => {
+      const amenities = prev.amenities.includes(amenityId)
+        ? prev.amenities.filter(id => id !== amenityId)
+        : [...prev.amenities, amenityId];
+      return { ...prev, amenities };
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitting(true);
+    setSaving(true);
 
     try {
-      await travelerService.updateBus(busId, {
+      const payload = {
         ...formData,
+        amenities: formData.amenities.join(','),
         total_seats: parseInt(formData.total_seats),
         fare: parseFloat(formData.fare)
-      });
-      toast.success('Bus updated successfully! 🎉');
-      navigate('/traveler');
+      };
+
+      await travelerService.updateBus(busId, payload);
+      toast.success('Bus updated successfully!');
+      navigate('/traveler/buses');
     } catch (error) {
       toast.error(error.message || 'Failed to update bus');
     } finally {
-      setSubmitting(false);
+      setSaving(false);
     }
   };
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <StyledPaper>
-          <Box sx={{ textAlign: 'center', py: 8 }}>
-            <CircularProgress size={60} thickness={4} />
-            <Typography variant="h6" sx={{ mt: 3, color: 'text.secondary' }}>
-              Loading bus details...
-            </Typography>
-            <Box sx={{ mt: 4 }}>
-              <Skeleton variant="rectangular" height={60} sx={{ mb: 2, borderRadius: 2 }} />
-              <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
-            </Box>
-          </Box>
-        </StyledPaper>
-      </Container>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Fade in={true} timeout={800}>
-        <Box>
-          {/* Breadcrumbs */}
-          <Breadcrumbs 
-            separator={<NavigateNext fontSize="small" />} 
-            sx={{ mb: 3 }}
-            aria-label="breadcrumb"
-          >
-            <Link 
-              underline="hover" 
-              color="inherit" 
-              onClick={() => navigate('/traveler')}
-              sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-            >
-              <DirectionsBus sx={{ mr: 0.5 }} fontSize="small" />
-              Dashboard
-            </Link>
-            <Typography color="text.primary" sx={{ display: 'flex', alignItems: 'center' }}>
-              Edit Bus
-            </Typography>
-          </Breadcrumbs>
+    <div className="max-w-4xl mx-auto">
+      <div className="mb-8">
+        <button
+          onClick={() => navigate('/traveler/buses')}
+          className="flex items-center text-gray-400 hover:text-white mb-4 transition-colors text-sm"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Buses
+        </button>
+        <h2 className="text-3xl font-bold text-white">Edit <span className="text-primary">Bus</span></h2>
+        <p className="text-gray-500 mt-2">Update vehicle information and settings.</p>
+      </div>
 
-          {/* Header Card */}
-          <HeaderCard elevation={0}>
-            <CardContent sx={{ py: 4 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <IconButton 
-                  onClick={() => navigate('/traveler')}
-                  sx={{ 
-                    color: 'white',
-                    bgcolor: 'rgba(255,255,255,0.2)',
-                    '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' }
-                  }}
-                >
-                  <ArrowBack />
-                </IconButton>
-                <Box sx={{ flex: 1 }}>
-                  <Typography variant="h4" fontWeight="700" gutterBottom>
-                    Edit Bus Details
-                  </Typography>
-                  <Typography variant="body1" sx={{ opacity: 0.95 }}>
-                    Update your bus information and amenities
-                  </Typography>
-                </Box>
-                <DirectionsBus sx={{ fontSize: 80, opacity: 0.3 }} />
-              </Box>
-            </CardContent>
-          </HeaderCard>
+      <form onSubmit={handleSubmit} className="bg-[#12121c] rounded-2xl p-8 border border-white/5 shadow-2xl">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-          {/* Form */}
-          <StyledPaper>
-            <form onSubmit={handleSubmit}>
-              <Grid container spacing={4}>
-                {/* Bus Number - Disabled */}
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Bus Number"
-                    name="bus_number"
-                    value={formData.bus_number}
-                    disabled
-                    variant="outlined"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <DirectionsBus color="action" />
-                        </InputAdornment>
-                      ),
-                    }}
-                    helperText="Bus number cannot be changed"
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                        bgcolor: '#f5f5f5',
-                      }
-                    }}
-                  />
-                </Grid>
+          {/* Section 1: Bus Details */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2 border-b border-white/5 pb-3">
+              <Bus className="w-5 h-5 text-primary" /> Vehicle Information
+            </h3>
 
-                {/* Bus Type */}
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth variant="outlined">
-                    <InputLabel>Bus Type *</InputLabel>
-                    <Select
-                      name="bus_type"
-                      value={formData.bus_type}
-                      onChange={handleChange}
-                      label="Bus Type *"
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1.5">Bus Number</label>
+                <input
+                  type="text"
+                  name="bus_number"
+                  required
+                  value={formData.bus_number}
+                  onChange={handleChange}
+                  placeholder="e.g., KA-01-AB-1234"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary/50 outline-none transition"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5">Bus Type</label>
+                  <select
+                    name="bus_type"
+                    value={formData.bus_type}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:ring-1 focus:ring-primary/50 outline-none transition appearance-none"
+                  >
+                    {busTypes.map(type => (
+                      <option key={type} value={type} className="bg-[#12121c]">{type}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5">Total Seats</label>
+                  <div className="relative">
+                    <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <input
+                      type="number"
+                      name="total_seats"
                       required
-                      sx={{ borderRadius: 2 }}
-                    >
-                      {busTypes.map(type => (
-                        <MenuItem key={type.value} value={type.value}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <span>{type.icon}</span>
-                            <span>{type.label}</span>
-                          </Box>
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
+                      min="10"
+                      max="60"
+                      value={formData.total_seats}
+                      onChange={handleChange}
+                      className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary/50 outline-none transition"
+                    />
+                  </div>
+                </div>
+              </div>
 
-                {/* From Location */}
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="From Location"
-                    name="from_location"
-                    value={formData.from_location}
-                    onChange={handleChange}
-                    required
-                    variant="outlined"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LocationOn color="primary" />
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                  />
-                </Grid>
-
-                {/* To Location */}
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="To Location"
-                    name="to_location"
-                    value={formData.to_location}
-                    onChange={handleChange}
-                    required
-                    variant="outlined"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LocationOn color="error" />
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                  />
-                </Grid>
-
-                {/* Departure Time */}
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Departure Time"
-                    name="departure_time"
-                    type="time"
-                    value={formData.departure_time}
-                    onChange={handleChange}
-                    required
-                    variant="outlined"
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Schedule color="action" />
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                  />
-                </Grid>
-
-                {/* Arrival Time */}
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Arrival Time"
-                    name="arrival_time"
-                    type="time"
-                    value={formData.arrival_time}
-                    onChange={handleChange}
-                    required
-                    variant="outlined"
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Schedule color="action" />
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                  />
-                </Grid>
-
-                {/* Total Seats */}
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Total Seats"
-                    name="total_seats"
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1.5">Default Fare (₹)</label>
+                <div className="relative">
+                  <IndianRupee className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <input
                     type="number"
-                    value={formData.total_seats}
-                    onChange={handleChange}
-                    required
-                    inputProps={{ min: 1, max: 100 }}
-                    variant="outlined"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <EventSeat color="action" />
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                  />
-                </Grid>
-
-                {/* Fare */}
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Fare per Seat"
                     name="fare"
-                    type="number"
+                    required
+                    min="1"
                     value={formData.fare}
                     onChange={handleChange}
-                    required
-                    inputProps={{ min: 1, step: 0.01 }}
-                    variant="outlined"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <AttachMoney color="success" />
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                    className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary/50 outline-none transition"
                   />
-                </Grid>
+                </div>
+              </div>
+            </div>
+          </div>
 
-                {/* Amenities Section */}
-                <Grid item xs={12}>
-                  <Divider sx={{ my: 2 }} />
-                  <Typography variant="h6" fontWeight="600" gutterBottom sx={{ mb: 3 }}>
-                    🎯 Bus Amenities
-                  </Typography>
-                  <Paper 
-                    elevation={0} 
-                    sx={{ 
-                      p: 3, 
-                      bgcolor: '#f8f9fa',
-                      borderRadius: 2,
-                      border: '2px dashed #e0e0e0'
-                    }}
-                  >
-                    <FormGroup>
-                      <Grid container spacing={2}>
-                        {amenityOptions.map(amenity => (
-                          <Grid item xs={12} sm={6} md={4} key={amenity.name}>
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={formData.amenities?.includes(amenity.name)}
-                                  onChange={() => handleAmenityToggle(amenity.name)}
-                                  sx={{
-                                    color: '#667eea',
-                                    '&.Mui-checked': {
-                                      color: '#667eea',
-                                    },
-                                  }}
-                                />
-                              }
-                              label={
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  {amenity.icon}
-                                  <Typography variant="body2" fontWeight="500">
-                                    {amenity.name}
-                                  </Typography>
-                                </Box>
-                              }
-                              sx={{
-                                border: '1px solid #e0e0e0',
-                                borderRadius: 2,
-                                px: 2,
-                                py: 1,
-                                m: 0,
-                                bgcolor: 'white',
-                                transition: 'all 0.2s',
-                                '&:hover': {
-                                  bgcolor: '#f5f5f5',
-                                  transform: 'translateY(-2px)',
-                                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                                }
-                              }}
-                            />
-                          </Grid>
-                        ))}
-                      </Grid>
-                    </FormGroup>
-                  </Paper>
+          {/* Section 2: Route & Amenities */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2 border-b border-white/5 pb-3">
+              <MapPin className="w-5 h-5 text-primary" /> Route & Amenities
+            </h3>
 
-                  {/* Selected Amenities Preview */}
-                  {formData.amenities && formData.amenities.length > 0 && (
-                    <Box sx={{ mt: 3 }}>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Selected Amenities:
-                      </Typography>
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-                        {formData.amenities.map(amenity => (
-                          <AmenityChip
-                            key={amenity}
-                            label={amenity}
-                            color="primary"
-                            variant="outlined"
-                            onDelete={() => handleAmenityToggle(amenity)}
-                          />
-                        ))}
-                      </Box>
-                    </Box>
-                  )}
-                </Grid>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5">From Location</label>
+                  <input
+                    type="text"
+                    name="from_location"
+                    required
+                    value={formData.from_location}
+                    onChange={handleChange}
+                    placeholder="Source City"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary/50 outline-none transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5">To Location</label>
+                  <input
+                    type="text"
+                    name="to_location"
+                    required
+                    value={formData.to_location}
+                    onChange={handleChange}
+                    placeholder="Destination City"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary/50 outline-none transition"
+                  />
+                </div>
+              </div>
 
-                {/* Action Buttons */}
-                <Grid item xs={12}>
-                  <Divider sx={{ my: 2 }} />
-                  <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', pt: 2 }}>
-                    <StyledButton
-                      variant="outlined"
-                      size="large"
-                      startIcon={<Cancel />}
-                      onClick={() => navigate('/traveler')}
-                      sx={{
-                        borderColor: '#e0e0e0',
-                        color: 'text.secondary',
-                        '&:hover': {
-                          borderColor: '#bdbdbd',
-                          bgcolor: '#f5f5f5',
-                        }
-                      }}
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-3">Amenities</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {amenitiesList.map((amenity) => (
+                    <div
+                      key={amenity.id}
+                      onClick={() => handleAmenityToggle(amenity.id)}
+                      className={`cursor-pointer flex items-center gap-3 p-3 rounded-xl border transition-all ${formData.amenities.includes(amenity.id)
+                          ? 'bg-primary/10 border-primary text-primary'
+                          : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                        }`}
                     >
-                      Cancel
-                    </StyledButton>
-                    <StyledButton
-                      type="submit"
-                      variant="contained"
-                      size="large"
-                      disabled={submitting}
-                      startIcon={submitting ? <CircularProgress size={20} color="inherit" /> : <Save />}
-                      sx={{
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        '&:hover': {
-                          background: 'linear-gradient(135deg, #5568d3 0%, #65408b 100%)',
-                        }
-                      }}
-                    >
-                      {submitting ? 'Updating...' : 'Update Bus'}
-                    </StyledButton>
-                  </Box>
-                </Grid>
-              </Grid>
-            </form>
-          </StyledPaper>
+                      <amenity.icon className={`w-4 h-4 ${formData.amenities.includes(amenity.id) ? 'text-primary' : 'text-gray-500'}`} />
+                      <span className="text-sm font-medium">{amenity.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-          {/* Info Alert */}
-          <Alert 
-            severity="info" 
-            sx={{ 
-              mt: 3, 
-              borderRadius: 2,
-              '& .MuiAlert-icon': {
-                fontSize: 28
-              }
-            }}
+        {/* Form Actions */}
+        <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-end gap-4">
+          <button
+            type="button"
+            onClick={() => navigate('/traveler/buses')}
+            className="px-6 py-3 rounded-xl text-gray-400 font-medium hover:text-white hover:bg-white/5 transition"
           >
-            <Typography variant="body2">
-              <strong>Note:</strong> All changes will be reflected immediately after updating. 
-              Make sure to verify all details before saving.
-            </Typography>
-          </Alert>
-        </Box>
-      </Fade>
-    </Container>
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="px-8 py-3 bg-gradient-to-r from-primary to-orange-600 rounded-xl text-white font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] transition-all disabled:opacity-70 disabled:hover:scale-100 flex items-center gap-2"
+          >
+            {saving ? (
+              <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <>
+                <Save className="w-4 h-4" /> Update Bus
+              </>
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 

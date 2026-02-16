@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Search, MapPin, Calendar, ArrowRightLeft, Bus, 
-  Clock, Wifi, Coffee, BatteryCharging, ArrowRight, 
+  Search, MapPin, Calendar, ArrowRightLeft, Bus,
+  Clock, Wifi, Coffee, BatteryCharging, ArrowRight,
   Filter, Star, Info, ChevronRight, ShieldCheck, Zap,
   TrendingUp, Award, Users
 } from 'lucide-react';
@@ -40,78 +40,78 @@ const BusSearch = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen animate-in fade-in duration-500">
       {/* Header Section */}
-      <header className="p-8 pb-6 border-b border-border/50">
+      <header className="p-8 pb-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }} 
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-linear-to-r from-teal-500/10 to-emerald-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400 text-xs font-bold uppercase tracking-wider mb-3"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-linear-to-r from-primary/10 to-orange-500/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-wider mb-3"
             >
-              <ShieldCheck className="w-4 h-4" /> 
+              <ShieldCheck className="w-4 h-4" />
               Verified & Secure
             </motion.div>
             <h1 className="text-3xl md:text-4xl font-black tracking-tight">
-              Find Your <span className="text-transparent bg-clip-text bg-linear-to-r from-teal-500 to-emerald-500">Perfect Ride</span>
+              Find Your <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-orange-500">Perfect Ride</span>
             </h1>
             <p className="text-muted-foreground mt-2">Search from 5,000+ routes across India</p>
           </div>
         </div>
       </header>
 
-      <div className="p-8">
+      <div className="p-8 pt-0">
         {/* Modern Search Bar */}
-        <motion.div 
+        <motion.div
           layout
-          className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-3xl p-4 shadow-2xl border border-border/50 ring-1 ring-black/5 dark:ring-white/10 mb-12"
+          className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-3xl p-4 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 mb-12"
         >
           <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
             <div className="md:col-span-3 relative group">
-              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-teal-500 transition-colors" />
+              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors" />
               <input
-                className="w-full pl-12 pr-4 py-4 bg-muted/30 rounded-2xl border border-transparent focus:border-teal-500/20 focus:ring-2 focus:ring-teal-500/20 focus:bg-background transition-all text-foreground placeholder:text-muted-foreground font-medium outline-none"
+                className="w-full pl-12 pr-4 py-4 bg-muted/30 rounded-2xl border border-transparent focus:border-primary/20 focus:ring-2 focus:ring-primary/20 focus:bg-background transition-all text-foreground placeholder:text-muted-foreground font-medium outline-none"
                 placeholder="From City"
                 value={searchParams.from}
-                onChange={e => setSearchParams({...searchParams, from: e.target.value})}
+                onChange={e => setSearchParams({ ...searchParams, from: e.target.value })}
               />
             </div>
 
             <div className="md:col-span-1 flex justify-center">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={swapLocations}
-                className="p-3.5 bg-muted hover:bg-linear-to-r hover:from-teal-500 hover:to-emerald-500 hover:text-white rounded-2xl transition-all transform hover:rotate-180 duration-500 group"
+                className="p-3.5 bg-muted hover:bg-primary hover:text-white rounded-2xl transition-all transform hover:rotate-180 duration-500 group"
               >
                 <ArrowRightLeft className="w-5 h-5" />
               </button>
             </div>
 
             <div className="md:col-span-3 relative group">
-              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors" />
               <input
-                className="w-full pl-12 pr-4 py-4 bg-muted/30 rounded-2xl border border-transparent focus:border-emerald-500/20 focus:ring-2 focus:ring-emerald-500/20 focus:bg-background transition-all text-foreground placeholder:text-muted-foreground font-medium outline-none"
+                className="w-full pl-12 pr-4 py-4 bg-muted/30 rounded-2xl border border-transparent focus:border-primary/20 focus:ring-2 focus:ring-primary/20 focus:bg-background transition-all text-foreground placeholder:text-muted-foreground font-medium outline-none"
                 placeholder="To City"
                 value={searchParams.to}
-                onChange={e => setSearchParams({...searchParams, to: e.target.value})}
+                onChange={e => setSearchParams({ ...searchParams, to: e.target.value })}
               />
             </div>
 
             <div className="md:col-span-3 relative group">
-              <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-teal-500 transition-colors" />
+              <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors" />
               <input
                 type="date"
                 min={today}
-                className="w-full pl-12 pr-4 py-4 bg-muted/30 rounded-2xl border border-transparent focus:border-teal-500/20 focus:ring-2 focus:ring-teal-500/20 focus:bg-background transition-all text-foreground font-medium cursor-pointer outline-none"
+                className="w-full pl-12 pr-4 py-4 bg-muted/30 rounded-2xl border border-transparent focus:border-primary/20 focus:ring-2 focus:ring-primary/20 focus:bg-background transition-all text-foreground font-medium cursor-pointer outline-none"
                 value={searchParams.date}
-                onChange={e => setSearchParams({...searchParams, date: e.target.value})}
+                onChange={e => setSearchParams({ ...searchParams, date: e.target.value })}
               />
             </div>
 
             <div className="md:col-span-2">
-              <button 
-                className="w-full h-full py-4 bg-linear-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white rounded-2xl font-bold shadow-xl shadow-teal-500/30 hover:shadow-teal-500/50 transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+              <button
+                className="w-full h-full py-4 bg-primary hover:bg-primary/90 text-white rounded-2xl font-bold shadow-xl shadow-primary/30 hover:shadow-primary/50 transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={loading}
               >
                 {loading ? (
@@ -194,7 +194,7 @@ const BusSearch = () => {
             {loading ? (
               <div key="loading" className="space-y-4">
                 {[1, 2, 3].map(i => (
-                  <div key={i} className="h-56 bg-muted/30 animate-pulse rounded-3xl border border-border/50" />
+                  <div key={i} className="h-56 bg-muted/30 animate-pulse rounded-3xl" />
                 ))}
               </div>
             ) : buses.length > 0 ? (
@@ -211,9 +211,9 @@ const BusSearch = () => {
       </div>
 
       {showSeatSelection && selectedBus && (
-        <SeatSelection 
-          bus={selectedBus} 
-          onClose={() => setShowSeatSelection(false)} 
+        <SeatSelection
+          bus={selectedBus}
+          onClose={() => setShowSeatSelection(false)}
           onBookingComplete={() => { /* logic */ }}
         />
       )}
@@ -226,13 +226,13 @@ const BusCard = ({ bus, idx, onSelect }) => (
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay: idx * 0.1 }}
-    className="group bg-card border border-border/50 rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:border-primary/30"
+    className="group bg-card rounded-3xl overflow-hidden shadow-lg ring-1 ring-black/5 dark:ring-white/10 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 transition-all duration-500"
   >
     <div className="p-6 md:p-8 flex flex-col lg:flex-row items-center gap-6">
       {/* Operator Brand */}
       <div className="flex flex-row lg:flex-col items-center gap-4 w-full lg:w-48 text-center lg:text-left">
-        <div className="w-16 h-16 bg-linear-to-br from-teal-500/10 to-emerald-500/10 rounded-2xl flex items-center justify-center group-hover:from-teal-500 group-hover:to-emerald-500 transition-all duration-500 border border-teal-500/20">
-          <Bus className="w-8 h-8 text-teal-600 dark:text-teal-400 group-hover:text-white transition-colors" />
+        <div className="w-16 h-16 bg-linear-to-br from-primary/10 to-orange-500/10 rounded-2xl flex items-center justify-center group-hover:from-primary group-hover:to-orange-500 transition-all duration-500 border border-primary/20">
+          <Bus className="w-8 h-8 text-primary group-hover:text-white transition-colors" />
         </div>
         <div>
           <h3 className="font-black text-foreground text-lg leading-tight truncate">{bus.company_name}</h3>
@@ -252,14 +252,14 @@ const BusCard = ({ bus, idx, onSelect }) => (
             {formatDuration(bus.departure_time, bus.arrival_time)}
           </span>
           <div className="w-full flex items-center gap-1">
-            <div className="h-[3px] flex-1 bg-linear-to-r from-transparent via-teal-200 dark:via-teal-800 to-teal-500/50 rounded-full" />
+            <div className="h-[3px] flex-1 bg-linear-to-r from-transparent via-primary/30 to-primary/50 rounded-full" />
             <div className="relative">
-              <Bus className="w-5 h-5 text-teal-500" />
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+              <Bus className="w-5 h-5 text-primary" />
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             </div>
-            <div className="h-[3px] flex-1 bg-linear-to-l from-transparent via-emerald-200 dark:via-emerald-800 to-emerald-500/50 rounded-full" />
+            <div className="h-[3px] flex-1 bg-linear-to-l from-transparent via-orange-500/30 to-orange-500/50 rounded-full" />
           </div>
-          <span className="text-[10px] font-bold text-teal-600 dark:text-teal-400 mt-2 uppercase tracking-tighter px-2 py-1 bg-teal-50 dark:bg-teal-950/30 rounded-full">
+          <span className="text-[10px] font-bold text-primary mt-2 uppercase tracking-tighter px-2 py-1 bg-primary/10 rounded-full">
             Direct
           </span>
         </div>
@@ -278,15 +278,15 @@ const BusCard = ({ bus, idx, onSelect }) => (
             <span className="text-sm font-bold text-foreground">4.8</span>
             <span className="text-xs text-muted-foreground">(2.5k)</span>
           </div>
-          <p className="text-3xl font-black text-transparent bg-clip-text bg-linear-to-r from-teal-600 to-emerald-600 leading-none">
+          <p className="text-3xl font-black text-transparent bg-clip-text bg-linear-to-r from-primary to-orange-500 leading-none">
             {formatCurrency(bus.fare)}
           </p>
           <p className="text-[10px] font-bold text-muted-foreground uppercase mt-2">Per Seat</p>
         </div>
 
-        <button 
+        <button
           onClick={onSelect}
-          className="px-8 py-4 bg-foreground hover:bg-linear-to-r hover:from-teal-600 hover:to-emerald-600 text-background hover:text-white rounded-2xl font-black text-sm transition-all transform active:scale-95 flex items-center gap-2 shadow-xl group"
+          className="px-8 py-4 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black text-sm transition-all transform active:scale-95 flex items-center gap-2 shadow-xl shadow-primary/25 group"
         >
           Book Now
           <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -321,14 +321,15 @@ const BusCard = ({ bus, idx, onSelect }) => (
 );
 
 const NoResults = () => (
-  <motion.div 
-    initial={{ opacity: 0 }} 
+  <motion.div
+    initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     className="flex flex-col items-center justify-center py-20 text-center"
   >
     <div className="w-32 h-32 bg-muted rounded-full flex items-center justify-center mb-6 relative">
       <Bus className="w-16 h-16 text-muted-foreground/30" />
-      <div className="absolute inset-0 rounded-full border-4 border-dashed border-muted-foreground/10" />
+      <div className="absolute inset-0 rounded-full border-4 border-dashed border-primary/15" />
+      <div className="absolute -inset-2 rounded-full bg-linear-to-br from-primary/5 to-orange-500/5 blur-xl" />
     </div>
     <h3 className="text-2xl font-black text-foreground mb-2">No buses available</h3>
     <p className="text-muted-foreground max-w-md">

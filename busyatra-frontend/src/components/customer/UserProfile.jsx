@@ -3,9 +3,10 @@ import { motion } from 'framer-motion';
 import {
   Person, Email, Phone, CalendarMonth,
   Edit, Save, Close, DirectionsBus,
-  Verified, TrendingUp, Award, LocalOffer,
+  Verified, TrendingUp, LocalOffer,
   CheckCircle
 } from '@mui/icons-material';
+import { Award } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import authService from '../../services/authService';
 import toast from 'react-hot-toast';
@@ -14,10 +15,10 @@ import { cn } from '../../utils/cn';
 const formatDate = (dateString) => {
   if (!dateString) return 'Not set';
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   });
 };
 
@@ -65,18 +66,18 @@ const UserProfile = () => {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative mb-8 p-8 rounded-3xl overflow-hidden bg-linear-to-r from-purple-500 via-pink-500 to-rose-500"
+        className="relative mb-8 p-8 rounded-3xl overflow-hidden bg-linear-to-r from-primary via-orange-500 to-amber-500"
       >
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
-        
+
         <div className="relative z-10 flex items-center gap-6 flex-wrap">
           <motion.div
             whileHover={{ scale: 1.05, rotate: 5 }}
-            className="w-24 h-24 rounded-3xl bg-white shadow-2xl shadow-black/20 flex items-center justify-center text-3xl font-black text-purple-600"
+            className="w-24 h-24 rounded-3xl bg-white shadow-2xl shadow-black/20 flex items-center justify-center text-3xl font-black text-primary"
           >
             {getInitials(user?.full_name)}
           </motion.div>
-          
+
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-2 flex-wrap">
               <h1 className="text-3xl md:text-4xl font-black text-white truncate">
@@ -105,7 +106,7 @@ const UserProfile = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setEditing(true)}
-              className="p-4 rounded-2xl bg-white hover:bg-white/90 text-purple-600 shadow-xl transition-colors"
+              className="p-4 rounded-2xl bg-white hover:bg-white/90 text-primary shadow-xl transition-colors"
             >
               <Edit />
             </motion.button>
@@ -122,7 +123,7 @@ const UserProfile = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-card border border-border/50 rounded-3xl overflow-hidden shadow-xl mb-8"
+        className="bg-card rounded-3xl overflow-hidden shadow-xl ring-1 ring-black/5 dark:ring-white/10 mb-8"
       >
         <div className="p-6 border-b border-border/50 flex items-center justify-between">
           <div>
@@ -147,7 +148,7 @@ const UserProfile = () => {
               <div className="relative group">
                 <Person className={cn(
                   "absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors",
-                  editing ? "text-purple-500" : "text-muted-foreground"
+                  editing ? "text-primary" : "text-muted-foreground"
                 )} />
                 <input
                   type="text"
@@ -157,7 +158,7 @@ const UserProfile = () => {
                   className={cn(
                     "w-full pl-12 pr-4 py-4 rounded-2xl border-2 font-medium transition-all outline-none",
                     editing
-                      ? "bg-background border-purple-500/20 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10"
+                      ? "bg-background border-primary/20 focus:border-primary focus:ring-4 focus:ring-primary/10"
                       : "bg-muted border-transparent cursor-not-allowed"
                   )}
                 />
@@ -192,7 +193,7 @@ const UserProfile = () => {
               <div className="relative group">
                 <Phone className={cn(
                   "absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors",
-                  editing ? "text-purple-500" : "text-muted-foreground"
+                  editing ? "text-primary" : "text-muted-foreground"
                 )} />
                 <input
                   type="tel"
@@ -206,7 +207,7 @@ const UserProfile = () => {
                   className={cn(
                     "w-full pl-12 pr-4 py-4 rounded-2xl border-2 font-medium transition-all outline-none",
                     editing
-                      ? "bg-background border-purple-500/20 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10"
+                      ? "bg-background border-primary/20 focus:border-primary focus:ring-4 focus:ring-primary/10"
                       : "bg-muted border-transparent cursor-not-allowed"
                   )}
                 />
@@ -239,7 +240,7 @@ const UserProfile = () => {
             >
               <button
                 type="submit"
-                className="flex-1 py-4 px-6 rounded-2xl bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold shadow-xl shadow-purple-500/25 transition-all flex items-center justify-center gap-2 group"
+                className="flex-1 py-4 px-6 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold shadow-xl shadow-primary/25 transition-all flex items-center justify-center gap-2 group"
               >
                 <Save className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 Save Changes
@@ -263,7 +264,7 @@ const UserProfile = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="p-6 rounded-3xl bg-linear-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/20 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-500 group"
+          className="p-6 rounded-3xl bg-linear-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/20 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 hover:scale-[1.02] transition-all duration-500 group cursor-default"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -279,7 +280,7 @@ const UserProfile = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="p-6 rounded-3xl bg-linear-to-br from-emerald-500/10 to-emerald-600/10 border border-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-500 group"
+          className="p-6 rounded-3xl bg-linear-to-br from-emerald-500/10 to-emerald-600/10 border border-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1 hover:scale-[1.02] transition-all duration-500 group cursor-default"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -295,7 +296,7 @@ const UserProfile = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="p-6 rounded-3xl bg-linear-to-br from-amber-500/10 to-amber-600/10 border border-amber-500/20 hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-500 group"
+          className="p-6 rounded-3xl bg-linear-to-br from-amber-500/10 to-amber-600/10 border border-amber-500/20 hover:shadow-xl hover:shadow-amber-500/10 hover:-translate-y-1 hover:scale-[1.02] transition-all duration-500 group cursor-default"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="w-14 h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -313,10 +314,10 @@ const UserProfile = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="mt-8 p-8 rounded-3xl bg-linear-to-r from-violet-500 via-purple-500 to-fuchsia-500 relative overflow-hidden"
+        className="mt-8 p-8 rounded-3xl bg-linear-to-r from-primary via-orange-500 to-amber-500 relative overflow-hidden"
       >
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
-        
+
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
@@ -327,12 +328,16 @@ const UserProfile = () => {
               <p className="text-white/80 text-sm">Unlock exclusive perks as you travel</p>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
             {['10% Cashback', 'Free Cancellation', 'Priority Boarding', 'Lounge Access'].map((benefit, i) => (
-              <div key={i} className="p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-center">
+              <motion.div
+                key={i}
+                whileHover={{ scale: 1.05, y: -2 }}
+                className="p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-center hover:bg-white/15 hover:shadow-lg hover:shadow-white/5 transition-colors cursor-default"
+              >
                 <p className="text-white font-bold text-sm">{benefit}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>

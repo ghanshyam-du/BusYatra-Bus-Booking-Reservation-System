@@ -41,7 +41,7 @@ const Navbar = () => {
                     className={cn(
                         "fixed z-50 left-1/2 -translate-x-1/2 transition-all duration-300 top-5",
                         isScrolled
-                            ? "bg-white/95 backdrop-blur-md shadow-lg shadow-teal-900/20"
+                            ? "bg-white/95 backdrop-blur-md shadow-lg shadow-primary/15"
                             : "bg-transparent border-b border-white/5"
                     )}
                 >
@@ -63,11 +63,11 @@ const Navbar = () => {
                                     to={item.link}
                                     className={cn(
                                         "text-sm font-medium transition-colors relative group",
-                                        isScrolled ? "text-black hover:text-teal-400" : "text-black hover:text-teal-600"
+                                        isScrolled ? "text-black hover:text-primary" : "text-black hover:text-primary"
                                     )}
                                 >
                                     {item.name}
-                                    <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-teal-400 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                                    <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-primary transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
                                 </Link>
                             ))}
                         </div>
@@ -92,7 +92,7 @@ const Navbar = () => {
                         <div className="md:hidden">
                             <button
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                                className={cn("p-2 transition-colors", isScrolled ? "text-black hover:text-white" : "text-black")}
+                                className={cn("p-2 transition-colors", isScrolled ? "text-black hover:text-primary" : "text-black")}
                             >
                                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                             </button>
@@ -115,7 +115,7 @@ const Navbar = () => {
                                                 key={idx}
                                                 to={item.link}
                                                 onClick={() => setIsMobileMenuOpen(false)}
-                                                className="text-lg font-medium text-gray-800 dark:text-gray-300 hover:text-teal-400 transition-colors"
+                                                className="text-lg font-medium text-gray-800 dark:text-gray-300 hover:text-primary transition-colors"
                                             >
                                                 {item.name}
                                             </Link>
@@ -161,11 +161,11 @@ const NavbarButton = ({ children, onClick, variant = "primary", className }) => 
             className={cn(
                 "px-5 py-2 rounded-full text-sm font-bold transition-all transform active:scale-95",
                 variant === "primary"
-                    ? "bg-linear-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-500 hover:to-emerald-500 shadow-lg shadow-teal-500/25"
+                    ? "bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/25"
                     : cn(
                         "border hover:bg-black/5 transition-colors",
                         isScrolled
-                            ? "text-black border-white/10 hover:bg-white/10 hover:text-orange-500"
+                            ? "text-black border-black/10 hover:bg-black/5 hover:text-primary"
                             : "text-black border-gray-200 dark:border-white/10 dark:hover:bg-white/10"
                     ),
                 className

@@ -149,7 +149,7 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-card rounded-3xl p-8 max-w-md w-full text-center border border-border shadow-2xl"
+          className="bg-card rounded-3xl p-8 max-w-md w-full text-center shadow-2xl ring-1 ring-black/5 dark:ring-white/10"
         >
           <div className="w-20 h-20 bg-red-50 dark:bg-red-950/30 rounded-full flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="w-10 h-10 text-red-600 dark:text-red-400" />
@@ -157,15 +157,15 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
           <h3 className="text-2xl font-black mb-2">Unable to Load Seats</h3>
           <p className="text-muted-foreground mb-6">{error}</p>
           <div className="flex gap-3 justify-center">
-            <button 
-              onClick={onClose} 
+            <button
+              onClick={onClose}
               className="px-6 py-3 rounded-2xl bg-muted hover:bg-muted/80 font-bold transition-colors"
             >
               Close
             </button>
-            <button 
-              onClick={fetchSeats} 
-              className="px-6 py-3 rounded-2xl bg-linear-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold transition-all"
+            <button
+              onClick={fetchSeats}
+              className="px-6 py-3 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold transition-all shadow-lg shadow-primary/25"
             >
               Retry
             </button>
@@ -189,12 +189,12 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="relative w-full max-w-7xl max-h-[90vh] bg-card rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-border"
+        className="relative w-full max-w-7xl max-h-[90vh] bg-card rounded-3xl shadow-2xl overflow-hidden flex flex-col ring-1 ring-black/5 dark:ring-white/10"
       >
         {/* Header */}
         <div className="relative bg-linear-to-r from-slate-900 via-gray-900 to-slate-800 p-8 shrink-0">
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="absolute top-6 right-6 p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition-colors z-10"
           >
             <X className="w-6 h-6" />
@@ -203,7 +203,7 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
           <div className="flex flex-col lg:flex-row gap-6 relative z-10">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-teal-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-teal-500/25">
+                <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-primary to-orange-500 flex items-center justify-center shadow-lg shadow-primary/25">
                   <Bus className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -217,13 +217,13 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
 
               <div className="flex flex-wrap gap-3">
                 <div className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-2xl text-white/90 text-sm backdrop-blur-md border border-white/10">
-                  <MapPin className="w-4 h-4 text-teal-400" />
+                  <MapPin className="w-4 h-4 text-primary" />
                   <span className="font-medium">{bus?.from_location}</span>
                   <ArrowRight className="w-3 h-3 text-white/40" />
                   <span className="font-medium">{bus?.to_location}</span>
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-2xl text-white/90 text-sm backdrop-blur-md border border-white/10">
-                  <Calendar className="w-4 h-4 text-emerald-400" />
+                  <Calendar className="w-4 h-4 text-orange-400" />
                   <span className="font-medium">{bus?.journey_date ? formatDate(bus.journey_date) : 'N/A'}</span>
                 </div>
               </div>
@@ -231,15 +231,15 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
 
             <div className="lg:text-right">
               <p className="text-white/60 text-sm mb-2 font-medium">Price per seat</p>
-              <div className="text-5xl font-black text-transparent bg-clip-text bg-linear-to-r from-teal-400 to-emerald-400">
+              <div className="text-5xl font-black text-transparent bg-clip-text bg-linear-to-r from-primary to-orange-400">
                 {formatCurrency(bus?.fare || 0)}
               </div>
             </div>
           </div>
 
           {/* Decorative Elements */}
-          <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-teal-500/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-orange-500/20 rounded-full blur-3xl pointer-events-none" />
         </div>
 
         {/* Content */}
@@ -248,20 +248,25 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
           <div className="flex-1 overflow-y-auto p-8 bg-muted/30 border-b lg:border-b-0 lg:border-r border-border/50">
             <div className="max-w-md mx-auto">
               {/* Legend */}
-              <div className="flex flex-wrap justify-center gap-4 mb-8 p-4 rounded-2xl bg-card border border-border/50">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="flex flex-wrap justify-center gap-4 mb-8 p-4 rounded-2xl bg-card ring-1 ring-black/5 dark:ring-white/10"
+              >
                 <div className="flex items-center gap-2 text-sm font-medium">
-                  <div className="w-6 h-6 rounded-lg border-2 border-emerald-500 bg-background" />
+                  <div className="w-6 h-6 rounded-lg border-2 border-primary bg-background animate-pulse" />
                   <span>Available</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm font-medium">
-                  <div className="w-6 h-6 rounded-lg bg-linear-to-br from-teal-500 to-emerald-500 shadow-lg shadow-teal-500/30" />
+                  <div className="w-6 h-6 rounded-lg bg-linear-to-br from-primary to-orange-500 shadow-lg shadow-primary/30" />
                   <span>Selected</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <div className="w-6 h-6 rounded-lg bg-muted" />
                   <span>Booked</span>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Driver */}
               <div className="flex justify-end mb-8 pr-4">
@@ -295,8 +300,8 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
                           isBooked
                             ? "bg-muted text-muted-foreground cursor-not-allowed"
                             : isSelected
-                              ? "bg-linear-to-br from-teal-500 to-emerald-500 text-white shadow-lg shadow-teal-500/30"
-                              : "bg-background border-2 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                              ? "bg-linear-to-br from-primary to-orange-500 text-white shadow-lg shadow-primary/30"
+                              : "bg-background border-2 border-primary/30 text-primary hover:border-primary hover:bg-primary/5"
                         )}
                       >
                         <Armchair className={cn(
@@ -324,20 +329,20 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-8 p-4 rounded-2xl bg-linear-to-br from-teal-500/10 to-emerald-500/10 border border-teal-500/20"
+                  className="mt-8 p-4 rounded-2xl bg-linear-to-br from-primary/10 to-orange-500/10 border border-primary/20"
                 >
                   <div className="flex flex-wrap items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-teal-600 dark:text-teal-400" />
-                    <span className="font-bold text-teal-600 dark:text-teal-400">Selected Seats:</span>
+                    <Sparkles className="w-5 h-5 text-primary" />
+                    <span className="font-bold text-primary">Selected Seats:</span>
                     {selectedSeats.map((seat) => (
                       <div
                         key={seat.seat_id}
-                        className="flex items-center gap-1 bg-teal-500/20 text-teal-700 dark:text-teal-300 text-xs font-bold px-3 py-1.5 rounded-full border border-teal-500/30"
+                        className="flex items-center gap-1 bg-primary/20 text-primary text-xs font-bold px-3 py-1.5 rounded-full border border-primary/30"
                       >
                         <span>{seat.seat_number}</span>
-                        <button 
-                          onClick={() => toggleSeat(seat)} 
-                          className="hover:text-teal-900 dark:hover:text-teal-100"
+                        <button
+                          onClick={() => toggleSeat(seat)}
+                          className="hover:text-foreground"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -361,10 +366,13 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
 
               {selectedSeats.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-border rounded-3xl">
-                  <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
+                  <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4 relative">
                     <Armchair className="w-10 h-10 text-muted-foreground/30" />
+                    <div className="absolute inset-0 rounded-full border-4 border-dashed border-primary/15 animate-spin" style={{ animationDuration: '8s' }} />
+                    <div className="absolute -inset-2 rounded-full bg-linear-to-br from-primary/5 to-orange-500/5 blur-xl" />
                   </div>
                   <p className="text-muted-foreground font-medium">Select seats to add passengers</p>
+                  <p className="text-muted-foreground/50 text-xs mt-1">Click on available seats on the left</p>
                 </div>
               ) : (
                 <div className="flex-1 space-y-4 mb-8">
@@ -375,14 +383,14 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
-                        className="bg-muted/30 rounded-2xl p-5 border border-border/50 hover:border-primary/30 transition-colors"
+                        className="bg-muted/30 rounded-2xl p-5 ring-1 ring-black/5 dark:ring-white/10 hover:ring-primary/30 transition-colors"
                       >
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-teal-500 to-emerald-500 flex items-center justify-center text-white font-bold shadow-lg shadow-teal-500/25">
+                            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-primary to-orange-500 flex items-center justify-center text-white font-bold shadow-lg shadow-primary/25">
                               {index + 1}
                             </div>
-                            <span className="text-sm font-bold bg-linear-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+                            <span className="text-sm font-bold bg-linear-to-r from-primary to-orange-500 bg-clip-text text-transparent">
                               Seat {seat.seat_number}
                             </span>
                           </div>
@@ -400,7 +408,7 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
                             placeholder="Full Name"
                             value={passengers[index]?.name || ''}
                             onChange={(e) => updatePassenger(index, 'name', e.target.value)}
-                            className="w-full bg-background border-2 border-border/50 focus:border-teal-500 rounded-xl px-4 py-3 text-sm font-medium focus:ring-4 focus:ring-teal-500/10 outline-none transition-all"
+                            className="w-full bg-background border-2 border-border/50 focus:border-primary rounded-xl px-4 py-3 text-sm font-medium focus:ring-4 focus:ring-primary/10 outline-none transition-all"
                           />
                           <div className="grid grid-cols-2 gap-3">
                             <input
@@ -408,13 +416,13 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
                               placeholder="Age"
                               value={passengers[index]?.age || ''}
                               onChange={(e) => updatePassenger(index, 'age', e.target.value)}
-                              className="w-full bg-background border-2 border-border/50 focus:border-teal-500 rounded-xl px-4 py-3 text-sm font-medium focus:ring-4 focus:ring-teal-500/10 outline-none transition-all"
+                              className="w-full bg-background border-2 border-border/50 focus:border-primary rounded-xl px-4 py-3 text-sm font-medium focus:ring-4 focus:ring-primary/10 outline-none transition-all"
                             />
                             <div className="relative">
                               <select
                                 value={passengers[index]?.gender || ''}
                                 onChange={(e) => updatePassenger(index, 'gender', e.target.value)}
-                                className="w-full bg-background border-2 border-border/50 focus:border-teal-500 rounded-xl px-4 py-3 text-sm font-medium focus:ring-4 focus:ring-teal-500/10 outline-none appearance-none transition-all"
+                                className="w-full bg-background border-2 border-border/50 focus:border-primary rounded-xl px-4 py-3 text-sm font-medium focus:ring-4 focus:ring-primary/10 outline-none appearance-none transition-all"
                               >
                                 <option value="">Gender</option>
                                 <option value="Male">Male</option>
@@ -437,23 +445,27 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
                   <div className="flex items-end justify-between mb-6">
                     <div>
                       <p className="text-muted-foreground text-sm mb-1">Total Amount</p>
-                      <h3 className="text-4xl font-black text-transparent bg-clip-text bg-linear-to-r from-teal-600 to-emerald-600">
+                      <h3 className="text-4xl font-black text-transparent bg-clip-text bg-linear-to-r from-primary to-orange-500">
                         {formatCurrency(totalAmount)}
                       </h3>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-bold text-teal-600 dark:text-teal-400">
+                      <p className="text-sm font-bold text-primary">
                         {selectedSeats.length} {selectedSeats.length === 1 ? 'Seat' : 'Seats'}
                       </p>
                       <p className="text-xs text-muted-foreground">Selected</p>
                     </div>
                   </div>
 
-                  <button
+                  <motion.button
                     onClick={handleBooking}
                     disabled={booking}
-                    className="w-full py-4 bg-linear-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-black rounded-2xl shadow-xl shadow-teal-500/25 hover:shadow-teal-500/40 transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed group"
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full py-4 bg-linear-to-r from-primary to-orange-500 hover:from-primary/90 hover:to-orange-500/90 text-white font-black rounded-2xl shadow-xl shadow-primary/25 hover:shadow-primary/40 transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed group relative overflow-hidden"
                   >
+                    {/* Shimmer effect */}
+                    <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                     {booking ? (
                       <>
                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -465,7 +477,7 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
                         <CheckCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
                       </>
                     )}
-                  </button>
+                  </motion.button>
                 </div>
               )}
             </div>

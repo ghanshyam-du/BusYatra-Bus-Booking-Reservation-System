@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Bus, Ticket, MessageSquare, BarChart3, LogOut, UserCheck } from 'lucide-react';
+import { LayoutDashboard, Users, Bus, Ticket, MessageSquare, BarChart3, LogOut, UserCheck, Menu, X, ChevronRight, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import DashboardStats from '../components/admin/DashboardStats';
 import TravelerManagement from '../components/admin/TravelerManagement';
@@ -10,11 +10,13 @@ import TicketManagement from '../components/admin/TicketManagement';
 import RevenueReports from '../components/admin/RevenueReports';
 import UserManagement from '../components/admin/UserManagement';
 import BusManagement from '../components/admin/BusManagement';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -26,127 +28,124 @@ const AdminDashboard = () => {
     return location.pathname.includes(path) && path !== '/admin';
   };
 
+  const navItems = [
+    { path: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
+    { path: '/admin/travelers', icon: UserCheck, label: 'Travelers' },
+    { path: '/admin/users', icon: Users, label: 'Users' },
+    { path: '/admin/buses', icon: Bus, label: 'Buses' },
+    { path: '/admin/tickets', icon: MessageSquare, label: 'Support Tickets' },
+    { path: '/admin/reports', icon: BarChart3, label: 'Reports' },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <nav className="bg-gradient-to-r from-purple-600 to-blue-600 shadow-lg sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+    <div className="min-h-screen bg-[#0a0a0f]">
+      {/* Top Navbar */}
+      <nav className="sticky top-0 z-30 bg-[#0f0f18]/80 backdrop-blur-xl border-b border-white/5">
+        <div className="max-w-[1600px] mx-auto px-4 lg:px-6 py-3">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                <LayoutDashboard className="w-6 h-6 text-purple-600" />
-              </div>
-              <div>
-                <span className="text-2xl font-bold text-white">BusYatra</span>
-                <span className="ml-2 text-sm text-purple-100">Admin Portal</span>
-              </div>
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="lg:hidden p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 transition"
+              >
+                {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
+              <Link to="/admin" className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-primary to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+                  <Shield className="w-5 h-5 text-white" />
+                </div>
+                <div className="hidden sm:block">
+                  <span className="text-xl font-bold text-white">BusYatra</span>
+                  <span className="ml-2 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">Admin</span>
+                </div>
+              </Link>
             </div>
-            <div className="flex items-center gap-6">
-              <span className="text-white font-medium">👑 {user?.full_name}</span>
+            <div className="flex items-center gap-4">
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-xl">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-orange-600 flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">{user?.full_name?.[0] || 'A'}</span>
+                </div>
+                <span className="text-sm font-medium text-gray-300">{user?.full_name}</span>
+              </div>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition"
+                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-red-500/10 hover:text-red-400 text-gray-400 rounded-xl transition-all duration-200 text-sm font-medium"
               >
-                <LogOut className="w-5 h-5" />
-                Logout
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Logout</span>
               </button>
             </div>
           </div>
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex gap-6">
-          {/* Sidebar */}
-          <div className="w-64 bg-white rounded-lg shadow-sm p-4 h-fit sticky top-24">
-            <nav className="space-y-2">
-              <Link
-                to="/admin"
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                  location.pathname === '/admin'
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <LayoutDashboard className="w-5 h-5" />
-                Dashboard
-              </Link>
+      <div className="max-w-[1600px] mx-auto flex">
+        {/* Sidebar Overlay (Mobile) */}
+        <AnimatePresence>
+          {sidebarOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 lg:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
+        </AnimatePresence>
 
-              <Link
-                to="/admin/travelers"
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                  isActive('/travelers')
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <UserCheck className="w-5 h-5" />
-                Travelers
-              </Link>
+        {/* Sidebar */}
+        <aside className={`
+          fixed lg:sticky top-16 lg:top-[61px] z-20 lg:z-10
+          w-[260px] h-[calc(100vh-64px)] lg:h-[calc(100vh-61px)]
+          bg-[#0f0f18]/95 lg:bg-[#0f0f18]/50 backdrop-blur-xl
+          border-r border-white/5
+          p-4 overflow-y-auto
+          transition-transform duration-300 lg:transition-none
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}>
+          <nav className="space-y-1">
+            {navItems.map((item) => {
+              const active = item.exact ? location.pathname === item.path : isActive(item.path.replace('/admin/', ''));
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${active
+                      ? 'bg-gradient-to-r from-primary/15 to-orange-600/10 text-primary shadow-sm'
+                      : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+                    }`}
+                >
+                  <item.icon className={`w-5 h-5 transition-colors ${active ? 'text-primary' : 'text-gray-600 group-hover:text-gray-400'}`} />
+                  <span className="font-medium text-sm">{item.label}</span>
+                  {active && <ChevronRight className="w-4 h-4 ml-auto text-primary/50" />}
+                </Link>
+              );
+            })}
+          </nav>
 
-              <Link
-                to="/admin/users"
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                  isActive('/users')
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <Users className="w-5 h-5" />
-                Users
-              </Link>
-
-              <Link
-                to="/admin/buses"
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                  isActive('/buses')
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <Bus className="w-5 h-5" />
-                Buses
-              </Link>
-
-              <Link
-                to="/admin/tickets"
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                  isActive('/tickets')
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <MessageSquare className="w-5 h-5" />
-                Support Tickets
-              </Link>
-
-              <Link
-                to="/admin/reports"
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                  isActive('/reports')
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <BarChart3 className="w-5 h-5" />
-                Reports
-              </Link>
-            </nav>
+          {/* Sidebar Footer */}
+          <div className="mt-8 p-4 rounded-xl bg-gradient-to-br from-primary/5 to-orange-600/5 border border-primary/10">
+            <p className="text-xs text-gray-500 font-medium">Platform Status</p>
+            <div className="flex items-center gap-2 mt-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs text-gray-400">All systems operational</span>
+            </div>
           </div>
+        </aside>
 
-          {/* Main Content */}
-          <div className="flex-1">
-            <Routes>
-              <Route index element={<DashboardStats />} />
-              <Route path="travelers" element={<TravelerManagement />} />
-              <Route path="travelers/onboard" element={<OnboardTraveler />} />
-              <Route path="users" element={<UserManagement />} />
-              <Route path="buses" element={<BusManagement />} />
-              <Route path="tickets" element={<TicketManagement />} />
-              <Route path="reports" element={<RevenueReports />} />
-            </Routes>
-          </div>
-        </div>
+        {/* Main Content */}
+        <main className="flex-1 min-h-[calc(100vh-61px)] p-4 lg:p-8">
+          <Routes>
+            <Route index element={<DashboardStats />} />
+            <Route path="travelers" element={<TravelerManagement />} />
+            <Route path="travelers/onboard" element={<OnboardTraveler />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="buses" element={<BusManagement />} />
+            <Route path="tickets" element={<TicketManagement />} />
+            <Route path="reports" element={<RevenueReports />} />
+          </Routes>
+        </main>
       </div>
     </div>
   );

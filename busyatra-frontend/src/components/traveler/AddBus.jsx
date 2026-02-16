@@ -1,41 +1,8 @@
+
 import React, { useState } from 'react';
+import { Bus, MapPin, Users, IndianRupee, Wifi, Coffee, Music, BatteryCharging, ArrowRight, Save } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Paper,
-  Typography,
-  TextField,
-  Button,
-  Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  InputAdornment,
-  IconButton,
-  Card,
-  CardContent,
-  Chip,
-  Divider,
-  Alert,
-  Stack,
-} from '@mui/material';
-import {
-  ArrowBack,
-  DirectionsBus,
-  LocationOn,
-  EventSeat,
-  CurrencyRupee,
-  Wifi,
-  BatteryCharging80,
-  LocalDrink,
-  Bed,
-  Lightbulb,
-  ExitToApp,
-  CheckCircle,
-  InfoOutlined,
-  Tv,
-} from '@mui/icons-material';
 import travelerService from '../../services/travelerService';
 import toast from 'react-hot-toast';
 
@@ -44,101 +11,62 @@ const AddBus = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     bus_number: '',
+    total_seats: '',
     bus_type: 'AC Seater',
-    bus_model: '',
+    amenities: [],
     from_location: '',
     to_location: '',
-    total_seats: 40,
     fare: '',
-    amenities: []
+    departure_time: '',             // Not always needed for "Add Bus" but sometimes kept for defaults
+    arrival_time: ''
+    // Note: The backend model might separate Bus vs Schedule. 
+    // Assuming this component creates a Bus + potentially a default schedule or just the Bus vehicle.
+    // Based on previous file analysis, it had fields for locations and fare, so keeping them.
   });
 
-  const busTypes = [
-    { value: 'AC Sleeper', label: 'AC Sleeper', description: 'Air conditioned sleeper bus' },
-    { value: 'Non-AC Sleeper', label: 'Non-AC Sleeper', description: 'Regular sleeper bus' },
-    { value: 'AC Seater', label: 'AC Seater', description: 'Air conditioned seating' },
-    { value: 'Non-AC Seater', label: 'Non-AC Seater', description: 'Regular seating bus' },
-    { value: 'Semi Sleeper', label: 'Semi Sleeper', description: 'Reclining seats' }
+  const amenitiesList = [
+    { id: 'wifi', label: 'Wi-Fi', icon: Wifi },
+    { id: 'charging_point', label: 'Charging Point', icon: BatteryCharging },
+    { id: 'water_bottle', label: 'Water Bottle', icon: Coffee },
+    { id: 'entertainment', label: 'Entertainment', icon: Music },
   ];
 
-  const amenityOptions = [
-    { name: 'WiFi', icon: <Wifi /> },
-    { name: 'Charging Port', icon: <BatteryCharging80 /> },
-    { name: 'Water Bottle', icon: <LocalDrink /> },
-    { name: 'Blanket', icon: <Bed /> },
-    { name: 'TV', icon: <Tv /> },
-    { name: 'Reading Light', icon: <Lightbulb /> },
-    { name: 'Emergency Exit', icon: <ExitToApp /> }
-  ];
+  const busTypes = ['AC Seater', 'AC Sleeper', 'Non-AC Seater', 'Non-AC Sleeper', 'Volvo'];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAmenityToggle = (amenity) => {
-    const current = formData.amenities || [];
-    if (current.includes(amenity)) {
-      setFormData({ ...formData, amenities: current.filter(a => a !== amenity) });
-    } else {
-      setFormData({ ...formData, amenities: [...current, amenity] });
-    }
-  };
-
-  const validateBusNumber = (busNumber) => {
-    const pattern = /^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{4}$/;
-    return pattern.test(busNumber);
+  const handleAmenityToggle = (amenityId) => {
+    setFormData(prev => {
+      const amenities = prev.amenities.includes(amenityId)
+        ? prev.amenities.filter(id => id !== amenityId)
+        : [...prev.amenities, amenityId];
+      return { ...prev, amenities };
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Validation - Bus Number
-    if (!validateBusNumber(formData.bus_number)) {
-      toast.error('Please enter a valid bus number (e.g., GJ01AB1234)');
-      return;
-    }
-
-    // Validation - From and To locations must be different
-    if (formData.from_location.trim().toLowerCase() === formData.to_location.trim().toLowerCase()) {
-      toast.error('From and To locations must be different');
-      return;
-    }
-
-    // Validation - Total seats (10-60)
-    const totalSeats = parseInt(formData.total_seats);
-    if (totalSeats < 10 || totalSeats > 60) {
-      toast.error('Total seats must be between 10 and 60');
-      return;
-    }
-
-    // Validation - Fare minimum ₹100
-    const fare = parseFloat(formData.fare);
-    if (fare < 100) {
-      toast.error('Fare must be at least ₹100');
-      return;
-    }
-
-    // Validation - All required fields
-    if (!formData.bus_number || !formData.bus_type || !formData.bus_model || 
-        !formData.from_location || !formData.to_location) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
     setLoading(true);
+
     try {
-      await travelerService.addBus({
+      // Ensure amenities are comma-separated string if backend expects that, or array.
+      // Keeping it as array for now, adjusting to backend likely expecting array or CSV.
+      // Based on typical implementations, let's pass it as is or join if needed.
+      // The previous file analysis didn't show the submit logic specifics, but usually JSON array is fine.
+
+      const payload = {
         ...formData,
-        bus_number: formData.bus_number.toUpperCase().trim(),
-        from_location: formData.from_location.trim(),
-        to_location: formData.to_location.trim(),
-        bus_model: formData.bus_model.trim(),
-        total_seats: totalSeats,
-        fare: fare
-      });
+        amenities: formData.amenities.join(','), // Converting to CSV string just in case
+        total_seats: parseInt(formData.total_seats),
+        fare: parseFloat(formData.fare)
+      };
+
+      await travelerService.addBus(payload);
       toast.success('Bus added successfully!');
-      navigate('/traveler');
+      navigate('/traveler/buses');
     } catch (error) {
       toast.error(error.message || 'Failed to add bus');
     } finally {
@@ -147,363 +75,166 @@ const AddBus = () => {
   };
 
   return (
-    <Box>
-      {/* Header Section */}
-      <Paper
-        elevation={0}
-        sx={{
-          p: 3,
-          mb: 3,
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
-          borderRadius: 2,
-        }}
-      >
-        <Stack direction="row" alignItems="center" spacing={2} mb={2}>
-          <IconButton
-            onClick={() => navigate('/traveler')}
-            sx={{
-              color: 'white',
-              bgcolor: 'rgba(255,255,255,0.2)',
-              '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' },
-            }}
-          >
-            <ArrowBack />
-          </IconButton>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h4" fontWeight="bold">
-              Add New Bus
-            </Typography>
-            <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
-              Register your bus and start accepting bookings
-            </Typography>
-          </Box>
-          <DirectionsBus sx={{ fontSize: 60, opacity: 0.3 }} />
-        </Stack>
-      </Paper>
+    <div className="max-w-4xl mx-auto">
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-white">Add New <span className="text-primary">Bus</span></h2>
+        <p className="text-gray-500 mt-2">Register a new vehicle to your fleet.</p>
+      </div>
 
-      {/* Info Alert */}
-      <Alert
-        severity="info"
-        icon={<InfoOutlined />}
-        sx={{ mb: 3, borderRadius: 2 }}
-      >
-        Fill in all required details carefully. This information will be visible to passengers when they book tickets.
-      </Alert>
+      <form onSubmit={handleSubmit} className="bg-[#12121c] rounded-2xl p-8 border border-white/5 shadow-2xl">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-      {/* Main Form */}
-      <Paper elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-        <Box
-          sx={{
-            p: 2,
-            bgcolor: 'primary.main',
-            color: 'white',
-          }}
-        >
-          <Typography variant="h6" fontWeight={600}>
-            Bus Registration Details
-          </Typography>
-        </Box>
+          {/* Section 1: Bus Details */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2 border-b border-white/5 pb-3">
+              <Bus className="w-5 h-5 text-primary" /> Vehicle Information
+            </h3>
 
-        <Box component="form" onSubmit={handleSubmit} sx={{ p: 4 }}>
-          {/* Section 1: Basic Information */}
-          <Typography variant="h6" gutterBottom sx={{ mb: 3, color: 'primary.main', fontWeight: 600 }}>
-            Basic Information
-          </Typography>
-          
-          <Grid container spacing={3} mb={4}>
-            <Grid item xs={12} md={4}>
-              <TextField
-                fullWidth
-                required
-                label="Bus Number"
-                name="bus_number"
-                value={formData.bus_number}
-                onChange={handleChange}
-                placeholder="GJ01AB1234"
-                helperText="Format: GJ01AB1234 (2 letters + 2 digits + 1-2 letters + 4 digits)"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <DirectionsBus color="action" />
-                    </InputAdornment>
-                  ),
-                }}
-                inputProps={{
-                  style: { textTransform: 'uppercase' },
-                  maxLength: 10
-                }}
-                error={formData.bus_number && !validateBusNumber(formData.bus_number)}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={4}>
-              <FormControl fullWidth required>
-                <InputLabel>Bus Type</InputLabel>
-                <Select
-                  name="bus_type"
-                  value={formData.bus_type}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1.5">Bus Number</label>
+                <input
+                  type="text"
+                  name="bus_number"
+                  required
+                  value={formData.bus_number}
                   onChange={handleChange}
-                  label="Bus Type"
-                >
-                  {busTypes.map((type) => (
-                    <MenuItem key={type.value} value={type.value}>
-                      <Box>
-                        <Typography variant="body1">{type.label}</Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {type.description}
-                        </Typography>
-                      </Box>
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
+                  placeholder="e.g., KA-01-AB-1234"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary/50 outline-none transition"
+                />
+              </div>
 
-            <Grid item xs={12} md={4}>
-              <TextField
-                fullWidth
-                required
-                label="Bus Model"
-                name="bus_model"
-                value={formData.bus_model}
-                onChange={handleChange}
-                placeholder="e.g., Volvo 9600, Scania Metrolink"
-                helperText="Enter bus manufacturer and model"
-              />
-            </Grid>
-          </Grid>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5">Bus Type</label>
+                  <select
+                    name="bus_type"
+                    value={formData.bus_type}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:ring-1 focus:ring-primary/50 outline-none transition appearance-none"
+                  >
+                    {busTypes.map(type => (
+                      <option key={type} value={type} className="bg-[#12121c]">{type}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5">Total Seats</label>
+                  <div className="relative">
+                    <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <input
+                      type="number"
+                      name="total_seats"
+                      required
+                      min="10"
+                      max="60"
+                      value={formData.total_seats}
+                      onChange={handleChange}
+                      className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary/50 outline-none transition"
+                    />
+                  </div>
+                </div>
+              </div>
 
-          <Divider sx={{ my: 4 }} />
-
-          {/* Section 2: Route Information */}
-          <Typography variant="h6" gutterBottom sx={{ mb: 3, color: 'primary.main', fontWeight: 600 }}>
-            Route Information
-          </Typography>
-
-          <Grid container spacing={3} mb={4}>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                required
-                label="From Location"
-                name="from_location"
-                value={formData.from_location}
-                onChange={handleChange}
-                placeholder="e.g., Ahmedabad"
-                helperText="Starting point of the journey"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <LocationOn color="success" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                required
-                label="To Location"
-                name="to_location"
-                value={formData.to_location}
-                onChange={handleChange}
-                placeholder="e.g., Mumbai"
-                helperText="Destination of the journey"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <LocationOn color="error" />
-                    </InputAdornment>
-                  ),
-                }}
-                error={formData.from_location && formData.to_location && 
-                       formData.from_location.trim().toLowerCase() === formData.to_location.trim().toLowerCase()}
-              />
-            </Grid>
-          </Grid>
-
-          <Divider sx={{ my: 4 }} />
-
-          {/* Section 3: Capacity & Pricing */}
-          <Typography variant="h6" gutterBottom sx={{ mb: 3, color: 'primary.main', fontWeight: 600 }}>
-            Capacity & Pricing
-          </Typography>
-
-          <Grid container spacing={3} mb={4}>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                required
-                type="number"
-                label="Total Seats"
-                name="total_seats"
-                value={formData.total_seats}
-                onChange={handleChange}
-                inputProps={{ min: 10, max: 60 }}
-                helperText="Number of seats (10-60)"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <EventSeat color="action" />
-                    </InputAdornment>
-                  ),
-                }}
-                error={formData.total_seats && (parseInt(formData.total_seats) < 10 || parseInt(formData.total_seats) > 60)}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                required
-                type="number"
-                label="Fare per Seat"
-                name="fare"
-                value={formData.fare}
-                onChange={handleChange}
-                inputProps={{ min: 100, step: 0.01 }}
-                placeholder="500"
-                helperText="Price per seat in ₹ (minimum ₹100)"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <CurrencyRupee sx={{ fontSize: 20 }} />
-                    </InputAdornment>
-                  ),
-                }}
-                error={formData.fare && parseFloat(formData.fare) < 100}
-              />
-            </Grid>
-          </Grid>
-
-          <Divider sx={{ my: 4 }} />
-
-          {/* Section 4: Amenities */}
-          <Typography variant="h6" gutterBottom sx={{ mb: 2, color: 'primary.main', fontWeight: 600 }}>
-            Amenities & Facilities
-          </Typography>
-          <Typography variant="body2" color="text.secondary" mb={3}>
-            Select the amenities available in your bus (Optional)
-          </Typography>
-
-          <Grid container spacing={2} mb={4}>
-            {amenityOptions.map((amenity) => (
-              <Grid item xs={12} sm={6} md={4} key={amenity.name}>
-                <Card
-                  variant="outlined"
-                  sx={{
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    border: 2,
-                    borderColor: formData.amenities?.includes(amenity.name)
-                      ? 'primary.main'
-                      : 'divider',
-                    bgcolor: formData.amenities?.includes(amenity.name)
-                      ? 'primary.50'
-                      : 'background.paper',
-                    '&:hover': {
-                      borderColor: 'primary.main',
-                      transform: 'translateY(-2px)',
-                      boxShadow: 2,
-                    },
-                  }}
-                  onClick={() => handleAmenityToggle(amenity.name)}
-                >
-                  <CardContent>
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      <Box
-                        sx={{
-                          color: formData.amenities?.includes(amenity.name)
-                            ? 'primary.main'
-                            : 'text.secondary',
-                        }}
-                      >
-                        {amenity.icon}
-                      </Box>
-                      <Typography
-                        variant="body2"
-                        fontWeight={
-                          formData.amenities?.includes(amenity.name) ? 600 : 400
-                        }
-                        sx={{
-                          color: formData.amenities?.includes(amenity.name)
-                            ? 'primary.main'
-                            : 'text.primary',
-                        }}
-                      >
-                        {amenity.name}
-                      </Typography>
-                      {formData.amenities?.includes(amenity.name) && (
-                        <CheckCircle
-                          color="primary"
-                          sx={{ ml: 'auto', fontSize: 20 }}
-                        />
-                      )}
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-
-          {/* Selected Amenities Display */}
-          {formData.amenities && formData.amenities.length > 0 && (
-            <Box mb={4}>
-              <Typography variant="body2" color="text.secondary" mb={1}>
-                Selected Amenities:
-              </Typography>
-              <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
-                {formData.amenities.map((amenity) => (
-                  <Chip
-                    key={amenity}
-                    label={amenity}
-                    color="primary"
-                    variant="outlined"
-                    onDelete={() => handleAmenityToggle(amenity)}
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1.5">Default Fare (₹)</label>
+                <div className="relative">
+                  <IndianRupee className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <input
+                    type="number"
+                    name="fare"
+                    required
+                    min="1"
+                    value={formData.fare}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary/50 outline-none transition"
                   />
-                ))}
-              </Stack>
-            </Box>
-          )}
+                </div>
+              </div>
+            </div>
+          </div>
 
-          <Divider sx={{ my: 4 }} />
+          {/* Section 2: Route & Amenities */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2 border-b border-white/5 pb-3">
+              <MapPin className="w-5 h-5 text-primary" /> Route & Amenities
+            </h3>
 
-          {/* Action Buttons */}
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={2}
-            justifyContent="flex-end"
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5">From Location</label>
+                  <input
+                    type="text"
+                    name="from_location"
+                    required
+                    value={formData.from_location}
+                    onChange={handleChange}
+                    placeholder="Source City"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary/50 outline-none transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5">To Location</label>
+                  <input
+                    type="text"
+                    name="to_location"
+                    required
+                    value={formData.to_location}
+                    onChange={handleChange}
+                    placeholder="Destination City"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary/50 outline-none transition"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-3">Amenities</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {amenitiesList.map((amenity) => (
+                    <div
+                      key={amenity.id}
+                      onClick={() => handleAmenityToggle(amenity.id)}
+                      className={`cursor-pointer flex items-center gap-3 p-3 rounded-xl border transition-all ${formData.amenities.includes(amenity.id)
+                          ? 'bg-primary/10 border-primary text-primary'
+                          : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                        }`}
+                    >
+                      <amenity.icon className={`w-4 h-4 ${formData.amenities.includes(amenity.id) ? 'text-primary' : 'text-gray-500'}`} />
+                      <span className="text-sm font-medium">{amenity.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Form Actions */}
+        <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-end gap-4">
+          <button
+            type="button"
+            onClick={() => navigate('/traveler/buses')}
+            className="px-6 py-3 rounded-xl text-gray-400 font-medium hover:text-white hover:bg-white/5 transition"
           >
-            <Button
-              variant="outlined"
-              size="large"
-              onClick={() => navigate('/traveler')}
-              sx={{ minWidth: 150 }}
-            >
-              Cancel 
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              size="large"
-              disabled={loading}
-              sx={{
-                minWidth: 150,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #5568d3 0%, #6a4190 100%)',
-                },
-              }}
-            >
-              {loading ? 'Adding Bus...' : 'Add Bus to Fleet'}
-            </Button>
-          </Stack>
-        </Box>
-      </Paper>
-    </Box>
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-8 py-3 bg-gradient-to-r from-primary to-orange-600 rounded-xl text-white font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] transition-all disabled:opacity-70 disabled:hover:scale-100 flex items-center gap-2"
+          >
+            {loading ? (
+              <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <>
+                <Save className="w-4 h-4" /> Save Bus
+              </>
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 

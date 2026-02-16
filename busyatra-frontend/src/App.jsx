@@ -6,7 +6,7 @@ import { AnimatePresence } from 'framer-motion';
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/common/PrivateRoute';
 import ScrollToTop from './components/common/ScrollToTop';
-import { ScrollProgress } from './components/common/ScrollProgress';
+import ScrollProgress from './components/common/ScrollProgress';
 import PageTransition from './components/common/PageTransition';
 import "./App.css"
 
@@ -96,7 +96,6 @@ function App() {
               <PageTransition>
                 <PrivateRoute allowedRoles={['ADMIN']}>
                   <AdminDashboard />
-                  <div className="p-10 text-center">Admin Dashboard Coming Soon</div>
                 </PrivateRoute>
               </PageTransition>
             }

@@ -1,39 +1,7 @@
-// Create and view support tickets
-// ----------------------------------------------------------------
 
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Grid,
-  Chip,
-  Stack,
-  Divider,
-  CircularProgress,
-  Paper,
-  Collapse,
-  IconButton,
-  Alert,
-  Avatar,
-} from '@mui/material';
-import {
-  Add,
-  MessageOutlined,
-  ErrorOutline,
-  CheckCircle,
-  AccessTime,
-  Close,
-  ConfirmationNumberOutlined,
-  PriorityHigh,
-} from '@mui/icons-material';
+import { MessageSquare, AlertCircle, CheckCircle, Clock, Plus, Send, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import travelerService from '../../services/travelerService';
 import { formatDateTime, getStatusColor } from '../../utils/formatters';
 import toast from 'react-hot-toast';
@@ -41,28 +9,22 @@ import toast from 'react-hot-toast';
 const SupportTickets = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [formData, setFormData] = useState({
+  const [showNewTicketModal, setShowNewTicketModal] = useState(false);
+  const [newTicket, setNewTicket] = useState({
     subject: '',
     description: '',
-    ticket_type: 'TECHNICAL',
-    priority: 'MEDIUM'
+    priority: 'MEDIUM',
+    ticket_type: 'TECHNICAL_ISSUE' // Default type
   });
 
   const ticketTypes = [
-    { value: 'TECHNICAL', label: 'Technical Support' },
-    { value: 'BOOKING', label: 'Booking Issue' },
-    { value: 'PAYMENT', label: 'Payment Issue' },
-    { value: 'SCHEDULE', label: 'Schedule Inquiry' },
+    { value: 'TECHNICAL_ISSUE', label: 'Technical Issue' },
+    { value: 'PAYMENT_ISSUE', label: 'Payment Problem' },
+    { value: 'ACCOUNT_MANAGEMENT', label: 'Account Management' },
     { value: 'OTHER', label: 'Other' }
   ];
 
-  const priorities = [
-    { value: 'LOW', label: 'Low', color: '#10b981' },
-    { value: 'MEDIUM', label: 'Medium', color: '#f59e0b' },
-    { value: 'HIGH', label: 'High', color: '#f97316' },
-    { value: 'URGENT', label: 'Urgent', color: '#ef4444' }
-  ];
+  const priorities = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
 
   useEffect(() => {
     fetchTickets();
@@ -82,15 +44,10 @@ const SupportTickets = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await travelerService.createTicket(formData);
-      toast.success('Support ticket created successfully!');
-      setShowCreateForm(false);
-      setFormData({
-        subject: '',
-        description: '',
-        ticket_type: 'TECHNICAL',
-        priority: 'MEDIUM'
-      });
+      await travelerService.createTicket(newTicket);
+      toast.success('Ticket created successfully!');
+      setShowNewTicketModal(false);
+      setNewTicket({ subject: '', description: '', priority: 'MEDIUM', ticket_type: 'TECHNICAL_ISSUE' });
       fetchTickets();
     } catch (error) {
       toast.error(error.message || 'Failed to create ticket');
@@ -98,337 +55,199 @@ const SupportTickets = () => {
   };
 
   const getPriorityIcon = (priority) => {
-    const iconProps = { sx: { fontSize: 20 } };
     switch (priority) {
       case 'URGENT':
-        return <ErrorOutline {...iconProps} sx={{ color: '#ef4444' }} />;
-      case 'HIGH':
-        return <PriorityHigh {...iconProps} sx={{ color: '#f97316' }} />;
-      case 'MEDIUM':
-        return <AccessTime {...iconProps} sx={{ color: '#f59e0b' }} />;
-      default:
-        return <CheckCircle {...iconProps} sx={{ color: '#10b981' }} />;
+      case 'HIGH': return <AlertCircle className="w-5 h-5 text-red-500" />;
+      case 'MEDIUM': return <Clock className="w-5 h-5 text-amber-500" />;
+      default: return <CheckCircle className="w-5 h-5 text-emerald-500" />;
     }
   };
-
-  const getPriorityColor = (priority) => {
-    const priorityObj = priorities.find(p => p.value === priority);
-    return priorityObj?.color || '#9ca3af';
-  };
-
-  const getTicketStatusColor = (status) => {
-    switch (status?.toUpperCase()) {
-      case 'OPEN':
-      case 'IN_PROGRESS':
-        return 'primary';
-      case 'RESOLVED':
-      case 'CLOSED':
-        return 'success';
-      case 'PENDING':
-        return 'warning';
-      default:
-        return 'default';
-    }
-  };
-
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress size={48} />
-      </Box>
-    );
-  }
 
   return (
-    <Box>
-      {/* Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Box>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
-            Support Tickets
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Get help from our support team
-          </Typography>
-        </Box>
-        {!showCreateForm && (
-          <Button
-            variant="contained"
-            size="large"
-            startIcon={<Add />}
-            onClick={() => setShowCreateForm(true)}
-            sx={{ 
-              textTransform: 'none',
-              px: 3,
-              py: 1.5,
-              borderRadius: 2,
-              fontWeight: 600,
-            }}
-          >
-            Create Ticket
-          </Button>
-        )}
-      </Box>
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-white">Support <span className="text-primary">Center</span></h2>
+          <p className="text-gray-500 text-sm mt-1">Get help and track your requests</p>
+        </div>
+        <button
+          onClick={() => setShowNewTicketModal(true)}
+          className="flex items-center justify-center gap-2 px-5 py-2.5 bg-primary hover:bg-orange-600 text-white rounded-xl transition font-medium shadow-lg shadow-primary/20"
+        >
+          <Plus className="w-4 h-4" />
+          Create New Ticket
+        </button>
+      </div>
 
-      {/* Create Ticket Form */}
-      <Collapse in={showCreateForm}>
-        <Card elevation={3} sx={{ mb: 4, borderRadius: 3 }}>
-          <CardContent sx={{ p: 4 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-              <Typography variant="h6" fontWeight="bold">
-                Create Support Ticket
-              </Typography>
-              <IconButton onClick={() => setShowCreateForm(false)} size="small">
-                <Close />
-              </IconButton>
-            </Box>
-
-            <Box component="form" onSubmit={handleSubmit}>
-              <Grid container spacing={3}>
-                {/* Ticket Type */}
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth required>
-                    <InputLabel>Ticket Type</InputLabel>
-                    <Select
-                      value={formData.ticket_type}
-                      label="Ticket Type"
-                      onChange={(e) => setFormData({ ...formData, ticket_type: e.target.value })}
-                    >
-                      {ticketTypes.map(type => (
-                        <MenuItem key={type.value} value={type.value}>
-                          {type.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                {/* Priority */}
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth required>
-                    <InputLabel>Priority</InputLabel>
-                    <Select
-                      value={formData.priority}
-                      label="Priority"
-                      onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                    >
-                      {priorities.map(priority => (
-                        <MenuItem key={priority.value} value={priority.value}>
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Box
-                              sx={{
-                                width: 8,
-                                height: 8,
-                                borderRadius: '50%',
-                                bgcolor: priority.color
-                              }}
-                            />
-                            <Typography>{priority.label}</Typography>
-                          </Stack>
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                {/* Subject */}
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    required
-                    label="Subject"
-                    placeholder="Brief description of the issue"
-                    value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  />
-                </Grid>
-
-                {/* Description */}
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    required
-                    multiline
-                    rows={5}
-                    label="Description"
-                    placeholder="Please provide detailed information about your issue..."
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  />
-                </Grid>
-
-                {/* Submit Button */}
-                <Grid item xs={12}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    size="large"
-                    sx={{ 
-                      px: 4,
-                      py: 1.5,
-                      borderRadius: 2,
-                      fontWeight: 600,
-                    }}
-                  >
-                    Submit Ticket
-                  </Button>
-                </Grid>
-              </Grid>
-            </Box>
-          </CardContent>
-        </Card>
-      </Collapse>
-
-      {/* Tickets List */}
-      {tickets.length === 0 ? (
-        <Card elevation={2} sx={{ borderRadius: 3 }}>
-          <CardContent>
-            <Box textAlign="center" py={8}>
-              <Avatar
-                sx={{
-                  width: 80,
-                  height: 80,
-                  bgcolor: 'primary.50',
-                  color: 'primary.main',
-                  mx: 'auto',
-                  mb: 3
-                }}
-              >
-                <MessageOutlined sx={{ fontSize: 48 }} />
-              </Avatar>
-              <Typography variant="h5" fontWeight="600" gutterBottom>
-                No support tickets
-              </Typography>
-              <Typography variant="body1" color="text.secondary" mb={4}>
-                Create a ticket if you need help from our team
-              </Typography>
-              {!showCreateForm && (
-                <Button
-                  variant="contained"
-                  size="large"
-                  startIcon={<Add />}
-                  onClick={() => setShowCreateForm(true)}
-                  sx={{ 
-                    px: 4,
-                    py: 1.5,
-                    borderRadius: 2,
-                    fontWeight: 600,
-                  }}
-                >
-                  Create Your First Ticket
-                </Button>
-              )}
-            </Box>
-          </CardContent>
-        </Card>
+      {loading ? (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : tickets.length === 0 ? (
+        <div className="bg-[#12121c] rounded-2xl p-12 text-center border border-white/5">
+          <MessageSquare className="w-16 h-16 text-gray-700 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-white mb-1">No tickets yet</h3>
+          <p className="text-gray-500 text-sm">Need help? Create a new support ticket.</p>
+        </div>
       ) : (
-        <Stack spacing={3}>
-          {tickets.map((ticket) => (
-            <Card key={ticket.ticket_id} elevation={2} sx={{ borderRadius: 3 }}>
-              <CardContent sx={{ p: 4 }}>
-                {/* Header Section */}
-                <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3}>
-                  <Box flex={1}>
-                    <Stack direction="row" spacing={2} alignItems="center" mb={1.5}>
-                      <Avatar
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          bgcolor: `${getPriorityColor(ticket.priority)}20`,
-                          color: getPriorityColor(ticket.priority)
-                        }}
-                      >
-                        {getPriorityIcon(ticket.priority)}
-                      </Avatar>
-                      <Box>
-                        <Typography variant="h6" fontWeight="bold">
-                          {ticket.subject}
-                        </Typography>
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <ConfirmationNumberOutlined sx={{ fontSize: 16, color: 'text.secondary' }} />
-                          <Typography variant="caption" color="text.secondary">
-                            {ticket.ticket_number}
-                          </Typography>
-                        </Stack>
-                      </Box>
-                    </Stack>
-                  </Box>
-                  <Chip
-                    label={ticket.ticket_status}
-                    color={getTicketStatusColor(ticket.ticket_status)}
-                    sx={{ fontWeight: 600 }}
-                  />
-                </Box>
+        <div className="space-y-4">
+          <AnimatePresence>
+            {tickets.map((ticket, index) => (
+              <motion.div
+                key={ticket.ticket_id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="bg-[#12121c] rounded-2xl p-6 border border-white/5 hover:border-white/10 transition-all group"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center ring-1 ring-white/10">
+                      {getPriorityIcon(ticket.priority)}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-white text-lg">{ticket.subject}</h3>
+                      <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                        <span className="font-mono bg-white/5 px-1.5 py-0.5 rounded border border-white/5">
+                          {ticket.ticket_number}
+                        </span>
+                        <span>•</span>
+                        <span>{formatDateTime(ticket.created_at)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <span className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border ${ticket.ticket_status === 'OPEN' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                      ticket.ticket_status === 'IN_PROGRESS' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                        'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                    }`}>
+                    {ticket.ticket_status.replace('_', ' ')}
+                  </span>
+                </div>
 
-                {/* Description */}
-                <Typography variant="body1" color="text.primary" mb={3} sx={{ lineHeight: 1.7 }}>
-                  {ticket.description}
-                </Typography>
+                <div className="bg-white/5 rounded-xl p-4 border border-white/5 mb-4 max-w-3xl">
+                  <p className="text-gray-300 text-sm leading-relaxed">{ticket.description}</p>
+                </div>
 
-                {/* Metadata */}
-                <Stack 
-                  direction={{ xs: 'column', sm: 'row' }} 
-                  spacing={3}
-                  divider={<Divider orientation="vertical" flexItem />}
-                  mb={ticket.resolution_notes ? 3 : 0}
-                >
-                  <Box>
-                    <Typography variant="caption" color="text.secondary" display="block">
-                      Type
-                    </Typography>
-                    <Chip 
-                      label={ticket.ticket_type}
-                      size="small"
-                      variant="outlined"
-                      sx={{ mt: 0.5, fontWeight: 500 }}
-                    />
-                  </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary" display="block">
-                      Priority
-                    </Typography>
-                    <Chip
-                      label={ticket.priority}
-                      size="small"
-                      sx={{
-                        mt: 0.5,
-                        bgcolor: `${getPriorityColor(ticket.priority)}20`,
-                        color: getPriorityColor(ticket.priority),
-                        fontWeight: 600,
-                        borderColor: getPriorityColor(ticket.priority)
-                      }}
-                    />
-                  </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary" display="block">
-                      Created
-                    </Typography>
-                    <Typography variant="body2" fontWeight="500" sx={{ mt: 0.5 }}>
-                      {formatDateTime(ticket.created_at)}
-                    </Typography>
-                  </Box>
-                </Stack>
-
-                {/* Resolution Notes */}
                 {ticket.resolution_notes && (
-                  <>
-                    <Divider sx={{ my: 3 }} />
-                    <Alert severity="success" icon={<CheckCircle />}>
-                      <Typography variant="subtitle2" fontWeight="600" gutterBottom>
-                        Resolution
-                      </Typography>
-                      <Typography variant="body2">
-                        {ticket.resolution_notes}
-                      </Typography>
-                    </Alert>
-                  </>
+                  <div className="mt-4 pt-4 border-t border-white/5">
+                    <div className="bg-emerald-500/5 border border-emerald-500/20 p-4 rounded-xl">
+                      <p className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <CheckCircle className="w-3 h-3" /> Resolution
+                      </p>
+                      <p className="text-sm text-emerald-100/80">{ticket.resolution_notes}</p>
+                    </div>
+                  </div>
                 )}
-              </CardContent>
-            </Card>
-          ))}
-        </Stack>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
       )}
-    </Box>
+
+      {/* New Ticket Modal overlay */}
+      <AnimatePresence>
+        {showNewTicketModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#12121c] w-full max-w-lg rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
+            >
+              <div className="p-6 border-b border-white/5 flex justify-between items-center">
+                <h3 className="text-lg font-bold text-white">New Support Ticket</h3>
+                <button
+                  onClick={() => setShowNewTicketModal(false)}
+                  className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5">Subject</label>
+                  <input
+                    type="text"
+                    required
+                    value={newTicket.subject}
+                    onChange={(e) => setNewTicket({ ...newTicket, subject: e.target.value })}
+                    placeholder="Brief summary of the issue..."
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary/50 outline-none transition"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1.5">Type</label>
+                    <div className="relative">
+                      <select
+                        value={newTicket.ticket_type}
+                        onChange={(e) => setNewTicket({ ...newTicket, ticket_type: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:ring-1 focus:ring-primary/50 outline-none transition appearance-none"
+                      >
+                        {ticketTypes.map(type => (
+                          <option key={type.value} value={type.value} className="bg-[#12121c]">
+                            {type.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1.5">Priority</label>
+                    <div className="relative">
+                      <select
+                        value={newTicket.priority}
+                        onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:ring-1 focus:ring-primary/50 outline-none transition appearance-none"
+                      >
+                        {priorities.map(p => (
+                          <option key={p} value={p} className="bg-[#12121c]">{p}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5">Description</label>
+                  <textarea
+                    required
+                    rows="5"
+                    value={newTicket.description}
+                    onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
+                    placeholder="Detailed explanation of the problem..."
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary/50 outline-none transition resize-none"
+                  />
+                </div>
+
+                <div className="pt-4 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowNewTicketModal(false)}
+                    className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-medium transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 py-3 bg-primary hover:bg-orange-600 text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition flex items-center justify-center gap-2"
+                  >
+                    <Send className="w-4 h-4" /> Submit Ticket
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 
