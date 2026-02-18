@@ -159,7 +159,7 @@ const AddSchedule = () => {
                     min={new Date().toISOString().split('T')[0]}
                     value={formData.date}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 focus:ring-1 focus:ring-primary/50 outline-none transition appearance-none calendar-light"
+                    className="w-full px-4 py-3 bg-white  border border-gray-300 rounded-xl text-gray-900 focus:ring-1 focus:ring-primary/50 outline-none transition appearance-none calendar-light"
                   />
                   <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
                 </div>
