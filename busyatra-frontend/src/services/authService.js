@@ -27,7 +27,7 @@ const authService = {
 
     // Logout user
     logout: () => {
-        localStorage.removeItem('token');
+        localStorage.removeItem('token' );
         localStorage.removeItem('user');
     },
 
