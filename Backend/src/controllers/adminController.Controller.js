@@ -23,7 +23,7 @@ import asyncHandler from "../utils/asyncHandler.utils.js"
 export const getAllTravelers = asyncHandler(async (req, res, next) => {
   const { status, search, page = 1, limit = 10 } = req.query;
 
-  // Build query
+  
   let query = {};
   
   if (status) {
