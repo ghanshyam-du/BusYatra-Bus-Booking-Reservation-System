@@ -12,10 +12,10 @@ import asyncHandler from "../utils/asyncHandler.utils.js"
 
 
 // ================================================================
-// TRAVELER MANAGEMENT
+// TRAVELER MANAGEMENT  
 // ================================================================
 
-// @desc    Get all travelers (pending, approved, rejected)
+// @desc    Get all travelers (pending, approved, rejected) 
 // @route   GET /api/admin/travelers
 // @access  Private/Admin
 
