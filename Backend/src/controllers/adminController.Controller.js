@@ -64,7 +64,7 @@ export const getAllTravelers = asyncHandler(async (req, res, next) => {
 // @access  Private/Admin
 export const getTravelerDetails = asyncHandler(async (req, res, next) => {
   const traveler = await Traveler.findOne({ traveler_id: req.params.id })
-    .populate('user_id', 'full_name email mobile_number role');
+    .populate('user_id', 'full_name email  mobile_number role');
 
   if (!traveler) {
     return next(new ErrorResponse('Traveler not found', 404));
