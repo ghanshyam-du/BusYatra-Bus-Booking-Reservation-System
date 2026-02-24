@@ -71,7 +71,7 @@ export const getTravelerDetails = asyncHandler(async (req, res, next) => {
   }
 
   // Get traveler's buses count
-  const busCount = await Bus.countDocuments({ traveler_id: traveler.traveler_id });
+  const busCount = await Bus.countDocuments({ traveler_id:traveler.traveler_id });
 
   // Get traveler's total revenue
   const revenueStats = await Booking.aggregate([
