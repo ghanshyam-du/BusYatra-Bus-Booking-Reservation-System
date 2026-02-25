@@ -325,10 +325,10 @@ export const createSchedule = asyncHandler(async (req, res, next) => {
           booking_id: null
         });
         seatCounter++;
-      }
+      } 
     }
 
-    // Insert all seats with manually generated seat_ids
+    // Insert all seats with manually generated seat_ids 
     await Seat.insertMany(seats, { session });
 
     await session.commitTransaction();
