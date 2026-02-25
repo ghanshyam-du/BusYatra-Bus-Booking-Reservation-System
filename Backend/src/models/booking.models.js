@@ -76,7 +76,7 @@ const bookingSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// NO PRE-SAVE HOOKS - IDs are generated in the controller
+// NO PRE-SAVE HOOKS- IDs are generated in the controller
 
 // Indexes for better query performance
 bookingSchema.index({ user_id: 1, createdAt:-1 });

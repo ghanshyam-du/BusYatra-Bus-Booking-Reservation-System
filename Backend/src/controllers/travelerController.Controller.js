@@ -428,7 +428,6 @@ export const getMySchedules = asyncHandler(async (req, res, next) => {
 // @access  Private (Traveler only)
 
 
-
 export const updateSchedule = asyncHandler(async (req, res, next) => {
   const { scheduleId } = req.params;
   const traveler = await Traveler.findOne({ user_id: req.user.user_id });
