@@ -1,8 +1,14 @@
 import api from './api';
 
 const travelerService = {
+  // ============ DASHBOARD STATS ============
+  getDashboardStats: async () => {
+    const response = await api.get('/traveler/dashboard-stats');
+    return response.data;
+  },
+
   // ============ BUS MANAGEMENT ============
-  
+
   // Get all my buses
   getBuses: async () => {
     const response = await api.get('/traveler/buses');
@@ -28,7 +34,7 @@ const travelerService = {
   },
 
   // ============ SCHEDULE MANAGEMENT ============
-  
+
   // Get all my schedules
   getSchedules: async (filters) => {
     const response = await api.get('/traveler/schedules', {
@@ -61,7 +67,7 @@ const travelerService = {
   },
 
   // ============ BOOKING MANAGEMENT ============
-  
+
   // Get all bookings for my buses
   getBookings: async (filters) => {
     const response = await api.get('/traveler/bookings', {
@@ -71,7 +77,7 @@ const travelerService = {
   },
 
   // ============ SUPPORT TICKETS ============
-  
+
   // Create support ticket
   createTicket: async (ticketData) => {
     const response = await api.post('/traveler/tickets', ticketData);

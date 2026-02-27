@@ -1,4 +1,4 @@
-import express from "express"
+import express from "express";
 import {
   // Bus Management
   addBus,
@@ -6,20 +6,23 @@ import {
   getBusDetails,
   updateBus,
   deleteBus,
-  
+
   // Schedule Management
   createSchedule,
   getMySchedules,
   updateSchedule,
   cancelSchedule,
-  
+
   // Booking Management
   getMyBookings,
-  
+
   // Support Tickets
   createSupportTicket,
   getMySupportTickets,
-  getSupportTicketDetails
+  getSupportTicketDetails,
+
+  // Dashboard Diagnostics
+  getDashboardStats
 } from "../controllers/travelerController.Controller.js";
 
 
@@ -29,6 +32,9 @@ const router = express.Router();
 
 // All routes require TRAVELER role
 router.use(protect, authorize('TRAVELER'));
+
+// Dashboard Stats
+router.get('/dashboard-stats', getDashboardStats);
 
 // Bus Management Routes
 router.route('/buses')

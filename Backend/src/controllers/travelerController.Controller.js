@@ -711,3 +711,52 @@ export const getSupportTicketDetails = asyncHandler(async (req, res, next) => {
     data: ticket
   });
 });
+
+
+
+// ================================================================
+// DASHBOARD ANALYTICS
+// ================================================================
+
+// @desc    Get dashboard statistics for traveler
+// @route   GET /api/traveler/dashboard-stats
+// @access  Private (Traveler only)
+
+export const getDashboardStats = asyncHandler(async (req, res, next) => {
+  const traveler = await Traveler.findOne({ user_id: req.user.user_id });
+
+  if (!traveler) {
+    return next(new ErrorResponse('Traveler profile not found', 404));
+  }
+
+  // 1. Total Buses
+  const buses = await Bus.find({ traveler_id: traveler.traveler_id, is_active: true });
+  const busIds = buses.map(b => b.bus_id);
+  const total_buses = buses.length;
+
+  // 2. Active Schedules
+  const active_schedules = await BusSchedule.countDocuments({
+    bus_id: { $in: busIds },
+    schedule_status: 'ACTIVE',
+    journey_date: { $gte: new Date().setHours(0, 0, 0, 0) } // today or future
+  });
+
+  // 3. Total Bookings and Revenue
+  const bookings = await Booking.find({ traveler_id: traveler.traveler_id });
+  
+  const total_bookings = bookings.length;
+  
+  const total_revenue = bookings
+    .filter(b => b.booking_status === 'CONFIRMED')
+    .reduce((sum, b) => sum + b.total_amount, 0);
+
+  res.status(200).json({
+    success: true,
+    data: {
+      total_buses,
+      active_schedules,
+      total_bookings,
+      total_revenue
+    }
+  });
+});
