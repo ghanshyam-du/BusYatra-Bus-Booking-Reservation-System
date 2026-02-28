@@ -335,7 +335,7 @@ export const createSchedule = asyncHandler(async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: `Schedule created successfully with ${seats.length} seats`,
+      message: `Schedule created successfully with ${seats.length} seats `,
       data: {
         schedule: schedule[0],
         seats_generated: seats.length
