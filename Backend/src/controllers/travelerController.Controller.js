@@ -355,7 +355,7 @@ export const createSchedule = asyncHandler(async (req, res, next) => {
 
 
 // @desc    Get all schedules for traveler's buses
-// @route   GET /api/traveler/schedules
+// @route   GET /api/traveler/schedules  
 // @access  Private (Traveler only)     
 
 
