@@ -423,7 +423,7 @@ export const getMySchedules = asyncHandler(async (req, res, next) => {
 
 
 
-// @desc    Update schedule
+// @desc    Update schedule (departure_time, arrival_time) - Cannot update past schedules
 // @route   PUT /api/traveler/schedules/:scheduleId
 // @access  Private (Traveler only)   
 
