@@ -425,7 +425,7 @@ export const getMySchedules = asyncHandler(async (req, res, next) => {
 
 // @desc    Update schedule
 // @route   PUT /api/traveler/schedules/:scheduleId
-// @access  Private (Traveler only)
+// @access  Private (Traveler only)   
 
 
 export const updateSchedule = asyncHandler(async (req, res, next) => {
