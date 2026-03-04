@@ -4,13 +4,13 @@ import mongoose from "mongoose"
 const supportTicketSchema = new mongoose.Schema({
   ticket_id: {
     type: String,
-    required: true,
+    // required: true,
     unique: true,
     trim: true
   },
   ticket_number: {
     type: String,
-    required: true,
+    // required: true,
     unique: true,
     trim: true
   },
@@ -62,28 +62,26 @@ const supportTicketSchema = new mongoose.Schema({
 });
 
 // Auto-generate ticket_id and ticket_number
-supportTicketSchema.pre('save', async function(next) {
-  if (this.ticket_id) return next();
-  
-  const count = await this.constructor.countDocuments();
-  this.ticket_id = `TKT${String(count + 1).padStart(6, '0')}`;
-  
-  // Generate ticket number: SUP + YYYYMMDD + counter
+// ✅ Use pre('validate') NOT pre('save')
+// Auto-generate ticket_id and ticket_number BEFORE validation
+supportTicketSchema.pre('validate', async function() {
+  if (this.ticket_id) return; // already set, skip
+
   const date = new Date();
-  const dateStr = date.getFullYear() + 
-                  String(date.getMonth() + 1).padStart(2, '0') + 
+  const dateStr = date.getFullYear() +
+                  String(date.getMonth() + 1).padStart(2, '0') +
                   String(date.getDate()).padStart(2, '0');
-  this.ticket_number = `SUP${dateStr}${String(count + 1).padStart(4, '0')}`;
-  
-  next();
+  const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+
+  this.ticket_id = `TKT${dateStr}${randomSuffix}`;
+  this.ticket_number = `SUP${dateStr}${randomSuffix}`;
 });
 
 // Auto-set resolved_at when status changes to RESOLVED
-supportTicketSchema.pre('save', function(next) {
+supportTicketSchema.pre('save', function() {
   if (this.isModified('ticket_status') && this.ticket_status === 'RESOLVED' && !this.resolved_at) {
     this.resolved_at = new Date();
   }
-  next();
 });
 
 export default mongoose.model('SupportTicket', supportTicketSchema);

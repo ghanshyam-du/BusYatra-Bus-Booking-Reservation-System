@@ -10,21 +10,21 @@ const SupportTickets = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showNewTicketModal, setShowNewTicketModal] = useState(false);
-  const [newTicket, setNewTicket] = useState({
-    subject: '',
-    description: '',
-    priority: 'MEDIUM',
-    ticket_type: 'TECHNICAL_ISSUE' // Default type
-  });
+const [newTicket, setNewTicket] = useState({
+  subject: '',
+  description: '',
+  priority: 'MEDIUM',
+  ticket_type: 'TECHNICAL'  // ← was 'TECHNICAL_ISSUE'
+});
 
-  const ticketTypes = [
-    { value: 'TECHNICAL_ISSUE', label: 'Technical Issue' },
-    { value: 'PAYMENT_ISSUE', label: 'Payment Problem' },
-    { value: 'ACCOUNT_MANAGEMENT', label: 'Account Management' },
-    { value: 'OTHER', label: 'Other' }
-  ];
+ const ticketTypes = [
+  { value: 'TECHNICAL', label: 'Technical Issue' },
+  { value: 'BILLING', label: 'Payment / Billing Problem' },
+  { value: 'COMPLAINT', label: 'Complaint' },
+  { value: 'GENERAL', label: 'General Inquiry' }
+];
 
-  const priorities = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
+const priorities = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']; // Remove URGENT, add CRITICAL
 
   useEffect(() => {
     fetchTickets();
