@@ -1,7 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { UserCheck, Building, Mail, Phone, MapPin, CheckCircle, AlertCircle, Search, ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { UserCheck, Building, Mail, Phone, MapPin, Search, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import adminService from '../../services/adminService';
 import toast from 'react-hot-toast';
@@ -15,29 +13,55 @@ const OnboardTraveler = () => {
 
   const [formData, setFormData] = useState({
     company_name: '',
-    contact_number: '',
-    address: '',
-    role: 'TRAVELER'
+    business_contact: '',
+    address: {
+      street: '',
+      city: '',
+      state: '',
+      pincode: ''
+    }
   });
 
   useEffect(() => {
     fetchPotentialTravelers();
   }, []);
 
-  const fetchPotentialTravelers = async () => {
-    try {
-      const response = await adminService.getUsers({ role: 'CUSTOMER' });
-      setUsers(response.data || []);
-    } catch (error) {
-      toast.error('Failed to load eligible users');
-    }
-  };
+ const fetchPotentialTravelers = async () => {
+  try {
+    const response = await adminService.getUsers({});  // ← remove role filter
+    console.log('API Response:', response);
+
+    let allUsers = [];
+    if (Array.isArray(response)) allUsers = response;
+    else if (Array.isArray(response?.data)) allUsers = response.data;
+    else if (Array.isArray(response?.data?.data)) allUsers = response.data.data;
+
+    // Filter out admins on frontend
+    const customers = allUsers.filter(u => 
+      u.role !== 'ADMIN' && u.role !== 'TRAVELER'
+    );
+    setUsers(customers);
+  } catch (error) {
+    console.error('Fetch users error:', error);
+    toast.error('Failed to load eligible users');
+  }
+};
 
   const handleUserSelect = (user) => {
     setSelectedUser(user);
     setFormData(prev => ({
       ...prev,
-      contact_number: user.mobile_number || prev.contact_number
+      business_contact: user.mobile_number || ''
+    }));
+  };
+
+  const handleAddressChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      address: {
+        ...prev.address,
+        [field]: value
+      }
     }));
   };
 
@@ -50,11 +74,16 @@ const OnboardTraveler = () => {
 
     setLoading(true);
     try {
-      await adminService.onboardTraveler(selectedUser.user_id, formData);
+      await adminService.onboardTraveler({
+        user_id: selectedUser.user_id,
+        company_name: formData.company_name,
+        business_contact: formData.business_contact,
+        address: formData.address
+      });
       toast.success('Traveler onboarded successfully!');
       navigate('/admin/travelers');
     } catch (error) {
-      toast.error(error.message || 'Failed to onboard traveler');
+      toast.error(error.response?.data?.error || error.message || 'Failed to onboard traveler');
     } finally {
       setLoading(false);
     }
@@ -93,22 +122,24 @@ const OnboardTraveler = () => {
             </div>
 
             <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-              {filteredUsers.map(user => (
-                <button
-                  key={user.user_id}
-                  onClick={() => handleUserSelect(user)}
-                  className={`w-full text-left p-3 rounded-xl transition-all border ${selectedUser?.user_id === user.user_id
-                      ? 'bg-primary/10 border-primary/30 ring-1 ring-primary/20'
-                      : 'bg-white/5 border-transparent hover:bg-white/10'
+              {filteredUsers.length > 0 ? (
+                filteredUsers.map(user => (
+                  <button
+                    key={user.user_id}
+                    onClick={() => handleUserSelect(user)}
+                    className={`w-full text-left p-3 rounded-xl transition-all border ${
+                      selectedUser?.user_id === user.user_id
+                        ? 'bg-primary/10 border-primary/30 ring-1 ring-primary/20'
+                        : 'bg-white/5 border-transparent hover:bg-white/10'
                     }`}
-                >
-                  <p className={`font-medium text-sm ${selectedUser?.user_id === user.user_id ? 'text-primary' : 'text-white'}`}>
-                    {user.full_name}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                </button>
-              ))}
-              {filteredUsers.length === 0 && (
+                  >
+                    <p className={`font-medium text-sm ${selectedUser?.user_id === user.user_id ? 'text-primary' : 'text-white'}`}>
+                      {user.full_name}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                  </button>
+                ))
+              ) : (
                 <div className="text-center py-8 text-gray-600 text-sm">
                   No eligible customers found
                 </div>
@@ -120,6 +151,8 @@ const OnboardTraveler = () => {
         {/* Right Column: Company Details Form */}
         <div className="lg:col-span-2">
           <form onSubmit={handleSubmit} className="bg-[#12121c] rounded-2xl p-8 border border-white/5 relative overflow-hidden">
+
+            {/* Overlay when no user selected */}
             {!selectedUser && (
               <div className="absolute inset-0 bg-[#12121c]/80 backdrop-blur-sm z-10 flex items-center justify-center text-center p-8">
                 <div className="max-w-xs">
@@ -136,6 +169,8 @@ const OnboardTraveler = () => {
             </h3>
 
             <div className="space-y-5">
+
+              {/* Company Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-1.5">Company Name</label>
                 <div className="relative">
@@ -151,6 +186,7 @@ const OnboardTraveler = () => {
                 </div>
               </div>
 
+              {/* Phone & Email */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-1.5">Business Phone</label>
@@ -159,10 +195,11 @@ const OnboardTraveler = () => {
                     <input
                       type="tel"
                       required
-                      value={formData.contact_number}
-                      onChange={(e) => setFormData({ ...formData, contact_number: e.target.value })}
+                      maxLength={10}
+                      value={formData.business_contact}
+                      onChange={(e) => setFormData({ ...formData, business_contact: e.target.value })}
                       className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary/50 outline-none transition"
-                      placeholder="+91 98765 43210"
+                      placeholder="9876543210"
                     />
                   </div>
                 </div>
@@ -180,21 +217,63 @@ const OnboardTraveler = () => {
                 </div>
               </div>
 
+              {/* Street Address */}
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1.5">Headquarters Address</label>
+                <label className="block text-sm font-medium text-gray-400 mb-1.5">Street Address</label>
                 <div className="relative">
                   <MapPin className="absolute left-3.5 top-3.5 w-4 h-4 text-gray-500" />
                   <textarea
                     required
-                    rows="3"
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    rows="2"
+                    value={formData.address.street}
+                    onChange={(e) => handleAddressChange('street', e.target.value)}
                     className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary/50 outline-none transition resize-none"
-                    placeholder="Full business address..."
+                    placeholder="Street / Area / Locality"
                   />
                 </div>
               </div>
 
+              {/* City & State */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5">City</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.address.city}
+                    onChange={(e) => handleAddressChange('city', e.target.value)}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary/50 outline-none transition"
+                    placeholder="e.g., Mumbai"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5">State</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.address.state}
+                    onChange={(e) => handleAddressChange('state', e.target.value)}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary/50 outline-none transition"
+                    placeholder="e.g., Maharashtra"
+                  />
+                </div>
+              </div>
+
+              {/* Pincode */}
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1.5">Pincode</label>
+                <input
+                  type="text"
+                  required
+                  maxLength={6}
+                  value={formData.address.pincode}
+                  onChange={(e) => handleAddressChange('pincode', e.target.value)}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary/50 outline-none transition"
+                  placeholder="e.g., 400001"
+                />
+              </div>
+
+              {/* Submit */}
               <div className="pt-4 border-t border-white/5">
                 <button
                   type="submit"
@@ -209,10 +288,11 @@ const OnboardTraveler = () => {
                     </>
                   )}
                 </button>
-                <p className="textAlign-center mt-3 text-xs text-gray-500">
+                <p className="text-center mt-3 text-xs text-gray-500">
                   By clicking submit, you agree to grant this user Traveler privileges.
                 </p>
               </div>
+
             </div>
           </form>
         </div>
