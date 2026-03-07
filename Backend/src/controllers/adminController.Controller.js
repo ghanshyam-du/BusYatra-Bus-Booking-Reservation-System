@@ -23,9 +23,9 @@ import asyncHandler from "../utils/asyncHandler.utils.js"
 export const getAllTravelers = asyncHandler(async (req, res, next) => {
   const { status, search, page = 1, limit = 10 } = req.query;
 
-  
+
   let query = {};
-  
+
   if (status) {
     query.verification_status = status.toUpperCase();
   }
@@ -71,7 +71,7 @@ export const getTravelerDetails = asyncHandler(async (req, res, next) => {
   }
 
   // Get traveler's buses count
-  const busCount = await Bus.countDocuments({ traveler_id:traveler.traveler_id });
+  const busCount = await Bus.countDocuments({ traveler_id: traveler.traveler_id });
 
   // Get traveler's total revenue
   const revenueStats = await Booking.aggregate([
@@ -170,7 +170,7 @@ export const updateTravelerStatus = asyncHandler(async (req, res, next) => {
   }
 
   const traveler = await Traveler.findOne({ traveler_id: req.params.id });
-  
+
   if (!traveler) {
     return next(new ErrorResponse('Traveler not found', 404));
   }
@@ -206,7 +206,7 @@ export const getAllTickets = asyncHandler(async (req, res, next) => {
   const { status, priority, type, page = 1, limit = 10 } = req.query;
 
   let query = {};
-  
+
   if (status) query.ticket_status = status.toUpperCase();
   if (priority) query.priority = priority.toUpperCase();
   if (type) query.ticket_type = type.toUpperCase();
@@ -260,14 +260,14 @@ export const getTicketDetails = asyncHandler(async (req, res, next) => {
 
 export const assignTicket = asyncHandler(async (req, res, next) => {
   const ticket = await SupportTicket.findOne({ ticket_id: req.params.id });
-  
+
   if (!ticket) {
     return next(new ErrorResponse('Ticket not found', 404));
   }
 
   // Get admin profile from req.user
   const admin = await Admin.findOne({ user_id: req.user.user_id });
-  
+
   if (!admin) {
     return next(new ErrorResponse('Admin profile not found', 404));
   }
@@ -296,7 +296,7 @@ export const resolveTicket = asyncHandler(async (req, res, next) => {
   }
 
   const ticket = await SupportTicket.findOne({ ticket_id: req.params.id });
-  
+
   if (!ticket) {
     return next(new ErrorResponse('Ticket not found', 404));
   }
@@ -406,7 +406,7 @@ export const getRevenueReport = asyncHandler(async (req, res, next) => {
 
   // Group format based on groupBy parameter
   let dateFormat;
-  switch(groupBy) {
+  switch (groupBy) {
     case 'month':
       dateFormat = '%Y-%m';
       break;
@@ -564,9 +564,9 @@ export const getAllUsers = asyncHandler(async (req, res, next) => {
   const { role, search, page = 1, limit = 10 } = req.query;
 
   let query = {};
-  
+
   if (role) query.role = role.toUpperCase();
-  
+
   if (search) {
     query.$or = [
       { full_name: { $regex: search, $options: 'i' } },
@@ -602,7 +602,7 @@ export const getAllUsers = asyncHandler(async (req, res, next) => {
 
 export const toggleUserStatus = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ user_id: req.params.id });
-  
+
   if (!user) {
     return next(new ErrorResponse('User not found', 404));
   }
@@ -630,9 +630,9 @@ export const getAllBuses = asyncHandler(async (req, res, next) => {
   const { status, search, page = 1, limit = 10 } = req.query;
 
   let query = {};
-  
+
   if (status) query.is_active = status === 'active';
-  
+
   if (search) {
     query.$or = [
       { bus_number: { $regex: search, $options: 'i' } },
@@ -644,7 +644,11 @@ export const getAllBuses = asyncHandler(async (req, res, next) => {
   const skip = (page - 1) * limit;
 
   const buses = await Bus.find(query)
-    .populate('traveler_id', 'company_name')
+    .populate({
+      path: 'traveler_id',
+      select: 'company_name',
+      foreignField: 'traveler_id'   // ← match on Traveler.traveler_id, not Traveler._id
+    })
     .sort({ created_at: -1 })
     .skip(skip)
     .limit(parseInt(limit));
@@ -668,7 +672,7 @@ export const getAllBuses = asyncHandler(async (req, res, next) => {
 
 export const deactivateBus = asyncHandler(async (req, res, next) => {
   const bus = await Bus.findOne({ bus_id: req.params.id });
-  
+
   if (!bus) {
     return next(new ErrorResponse('Bus not found', 404));
   }
