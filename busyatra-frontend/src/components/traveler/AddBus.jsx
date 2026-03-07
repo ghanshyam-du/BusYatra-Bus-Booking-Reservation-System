@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bus, MapPin, Users, IndianRupee, Wifi, Coffee, Music, BatteryCharging, Save, Bed, Tv, Lightbulb, LogOut } from 'lucide-react';
+import { Bus, MapPin, Users, IndianRupee, Wifi, Coffee, Music, BatteryCharging, Save, Bed, Tv, Lightbulb, LogOut, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import travelerService from '../../services/travelerService';
 import toast from 'react-hot-toast';
@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 const AddBus = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [busNumberError, setBusNumberError] = useState('');
   const [formData, setFormData] = useState({
     bus_number: '',
     bus_type: 'AC Seater',
@@ -38,6 +39,8 @@ const AddBus = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // Clear bus number error when user starts editing
+    if (name === 'bus_number') setBusNumberError('');
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -57,6 +60,7 @@ const AddBus = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setBusNumberError('');
 
     // Validate bus number format
     if (!validateBusNumber(formData.bus_number.toUpperCase().trim())) {
@@ -106,7 +110,16 @@ const AddBus = () => {
       toast.success('Bus added successfully!');
       navigate('/traveler/buses');
     } catch (error) {
-      toast.error(error.message || 'Failed to add bus');
+      // Check specifically for duplicate bus number error
+      const isDuplicate =
+        error?.response?.data?.error === 'Bus number already exists' ||
+        error?.message?.toLowerCase().includes('bus number already exists');
+
+      if (isDuplicate) {
+        setBusNumberError('This bus number is already registered. Please use a different bus number.');
+      } else {
+        toast.error(error.message || 'Failed to add bus');
+      }
     } finally {
       setLoading(false);
     }
@@ -139,15 +152,26 @@ const AddBus = () => {
                 required
                 maxLength={10}
                 value={formData.bus_number}
-                onChange={(e) => setFormData(prev => ({ ...prev, bus_number: e.target.value.toUpperCase() }))}
+                onChange={(e) => {
+                  setBusNumberError('');
+                  setFormData(prev => ({ ...prev, bus_number: e.target.value.toUpperCase() }));
+                }}
                 placeholder="GJ01AB1234"
                 className={`w-full px-4 py-3 bg-white border rounded-xl text-gray-900 placeholder:text-gray-400 focus:ring-1 focus:ring-primary/50 outline-none transition ${
-                  formData.bus_number && !validateBusNumber(formData.bus_number.toUpperCase())
-                    ? 'border-red-400'
+                  busNumberError || (formData.bus_number && !validateBusNumber(formData.bus_number.toUpperCase()))
+                    ? 'border-red-400 bg-red-50'
                     : 'border-gray-300'
                 }`}
               />
               <p className="text-xs text-gray-400 mt-1">Format: GJ01AB1234</p>
+
+              {/* ── Duplicate Bus Number Error Banner ── */}
+              {busNumberError && (
+                <div className="mt-2 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl">
+                  <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+                  <p className="text-sm text-red-600 font-medium">{busNumberError}</p>
+                </div>
+              )}
             </div>
 
             {/* Bus Type */}
@@ -326,7 +350,7 @@ const AddBus = () => {
           )}
         </div>
 
-        {/* Form Actions */}
+        {/* Form Actions — Edit button removed, only Cancel + Save */}
         <div className="pt-6 border-t border-gray-100 flex items-center justify-end gap-4">
           <button
             type="button"

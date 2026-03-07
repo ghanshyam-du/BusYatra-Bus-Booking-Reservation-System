@@ -180,12 +180,7 @@ const BusList = () => {
 
                 {/* Card Footer Actions */}
                 <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-2">
-                  <Link
-                    to={`/traveler/edit-bus/${bus.bus_id}`}
-                    className="flex-1 py-2 px-3 bg-white hover:bg-gray-50 text-gray-700 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2 border border-gray-200"
-                  >
-                    <Edit className="w-4 h-4" /> Edit
-                  </Link>
+                
                   <button
                     onClick={() => handleDelete(bus.bus_id)}
                     className="flex-1 py-2 px-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2 border border-red-100"
