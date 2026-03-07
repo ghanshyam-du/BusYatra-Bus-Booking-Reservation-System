@@ -58,10 +58,10 @@ const travelerSchema = new mongoose.Schema({
 });
 
 // Pre-save hook to auto-generate traveler_id
-travelerSchema.pre('save', async function(next) {
+travelerSchema.pre('save', async function() {
   // Only generate for new documents
   if (!this.isNew || this.traveler_id) {
-    return next();
+    return;
   }
   
   try {
@@ -80,7 +80,7 @@ travelerSchema.pre('save', async function(next) {
     }
     
     this.traveler_id = `TRV${String(nextNumber).padStart(6, '0')}`;
-    // next();
+   
   } catch (error) {
     next(error);
   }

@@ -198,9 +198,7 @@ const TravelerManagement = () => {
                       <><CheckCircle className="w-4 h-4" /> Approve</>
                     )}
                   </button>
-                  <button className="px-3 py-2 bg-white hover:bg-gray-100 text-gray-600 rounded-lg border border-gray-200 transition text-sm font-medium">
-                    View
-                  </button>
+                
                 </div>
               </motion.div>
             ))}
