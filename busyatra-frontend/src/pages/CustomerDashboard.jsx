@@ -6,7 +6,7 @@ import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import BusSearch from '../components/customer/BusSearch';
 import MyBookings from '../components/customer/MyBookings';
-import UserProfile from '../components/customer/UserProfile';
+import UserProfile from '../components/UserProfile';
 import { useAuth } from '../context/AuthContext';
 import { cn } from '../utils/cn';
 

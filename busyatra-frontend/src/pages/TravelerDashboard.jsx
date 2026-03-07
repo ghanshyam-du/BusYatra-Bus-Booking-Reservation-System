@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import {
@@ -10,7 +9,8 @@ import {
   LogOut,
   Users,
   Menu,
-  X
+  X,
+  UserCircle
 } from 'lucide-react';
 import Navbar from '../components/common/Navbar';
 import BusList from '../components/traveler/BusList';
@@ -24,6 +24,7 @@ import { useAuth } from '../context/AuthContext';
 import { cn } from '../utils/cn';
 import { motion, AnimatePresence } from 'framer-motion';
 import travelerService from '../services/travelerService';
+import UserProfile from '../components/UserProfile';
 
 const DashboardHome = ({ user }) => {
   const [stats, setStats] = React.useState(null);
@@ -90,7 +91,9 @@ const DashboardHome = ({ user }) => {
     <div className="flex flex-col h-full w-full">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-1">Welcome Back, {user?.full_name?.split(' ')[0]}!</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-1">
+            Welcome Back, {user?.full_name?.split(' ')[0]}!
+          </h2>
           <p className="text-gray-500">Here's what's happening with your fleet today.</p>
         </div>
       </div>
@@ -138,8 +141,13 @@ const DashboardHome = ({ user }) => {
             <Bus className="w-8 h-8 text-blue-600" />
           </div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">Manage Fleet</h3>
-          <p className="text-gray-500 text-sm max-w-[250px] mb-6">Add new buses, update details or remove inactive vehicles from your fleet.</p>
-          <Link to="/traveler/buses" className="px-5 py-2.5 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors inline-flex items-center gap-2">
+          <p className="text-gray-500 text-sm max-w-[250px] mb-6">
+            Add new buses, update details or remove inactive vehicles from your fleet.
+          </p>
+          <Link
+            to="/traveler/buses"
+            className="px-5 py-2.5 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors inline-flex items-center gap-2"
+          >
             View Buses
           </Link>
         </div>
@@ -149,8 +157,13 @@ const DashboardHome = ({ user }) => {
             <Calendar className="w-8 h-8 text-green-600" />
           </div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">Schedule Trips</h3>
-          <p className="text-gray-500 text-sm max-w-[250px] mb-6">Create new routes, manage timings and oversee all active schedules easily.</p>
-          <Link to="/traveler/schedules" className="px-5 py-2.5 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors inline-flex items-center gap-2">
+          <p className="text-gray-500 text-sm max-w-[250px] mb-6">
+            Create new routes, manage timings and oversee all active schedules easily.
+          </p>
+          <Link
+            to="/traveler/schedules"
+            className="px-5 py-2.5 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors inline-flex items-center gap-2"
+          >
             View Schedules
           </Link>
         </div>
@@ -170,27 +183,36 @@ const TravelerDashboard = () => {
     return location.pathname.includes(path) && path !== '/traveler';
   };
 
+  // ✅ Profile nav item added here
   const navItems = [
-    { name: 'Dashboard', path: '/traveler', icon: LayoutDashboard },
-    { name: 'My Buses', path: '/traveler/buses', icon: Bus },
-    { name: 'Schedules', path: '/traveler/schedules', icon: Calendar },
-    { name: 'Bookings', path: '/traveler/bookings', icon: BarChart3 },
-    { name: 'Support', path: '/traveler/tickets', icon: Users }, // Changed icon to match typical support icon usage or keep Users if preferred
+    { name: 'Dashboard',  path: '/traveler',          icon: LayoutDashboard },
+    { name: 'My Buses',   path: '/traveler/buses',     icon: Bus             },
+    { name: 'Schedules',  path: '/traveler/schedules', icon: Calendar        },
+    { name: 'Bookings',   path: '/traveler/bookings',  icon: BarChart3       },
+    { name: 'Support',    path: '/traveler/tickets',   icon: Users           },
+    { name: 'Profile',    path: '/traveler/profile',   icon: UserCircle      },
   ];
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <div className="mb-8 px-2">
         <h2 className="text-xl font-bold text-gray-900 tracking-tight">Traveler Portal</h2>
-        <div className="flex items-center gap-3 mt-6 p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
-          <div className="w-12 h-12 rounded-full bg-gray-900 flex items-center justify-center text-white font-bold text-xl shadow-md">
+
+        {/* ✅ Avatar now links to profile page */}
+        <Link
+          to="/traveler/profile"
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="flex items-center gap-3 mt-6 p-4 bg-white border border-gray-100 rounded-2xl shadow-sm hover:border-gray-300 hover:shadow-md transition-all group"
+        >
+          <div className="w-12 h-12 rounded-full bg-gray-900 flex items-center justify-center text-white font-bold text-xl shadow-md group-hover:bg-gray-700 transition-colors">
             {user?.full_name?.[0] || 'T'}
           </div>
-          <div className="overflow-hidden">
+          <div className="overflow-hidden flex-1">
             <p className="text-sm font-semibold text-gray-900 truncate">{user?.full_name}</p>
             <p className="text-xs text-gray-500 font-medium mt-0.5">Bus Operator</p>
           </div>
-        </div>
+          <UserCircle size={16} className="text-gray-400 group-hover:text-gray-600 shrink-0 transition-colors" />
+        </Link>
       </div>
 
       <nav className="flex-1 space-y-1.5 px-2">
@@ -206,7 +228,13 @@ const TravelerDashboard = () => {
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50/80"
             )}
           >
-            <item.icon size={20} className={cn("transition-transform duration-200", isActive(item.path) ? "scale-105" : "group-hover:scale-105")} />
+            <item.icon
+              size={20}
+              className={cn(
+                "transition-transform duration-200",
+                isActive(item.path) ? "scale-105" : "group-hover:scale-105"
+              )}
+            />
             <span className="font-medium relative z-10">{item.name}</span>
             {isActive(item.path) && (
               <motion.div
@@ -263,10 +291,16 @@ const TravelerDashboard = () => {
               exit={{ opacity: 0, x: -100 }}
               className="fixed inset-0 z-50 lg:hidden"
             >
-              <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
+              <div
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                onClick={() => setIsMobileMenuOpen(false)}
+              />
               <div className="absolute left-0 top-0 bottom-0 w-3/4 max-w-xs bg-white p-6 shadow-2xl border-r border-gray-200">
                 <div className="flex justify-end mb-4">
-                  <button onClick={() => setIsMobileMenuOpen(false)} className="text-gray-400 hover:text-gray-900">
+                  <button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-gray-400 hover:text-gray-900"
+                  >
                     <X size={24} />
                   </button>
                 </div>
@@ -288,6 +322,7 @@ const TravelerDashboard = () => {
               <Route path="add-schedule" element={<AddSchedule />} />
               <Route path="bookings" element={<BookingAnalytics />} />
               <Route path="tickets" element={<SupportTickets />} />
+              <Route path="profile" element={<UserProfile />} />
             </Routes>
           </div>
         </main>
