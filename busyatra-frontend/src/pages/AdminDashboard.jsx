@@ -1,7 +1,10 @@
-
 import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Bus, Ticket, MessageSquare, BarChart3, LogOut, UserCheck, Menu, X, ChevronRight, Shield } from 'lucide-react';
+import {
+  LayoutDashboard, Users, Bus, Ticket, MessageSquare,
+  BarChart3, LogOut, UserCheck, Menu, X, ChevronRight,
+  Shield, UserCircle
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import DashboardStats from '../components/admin/DashboardStats';
 import TravelerManagement from '../components/admin/TravelerManagement';
@@ -10,6 +13,7 @@ import TicketManagement from '../components/admin/TicketManagement';
 import RevenueReports from '../components/admin/RevenueReports';
 import UserManagement from '../components/admin/UserManagement';
 import BusManagement from '../components/admin/BusManagement';
+import UserProfile from '../components/UserProfile';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const AdminDashboard = () => {
@@ -29,18 +33,19 @@ const AdminDashboard = () => {
   };
 
   const navItems = [
-    { path: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
-    { path: '/admin/travelers', icon: UserCheck, label: 'Travelers' },
-    { path: '/admin/users', icon: Users, label: 'Users' },
-    { path: '/admin/buses', icon: Bus, label: 'Buses' },
-    { path: '/admin/tickets', icon: MessageSquare, label: 'Support Tickets' },
-    { path: '/admin/reports', icon: BarChart3, label: 'Reports' },
+    { path: '/admin',           icon: LayoutDashboard, label: 'Dashboard',       exact: true },
+    { path: '/admin/travelers', icon: UserCheck,       label: 'Travelers'                    },
+    { path: '/admin/users',     icon: Users,           label: 'Users'                        },
+    { path: '/admin/buses',     icon: Bus,             label: 'Buses'                        },
+    { path: '/admin/tickets',   icon: MessageSquare,   label: 'Support Tickets'              },
+    { path: '/admin/reports',   icon: BarChart3,       label: 'Reports'                      },
+    { path: '/admin/profile',   icon: UserCircle,      label: 'Profile'                      },
   ];
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
-      {/* Top Navbar */}
-      <nav className="sticky top-0 z-30 bg-[#0f0f18]/80 backdrop-blur-xl border-b border-white/5">
+      {/* ── Top Navbar ──────────────────────────────────────────────────── */}
+      <nav className="sticky top-0 z-30 bg-[#ffff]/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-[1600px] mx-auto px-4 lg:px-6 py-3">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
@@ -60,13 +65,22 @@ const AdminDashboard = () => {
                 </div>
               </Link>
             </div>
+
             <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-xl">
+              {/* ✅ Avatar links to profile */}
+              <Link
+                to="/admin/profile"
+                className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-xl transition-all duration-200 group"
+              >
                 <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-orange-600 flex items-center justify-center">
                   <span className="text-white text-xs font-bold">{user?.full_name?.[0] || 'A'}</span>
                 </div>
-                <span className="text-sm font-medium text-gray-300">{user?.full_name}</span>
-              </div>
+                <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">
+                  {user?.full_name}
+                </span>
+                <UserCircle className="w-3.5 h-3.5 text-gray-500 group-hover:text-gray-300 transition-colors" />
+              </Link>
+
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-red-500/10 hover:text-red-400 text-gray-400 rounded-xl transition-all duration-200 text-sm font-medium"
@@ -93,7 +107,7 @@ const AdminDashboard = () => {
           )}
         </AnimatePresence>
 
-        {/* Sidebar */}
+        {/* ── Sidebar ─────────────────────────────────────────────────────── */}
         <aside className={`
           fixed lg:sticky top-16 lg:top-[61px] z-20 lg:z-10
           w-[260px] h-[calc(100vh-64px)] lg:h-[calc(100vh-61px)]
@@ -105,16 +119,19 @@ const AdminDashboard = () => {
         `}>
           <nav className="space-y-1">
             {navItems.map((item) => {
-              const active = item.exact ? location.pathname === item.path : isActive(item.path.replace('/admin/', ''));
+              const active = item.exact
+                ? location.pathname === item.path
+                : isActive(item.path.replace('/admin/', ''));
               return (
                 <Link
                   key={item.path}
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
-                  className={`group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${active
+                  className={`group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                    active
                       ? 'bg-gradient-to-r from-primary/15 to-orange-600/10 text-primary shadow-sm'
                       : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
-                    }`}
+                  }`}
                 >
                   <item.icon className={`w-5 h-5 transition-colors ${active ? 'text-primary' : 'text-gray-600 group-hover:text-gray-400'}`} />
                   <span className="font-medium text-sm">{item.label}</span>
@@ -134,7 +151,7 @@ const AdminDashboard = () => {
           </div>
         </aside>
 
-        {/* Main Content */}
+        {/* ── Main Content ─────────────────────────────────────────────────── */}
         <main className="flex-1 min-h-[calc(100vh-61px)] p-4 lg:p-8">
           <Routes>
             <Route index element={<DashboardStats />} />
@@ -144,6 +161,7 @@ const AdminDashboard = () => {
             <Route path="buses" element={<BusManagement />} />
             <Route path="tickets" element={<TicketManagement />} />
             <Route path="reports" element={<RevenueReports />} />
+            <Route path="profile" element={<UserProfile />} />
           </Routes>
         </main>
       </div>
