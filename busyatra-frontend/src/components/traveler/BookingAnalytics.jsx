@@ -113,7 +113,7 @@ const BookingAnalytics = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="bg-[#12121c] p-5 rounded-2xl border border-white/5"
+            className="bg-[#353540] p-5 rounded-2xl border border-white/5"
           >
             <div className={`w-10 h-10 rounded-xl ${kpi.bg} flex items-center justify-center mb-3`}>
               <kpi.icon className={`w-5 h-5 ${kpi.color}`} />
@@ -130,11 +130,11 @@ const BookingAnalytics = () => {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
-          className="bg-[#12121c] p-6 rounded-2xl border border-white/5"
+          className="bg-[#575779] p-6 rounded-2xl border border-white/5"
         >
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-bold text-white">Weekly Bookings</h3>
-            <select className="bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300 px-2 py-1 outline-none">
+            <select className="bg-[#353540] border border-white/10 rounded-lg text-xs text-gray-300 px-2 py-1 outline-none">
               <option>This Week</option>
               <option>Last Week</option>
             </select>
@@ -160,7 +160,7 @@ const BookingAnalytics = () => {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3 }}
-          className="bg-[#12121c] p-6 rounded-2xl border border-white/5"
+          className="bg-[#575779] p-6 rounded-2xl border border-white/5"
         >
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-bold text-white">Revenue Trend</h3>
@@ -186,12 +186,12 @@ const BookingAnalytics = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="bg-[#12121c] rounded-2xl p-6 border border-white/5"
+        className="bg-[#43435f] rounded-2xl p-6 border border-white/5"
       >
         <div className="flex items-center justify-between mb-5">
           <h3 className="font-bold text-white">Recent Bookings</h3>
           {bookingStats && (
-            <span className="text-xs text-gray-400 bg-white/5 px-3 py-1 rounded-full">
+            <span className="text-xs text-white bg-white/5 px-3 py-1 rounded-full">
               {bookingStats.total_bookings} total
             </span>
           )}
@@ -206,7 +206,7 @@ const BookingAnalytics = () => {
             {/* Table Header */}
             <div className="hidden md:grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr] gap-4 px-3 pb-2 border-b border-white/5">
               {['Booking Ref', 'Journey', 'Date', 'Amount', 'Status'].map((h) => (
-                <p key={h} className="text-xs text-gray-500 font-medium uppercase tracking-wider">{h}</p>
+                <p key={h} className="text-xs text-white font-medium uppercase tracking-wider">{h}</p>
               ))}
             </div>
 
@@ -224,7 +224,7 @@ const BookingAnalytics = () => {
                   {/* Booking Ref */}
                   <div>
                     <p className="text-sm font-semibold text-white">{booking.booking_reference || '—'}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{booking.number_of_seats} seat{booking.number_of_seats !== 1 ? 's' : ''}</p>
+                    <p className="text-xs text-white mt-0.5">{booking.number_of_seats} seat{booking.number_of_seats !== 1 ? 's' : ''}</p>
                   </div>
 
                   {/* Journey */}
@@ -232,11 +232,11 @@ const BookingAnalytics = () => {
                     {booking.journey ? (
                       <>
                         <span className="text-sm text-white truncate">{booking.journey.from}</span>
-                        <ArrowRight className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
+                        <ArrowRight className="w-3.5 h-3.5 text-white flex-shrink-0" />
                         <span className="text-sm text-white truncate">{booking.journey.to}</span>
                       </>
                     ) : (
-                      <span className="text-sm text-gray-500">—</span>
+                      <span className="text-sm text-white">—</span>
                     )}
                   </div>
 
@@ -244,7 +244,7 @@ const BookingAnalytics = () => {
                   <div>
                     <p className="text-sm text-gray-300">{formatDate(booking.journey?.journey_date)}</p>
                     {booking.journey?.departure_time && (
-                      <p className="text-xs text-gray-500 mt-0.5">{booking.journey.departure_time}</p>
+                      <p className="text-xs text-white mt-0.5">{booking.journey.departure_time}</p>
                     )}
                   </div>
 
