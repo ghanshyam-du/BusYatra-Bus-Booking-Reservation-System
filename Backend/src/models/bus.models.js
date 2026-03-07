@@ -61,19 +61,29 @@ const busSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Auto-generate bus_id
-busSchema.pre('save', async function(next) {
-  // if (this.bus_id) return next();
-  
-  const count = await this.constructor.countDocuments();
-  this.bus_id = `BUS${String(count + 1).padStart(6, '0')}`;
-  // next();
+// Auto-generate bus_id by finding the highest existing one and incrementing
+busSchema.pre('save', async function () {
+  if (this.bus_id) return; // Skip if already set
+
+  const lastBus = await this.constructor
+    .findOne({ bus_id: { $exists: true } })
+    .sort({ bus_id: -1 })
+    .select('bus_id')
+    .lean();
+
+  let nextNumber = 1;
+  if (lastBus?.bus_id) {
+    const lastNumber = parseInt(lastBus.bus_id.replace('BUS', ''), 10);
+    if (!isNaN(lastNumber)) nextNumber = lastNumber + 1;
+  }
+
+  this.bus_id = `BUS${String(nextNumber).padStart(6, '0')}`;
 });
 
 // Validate from and to locations are different
-busSchema.pre('save', function(next) {
-  if (this.from_location === this.to_location) {
-    next(new Error('From and To locations must be different'));
+busSchema.pre('save', function (next) {
+  if (this.from_location?.trim().toLowerCase() === this.to_location?.trim().toLowerCase()) {
+    return next(new Error('From and To locations must be different'));
   }
   // next();
 });
