@@ -205,22 +205,61 @@ export const updateTravelerStatus = asyncHandler(async (req, res, next) => {
 export const getAllTickets = asyncHandler(async (req, res, next) => {
   const { status, priority, type, page = 1, limit = 10 } = req.query;
 
-  let query = {};
-
-  if (status) query.ticket_status = status.toUpperCase();
-  if (priority) query.priority = priority.toUpperCase();
-  if (type) query.ticket_type = type.toUpperCase();
+  let matchStage = {};
+  if (status)   matchStage.ticket_status = status.toUpperCase();
+  if (priority) matchStage.priority = priority.toUpperCase();
+  if (type)     matchStage.ticket_type = type.toUpperCase();
 
   const skip = (page - 1) * limit;
 
-  const tickets = await SupportTicket.find(query)
-    .populate('traveler_id', 'company_name business_contact')
-    .populate('admin_id', 'user_id')
-    .sort({ created_at: -1 })
-    .skip(skip)
-    .limit(parseInt(limit));
+  const tickets = await SupportTicket.aggregate([
+    { $match: matchStage },
+    {
+      $lookup: {
+        from: 'travelers',
+        localField: 'traveler_id',
+        foreignField: 'traveler_id',
+        as: 'traveler_id'
+      }
+    },
+    {
+      $addFields: {
+        traveler_id: {
+          $cond: {
+            if: { $gt: [{ $size: '$traveler_id' }, 0] },
+            then: {
+              $arrayElemAt: ['$traveler_id', 0]  // keeps company_name, business_contact etc.
+            },
+            else: null
+          }
+        }
+      }
+    },
+    {
+      $lookup: {
+        from: 'admins',           // check your actual collection name
+        localField: 'admin_id',
+        foreignField: 'admin_id',
+        as: 'admin_id'
+      }
+    },
+    {
+      $addFields: {
+        admin_id: {
+          $cond: {
+            if: { $gt: [{ $size: '$admin_id' }, 0] },
+            then: { $arrayElemAt: ['$admin_id', 0] },
+            else: null
+          }
+        }
+      }
+    },
+    { $sort: { created_at: -1 } },
+    { $skip: skip },
+    { $limit: parseInt(limit) }
+  ]);
 
-  const total = await SupportTicket.countDocuments(query);
+  const total = await SupportTicket.countDocuments(matchStage);
 
   res.status(200).json({
     success: true,
@@ -264,10 +303,10 @@ export const assignTicket = asyncHandler(async (req, res, next) => {
   if (!ticket) {
     return next(new ErrorResponse('Ticket not found', 404));
   }
-
+  console.log('Looking for admin with user_id:', req.user.user_id);
   // Get admin profile from req.user
   const admin = await Admin.findOne({ user_id: req.user.user_id });
-
+console.log('Found admin:', admin);
   if (!admin) {
     return next(new ErrorResponse('Admin profile not found', 404));
   }
