@@ -24,14 +24,18 @@ import { protect, authorize } from "../middlewares/auth.middlewares.js"
 
 // Apply authentication and admin authorization to all routes
 router.use(protect);
+router.use((req, res, next) => {
+  console.log('🔑 Logged in user role:', req.user?.role); // ← add this
+  next();
+});
 router.use(authorize('ADMIN'));
 
 // ================================================================
 // TRAVELER MANAGEMENT ROUTES
 // ================================================================
 router.get('/travelers', getAllTravelers);
-router.get('/travelers/:id', getTravelerDetails);
-router.post('/travelers/onboard', onboardTraveler);
+router.post('/travelers/onboard', onboardTraveler);   // ← moved up
+router.get('/travelers/:id', getTravelerDetails);     // ← moved down
 router.put('/travelers/:id/status', updateTravelerStatus);
 
 // ================================================================

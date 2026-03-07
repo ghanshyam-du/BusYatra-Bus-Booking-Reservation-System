@@ -18,10 +18,11 @@ const TravelerManagement = () => {
   const fetchTravelers = async () => {
     try {
       const params = {};
-      if (statusFilter !== 'all') params.status = statusFilter;
-      const response = await adminService.getAllTravelers(params);
+      if (statusFilter !== 'all') params.status = statusFilter.toUpperCase();
+      const response = await adminService.getTravelers(params);
       setTravelers(response.data || []);
     } catch (error) {
+      console.error('Traveler fetch error:', error.response?.data || error.message);
       toast.error('Failed to load travelers');
     } finally {
       setLoading(false);
@@ -29,13 +30,14 @@ const TravelerManagement = () => {
   };
 
   const handleUpdateStatus = async (travelerId, currentStatus) => {
-    const newStatus = currentStatus === 'approved' ? 'rejected' : 'approved';
-    if (!confirm(`Are you sure you want to ${newStatus} this traveler?`)) return;
+    const newStatus = currentStatus === 'APPROVED' ? 'REJECTED' : 'APPROVED';
+    if (!confirm(`Are you sure you want to ${newStatus.toLowerCase()} this traveler?`)) return;
     try {
       await adminService.updateTravelerStatus(travelerId, newStatus);
-      toast.success(`Traveler ${newStatus} successfully!`);
+      toast.success(`Traveler ${newStatus.toLowerCase()} successfully!`);
       fetchTravelers();
     } catch (error) {
+      console.error('Status update error:', error.response?.data || error.message);
       toast.error(error.message || 'Failed to update traveler status');
     }
   };
@@ -142,12 +144,13 @@ const TravelerManagement = () => {
                       </p>
                     </div>
                   </div>
+                  {/* FIX: use verification_status instead of status */}
                   <span className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border ${
-                    traveler.status === 'approved' ? 'bg-emerald-100 text-emerald-700 border-emerald-300' :
-                    traveler.status === 'rejected' ? 'bg-red-100 text-red-700 border-red-300' :
+                    traveler.verification_status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700 border-emerald-300' :
+                    traveler.verification_status === 'REJECTED' ? 'bg-red-100 text-red-700 border-red-300' :
                     'bg-amber-100 text-amber-700 border-amber-300'
                   }`}>
-                    {traveler.status}
+                    {traveler.verification_status}
                   </span>
                 </div>
 
@@ -157,13 +160,18 @@ const TravelerManagement = () => {
                     <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
                       <Phone className="w-4 h-4 text-gray-500" />
                     </div>
-                    <span className="truncate">{traveler.contact_number}</span>
+                    {/* FIX: backend field is business_contact not contact_number */}
+                    <span className="truncate">{traveler.business_contact}</span>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-gray-600">
                     <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
                       <MapPin className="w-4 h-4 text-gray-500" />
                     </div>
-                    <span className="truncate">{traveler.address}</span>
+                    <span className="truncate">
+                      {traveler.address
+                        ? `${traveler.address.street}, ${traveler.address.city}, ${traveler.address.state} - ${traveler.address.pincode}`
+                        : 'No address'}
+                    </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-gray-600">
                     <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
@@ -175,15 +183,16 @@ const TravelerManagement = () => {
 
                 {/* Card Footer */}
                 <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-2">
+                  {/* FIX: pass verification_status and compare uppercase */}
                   <button
-                    onClick={() => handleUpdateStatus(traveler.traveler_id, traveler.status)}
+                    onClick={() => handleUpdateStatus(traveler.traveler_id, traveler.verification_status)}
                     className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-2 ${
-                      traveler.status === 'approved'
+                      traveler.verification_status === 'APPROVED'
                         ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
                         : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200'
                     }`}
                   >
-                    {traveler.status === 'approved' ? (
+                    {traveler.verification_status === 'APPROVED' ? (
                       <><XCircle className="w-4 h-4" /> Revoke</>
                     ) : (
                       <><CheckCircle className="w-4 h-4" /> Approve</>

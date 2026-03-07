@@ -42,7 +42,7 @@ export const getAllTravelers = asyncHandler(async (req, res, next) => {
   const skip = (page - 1) * limit;
 
   const travelers = await Traveler.find(query)
-    .populate('user_id', 'full_name email mobile_number')
+    .populate({ path: 'user_id', select: 'full_name email mobile_number', foreignField: 'user_id' })
     .sort({ created_at: -1 })
     .skip(skip)
     .limit(parseInt(limit));
@@ -64,7 +64,7 @@ export const getAllTravelers = asyncHandler(async (req, res, next) => {
 // @access  Private/Admin
 export const getTravelerDetails = asyncHandler(async (req, res, next) => {
   const traveler = await Traveler.findOne({ traveler_id: req.params.id })
-    .populate('user_id', 'full_name email  mobile_number role');
+    .populate({ path: 'user_id', select: 'full_name email mobile_number role', foreignField: 'user_id' })
 
   if (!traveler) {
     return next(new ErrorResponse('Traveler not found', 404));
