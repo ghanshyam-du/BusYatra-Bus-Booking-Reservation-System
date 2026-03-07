@@ -185,6 +185,12 @@ export const updateTravelerStatus = asyncHandler(async (req, res, next) => {
       { role: 'CUSTOMER' }
     );
   }
+  if(status === 'APPROVED') {
+    await User.findOneAndUpdate(
+      { user_id: traveler.user_id },
+      { role: 'TRAVELER' }
+    );
+  }
 
   res.status(200).json({
     success: true,
