@@ -14,6 +14,7 @@ import RevenueReports from '../components/admin/RevenueReports';
 import UserManagement from '../components/admin/UserManagement';
 import BusManagement from '../components/admin/BusManagement';
 import UserProfile from '../components/UserProfile';
+import TravelerDetail from '../components/admin/Travelerdetai';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const AdminDashboard = () => {
@@ -33,13 +34,13 @@ const AdminDashboard = () => {
   };
 
   const navItems = [
-    { path: '/admin',           icon: LayoutDashboard, label: 'Dashboard',       exact: true },
-    { path: '/admin/travelers', icon: UserCheck,       label: 'Travelers'                    },
-    { path: '/admin/users',     icon: Users,           label: 'Users'                        },
-    { path: '/admin/buses',     icon: Bus,             label: 'Buses'                        },
-    { path: '/admin/tickets',   icon: MessageSquare,   label: 'Support Tickets'              },
-    { path: '/admin/reports',   icon: BarChart3,       label: 'Reports'                      },
-    { path: '/admin/profile',   icon: UserCircle,      label: 'Profile'                      },
+    { path: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
+    { path: '/admin/travelers', icon: UserCheck, label: 'Travelers' },
+    { path: '/admin/users', icon: Users, label: 'Users' },
+    { path: '/admin/buses', icon: Bus, label: 'Buses' },
+    { path: '/admin/tickets', icon: MessageSquare, label: 'Support Tickets' },
+    { path: '/admin/reports', icon: BarChart3, label: 'Reports' },
+    { path: '/admin/profile', icon: UserCircle, label: 'Profile' },
   ];
 
   return (
@@ -125,11 +126,10 @@ const AdminDashboard = () => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
-                  className={`group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                    active
+                  className={`group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${active
                       ? 'bg-orange-50 text-orange-600 shadow-sm border border-orange-200'
                       : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'
-                  }`}
+                    }`}
                 >
                   <item.icon className={`w-5 h-5 transition-colors ${active ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-600'}`} />
                   <span className="font-medium text-sm">{item.label}</span>
@@ -154,6 +154,7 @@ const AdminDashboard = () => {
           <Routes>
             <Route index element={<DashboardStats />} />
             <Route path="travelers" element={<TravelerManagement />} />
+            <Route path="travelers/:travelerId" element={<TravelerDetail />} />  {/* ← ADD THIS */}
             <Route path="travelers/onboard" element={<OnboardTraveler />} />
             <Route path="users" element={<UserManagement />} />
             <Route path="buses" element={<BusManagement />} />
