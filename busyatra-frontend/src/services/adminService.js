@@ -6,7 +6,6 @@ const adminService = {
   
   getDashboardStats: async () => {
     const response = await api.get('/admin/dashboard/stats');
-    console.log('Dashboard Stats--------:', response.data); // Debug log
     return response.data;
   },
 
