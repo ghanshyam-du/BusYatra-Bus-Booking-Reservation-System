@@ -18,8 +18,15 @@ import CustomerDashboard from './pages/CustomerDashboard';
 import TravelerDashboard from './pages/TravelerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 
+// Routes where ScrollProgress should NOT appear
+const DASHBOARD_ROUTES = ['/admin', '/customer', '/traveler'];
+
 function App() {
   const location = useLocation();
+
+  const isPublicRoute = !DASHBOARD_ROUTES.some(r =>
+    location.pathname.startsWith(r)
+  );
 
   // Determine key for AnimatePresence
   // Use first segment of path for dashboard routes to prevent full unmount on sub-navigation
@@ -27,14 +34,17 @@ function App() {
     const path = location.pathname;
     if (path.startsWith('/customer')) return 'customer';
     if (path.startsWith('/traveler')) return 'traveler';
-    if (path.startsWith('/admin')) return 'admin';
+    if (path.startsWith('/admin'))    return 'admin';
     return path;
   };
 
   return (
     <AuthProvider>
       <ScrollToTop />
-      <ScrollProgress />
+
+      {/* Only show scroll progress bar on public pages (/, /login, /register) */}
+      {isPublicRoute && <ScrollProgress />}
+
       <Toaster
         position="top-right"
         toastOptions={{
@@ -62,12 +72,13 @@ function App() {
 
       <AnimatePresence mode="wait">
         <Routes location={location} key={getKey()}>
-          {/* Public Routes */}
-          <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
-          <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
+
+          {/* ── Public Routes ────────────────────────────────────────────── */}
+          <Route path="/"         element={<PageTransition><HomePage /></PageTransition>} />
+          <Route path="/login"    element={<PageTransition><LoginPage /></PageTransition>} />
           <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
 
-          {/* Protected Routes */}
+          {/* ── Protected Routes ─────────────────────────────────────────── */}
           <Route
             path="/customer/*"
             element={
@@ -101,8 +112,9 @@ function App() {
             }
           />
 
-          {/* Fallback */}
+          {/* ── Fallback ─────────────────────────────────────────────────── */}
           <Route path="*" element={<Navigate to="/" replace />} />
+
         </Routes>
       </AnimatePresence>
     </AuthProvider>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, MapPin, IndianRupee, Users, ArrowRight, Trash2, Search, Filter } from 'lucide-react';
+import { Calendar, Clock, MapPin, IndianRupee, Users, ArrowRight, Trash2, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import travelerService from '../../services/travelerService';
@@ -7,12 +7,10 @@ import toast from 'react-hot-toast';
 
 const ScheduleList = () => {
   const [schedules, setSchedules] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
+  const [loading,   setLoading]   = useState(true);
+  const [filter,    setFilter]    = useState('all');
 
-  useEffect(() => {
-    fetchSchedules();
-  }, [filter]);
+  useEffect(() => { fetchSchedules(); }, [filter]);
 
   const fetchSchedules = async () => {
     try {
@@ -20,207 +18,238 @@ const ScheduleList = () => {
       const params = {};
       if (filter !== 'all') params.status = filter;
       const response = await travelerService.getSchedules(params);
-      console.log('📋 Schedules response:', response);
       setSchedules(response.data || []);
-    } catch (error) {
-      console.error('Failed to load schedules:', error);
+    } catch {
       toast.error('Failed to load schedules');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (scheduleId) => {
-    if (!confirm('Are you sure? This will cancel the schedule.')) return;
-
+  const handleCancel = async (scheduleId) => {
+    if (!confirm('Cancel this schedule?')) return;
     try {
       await travelerService.cancelSchedule(scheduleId);
-      toast.success('Schedule cancelled successfully');
-      fetchSchedules(); // Refresh the list
-    } catch (error) {
-      const errorMsg = error.response?.data?.error || error.message || 'Failed to cancel schedule';
-      toast.error(errorMsg);
+      toast.success('Schedule cancelled');
+      fetchSchedules();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to cancel schedule');
     }
   };
 
-  // ✅ Helper function to format currency
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(amount || 0);
+  const fmtCurrency = (n) =>
+    new Intl.NumberFormat('en-IN', { style:'currency', currency:'INR', maximumFractionDigits:0 }).format(n || 0);
+
+  const fmtDate = (v) => {
+    if (!v) return '—';
+    const d = new Date(v);
+    return isNaN(d) ? '—' : d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' });
   };
 
-  // ✅ Helper function to combine journey_date with time string
-  const getFullDateTime = (journeyDate, timeString) => {
-    if (!journeyDate || !timeString) return null;
-    
-    const date = new Date(journeyDate);
-    const [hours, minutes] = timeString.split(':');
-    date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-    
-    return date;
+  /* ── status config ── */
+  const STATUS = {
+    ACTIVE:    { bg:'bg-emerald-50', text:'text-emerald-700', border:'border-emerald-200', dot:'bg-emerald-500', label:'Active'    },
+    COMPLETED: { bg:'bg-blue-50',    text:'text-blue-700',    border:'border-blue-200',    dot:'bg-blue-500',    label:'Completed' },
+    CANCELLED: { bg:'bg-red-50',     text:'text-red-700',     border:'border-red-200',     dot:'bg-red-500',     label:'Cancelled' },
   };
+  const st = (s) => STATUS[s] || { bg:'bg-gray-50', text:'text-gray-500', border:'border-gray-200', dot:'bg-gray-400', label: s };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  const filterButtons = [
-    { key: 'all', label: 'All' },
-    { key: 'ACTIVE', label: 'Active' }, // ✅ Changed to match backend enum
-    { key: 'COMPLETED', label: 'Completed' },
-    { key: 'CANCELLED', label: 'Cancelled' },
+  /* ── filter tabs ── */
+  const filters = [
+    { key:'all',       label:'All'       },
+    { key:'ACTIVE',    label:'Active'    },
+    { key:'COMPLETED', label:'Completed' },
+    { key:'CANCELLED', label:'Cancelled' },
   ];
 
+  /* ── loading skeleton ── */
+  if (loading) return (
+    <div className="space-y-4 animate-pulse" style={{ fontFamily:"'DM Sans',sans-serif" }}>
+      <div className="h-8 w-48 bg-gray-100 rounded-xl"/>
+      <div className="h-10 w-72 bg-gray-100 rounded-2xl"/>
+      {[1,2,3].map(i => <div key={i} className="h-28 bg-gray-100 rounded-2xl"/>)}
+    </div>
+  );
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-5" style={{ fontFamily:"'DM Sans',sans-serif" }}>
+
+      {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-white">Trip <span className="text-primary">Schedules</span></h2>
-          <p className="text-gray-500 text-sm mt-1">Manage departure times and active trips</p>
+          <h2 className="text-2xl font-black text-gray-900">Trip Schedules</h2>
+          <p className="text-gray-400 text-sm mt-0.5">Manage departure times and active trips</p>
         </div>
-        <Link
-          to="/traveler/add-schedule"
-          className="flex items-center justify-center gap-2 px-5 py-2.5 bg-primary hover:bg-orange-600 text-white rounded-xl transition font-medium shadow-lg shadow-primary/20"
-        >
-          <Calendar className="w-4 h-4" />
-          Add Schedule
+        <Link to="/traveler/add-schedule"
+          className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-black shadow-sm transition-all hover:opacity-90"
+          style={{ background:'linear-gradient(135deg,#f97415,#ea580c)' }}>
+          <Plus className="w-4 h-4"/> Add Schedule
         </Link>
       </div>
 
-      {/* Filters */}
-      <div className="bg-[#12121c] rounded-2xl p-2 border border-white/5 inline-flex">
-        {filterButtons.map((btn) => (
-          <button
-            key={btn.key}
-            onClick={() => setFilter(btn.key)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
-              filter === btn.key
-                ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
+      {/* ── Filter pills ── */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {filters.map((f) => (
+          <button key={f.key} onClick={() => setFilter(f.key)}
+            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+              filter === f.key
+                ? 'text-white shadow-sm'
+                : 'bg-white border border-gray-200 text-gray-500 hover:border-orange-300 hover:text-orange-500'
             }`}
-          >
-            {btn.label}
+            style={filter === f.key ? { background:'linear-gradient(135deg,#f97415,#ea580c)' } : {}}>
+            {f.label}
           </button>
         ))}
+        <span className="ml-auto text-xs text-gray-400 font-semibold">{schedules.length} schedule{schedules.length !== 1 ? 's' : ''}</span>
       </div>
 
-      {/* Schedules List */}
-      <div className="space-y-4">
+      {/* ── Schedule cards ── */}
+      <div className="space-y-3">
         <AnimatePresence>
-          {schedules.map((schedule, index) => {
-            // ✅ Combine journey_date with departure_time string to get full date
-            const departureDateTime = getFullDateTime(schedule.journey_date, schedule.departure_time);
-            const isValidDate = departureDateTime && !isNaN(departureDateTime.getTime());
-
+          {schedules.map((s, i) => {
+            const cfg = st(s.schedule_status);
             return (
-              <motion.div
-                key={schedule.schedule_id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="bg-[#12121c] rounded-2xl p-5 border border-white/5 hover:border-primary/30 transition-all group"
-              >
-                <div className="flex flex-col lg:flex-row gap-6 items-center">
-                  {/* Time & Date Column */}
-                  <div className="flex flex-col items-center lg:items-start min-w-[120px] text-center lg:text-left">
-                    <div className="text-2xl font-bold text-white">
-                      {schedule.departure_time || 'N/A'}
-                    </div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wider font-medium mt-1">
-                      {isValidDate
-                        ? departureDateTime.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' })
-                        : new Date(schedule.journey_date).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' })}
-                    </div>
-                    <div
-                      className={`mt-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${
-                        schedule.schedule_status === 'ACTIVE'
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                          : schedule.schedule_status === 'CANCELLED'
-                          ? 'bg-red-500/10 text-red-400 border-red-500/20'
-                          : schedule.schedule_status === 'COMPLETED'
-                          ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                          : 'bg-gray-800 text-gray-400 border-gray-700'
-                      }`}
-                    >
-                      {schedule.schedule_status}
-                    </div>
-                  </div>
+              <motion.div key={s.schedule_id || i}
+                initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, height:0 }}
+                transition={{ delay: i * 0.05 }}
+                className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-orange-100 transition-all overflow-hidden">
 
-                  {/* Route & Bus Info */}
-                  <div className="flex-1 w-full">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-gray-400 text-sm font-medium">{schedule.bus?.bus_number}</span>
-                      <span className="w-1 h-1 rounded-full bg-gray-600" />
-                      <span className="text-primary text-sm font-medium">{schedule.bus?.bus_type}</span>
-                    </div>
+                {/* top accent line */}
+                <div className="h-[2px]"
+                  style={{ background:`linear-gradient(90deg,${s.schedule_status === 'ACTIVE' ? '#10b981' : s.schedule_status === 'CANCELLED' ? '#ef4444' : '#6366f1'},transparent)` }}/>
 
-                    <div className="flex items-center gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between relative">
-                          {/* Connecting Line */}
-                          <div className="absolute left-0 right-0 top-1/2 h-[1px] bg-gradient-to-r from-transparent via-gray-700 to-transparent -z-10" />
+                <div className="p-5 flex flex-col lg:flex-row gap-5 items-start lg:items-center">
 
-                          <div className="bg-[#12121c] pr-4">
-                            <p className="text-white font-bold text-lg">{schedule.bus?.from_location}</p>
-                            <p className="text-xs text-gray-500">Source</p>
-                          </div>
-                          <div className="bg-[#12121c] pl-4 text-right">
-                            <p className="text-white font-bold text-lg">{schedule.bus?.to_location}</p>
-                            <p className="text-xs text-gray-500">Destination</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Seats & Price */}
-                  <div className="flex items-center gap-8 border-t lg:border-t-0 lg:border-l border-white/5 pt-4 lg:pt-0 lg:pl-6 w-full lg:w-auto justify-between lg:justify-start">
-                    <div>
-                      <div className="flex items-center gap-1.5 text-gray-400 text-xs uppercase tracking-wider mb-1">
-                        <Users className="w-3.5 h-3.5" /> Booked
-                      </div>
-                      <p className="text-white font-bold">
-                        {schedule.booked_seats || 0}{' '}
-                        <span className="text-gray-600 font-normal">/ {schedule.total_seats}</span>
+                  {/* ── Col 1: Time + Date + Status ── */}
+                  <div className="flex items-center gap-4 lg:flex-col lg:items-center lg:gap-1 lg:min-w-[100px]">
+                    <div className="text-center">
+                      <p className="text-2xl font-black text-gray-900 leading-none">
+                        {s.departure_time || '—'}
+                      </p>
+                      <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mt-1">
+                        {fmtDate(s.journey_date)}
                       </p>
                     </div>
-                    <div>
-                      <div className="flex items-center gap-1.5 text-gray-400 text-xs uppercase tracking-wider mb-1">
-                        <IndianRupee className="w-3.5 h-3.5" /> Fare
-                      </div>
-                      <p className="text-primary font-bold text-lg">{formatCurrency(schedule.bus?.fare)}</p>
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border ${cfg.bg} ${cfg.text} ${cfg.border}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`}/>
+                      {cfg.label}
+                    </span>
+                  </div>
+
+                  {/* divider */}
+                  <div className="hidden lg:block w-px h-16 bg-gray-100 flex-shrink-0"/>
+
+                  {/* ── Col 2: Route ── */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      {s.bus?.bus_number && (
+                        <span className="text-[10px] font-black bg-gray-100 text-gray-600 px-2 py-0.5 rounded-lg">
+                          {s.bus.bus_number}
+                        </span>
+                      )}
+                      {s.bus?.bus_type && (
+                        <span className="text-[10px] font-black text-orange-500 bg-orange-50 px-2 py-0.5 rounded-lg">
+                          {s.bus.bus_type}
+                        </span>
+                      )}
                     </div>
 
-                    {schedule.schedule_status === 'ACTIVE' && (
-                      <button
-                        onClick={() => handleDelete(schedule.schedule_id)}
-                        className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition ml-2"
-                        title="Cancel Schedule"
-                      >
-                        <Trash2 className="w-4 h-4" />
+                    {/* from → to */}
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <p className="text-base font-black text-gray-900 leading-tight">
+                          {s.bus?.from_location || s.from_location || '—'}
+                        </p>
+                        <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Origin</p>
+                      </div>
+                      <div className="flex items-center gap-1 text-gray-300">
+                        <div className="w-6 h-px bg-gray-200"/>
+                        <ArrowRight className="w-4 h-4 text-orange-400"/>
+                        <div className="w-6 h-px bg-gray-200"/>
+                      </div>
+                      <div>
+                        <p className="text-base font-black text-gray-900 leading-tight">
+                          {s.bus?.to_location || s.to_location || '—'}
+                        </p>
+                        <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Destination</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* divider */}
+                  <div className="hidden lg:block w-px h-16 bg-gray-100 flex-shrink-0"/>
+
+                  {/* ── Col 3: Stats ── */}
+                  <div className="flex items-center gap-6 w-full lg:w-auto border-t border-gray-50 lg:border-0 pt-4 lg:pt-0">
+
+                    {/* Seats */}
+                    <div>
+                      <div className="flex items-center gap-1 text-[9px] uppercase tracking-widest font-black text-gray-400 mb-1">
+                        <Users className="w-3 h-3"/> Seats
+                      </div>
+                      <p className="text-sm font-black text-gray-900">
+                        {s.booked_seats || 0}
+                        <span className="text-gray-400 font-semibold"> / {s.total_seats || s.bus?.total_seats || '—'}</span>
+                      </p>
+                      {/* occupancy bar */}
+                      <div className="w-20 h-1 bg-gray-100 rounded-full mt-1 overflow-hidden">
+                        <div className="h-full rounded-full bg-orange-400 transition-all"
+                          style={{ width:`${Math.min(100, ((s.booked_seats||0) / (s.total_seats||1)) * 100)}%` }}/>
+                      </div>
+                    </div>
+
+                    {/* Fare */}
+                    <div>
+                      <div className="flex items-center gap-1 text-[9px] uppercase tracking-widest font-black text-gray-400 mb-1">
+                        <IndianRupee className="w-3 h-3"/> Fare
+                      </div>
+                      <p className="text-sm font-black text-orange-500">{fmtCurrency(s.bus?.fare || s.fare)}</p>
+                    </div>
+
+                    {/* Available */}
+                    {s.available_seats != null && (
+                      <div>
+                        <div className="text-[9px] uppercase tracking-widest font-black text-gray-400 mb-1">Available</div>
+                        <p className={`text-sm font-black ${s.available_seats > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                          {s.available_seats}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Cancel button */}
+                    {s.schedule_status === 'ACTIVE' && (
+                      <button onClick={() => handleCancel(s.schedule_id)}
+                        className="ml-auto flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-50 border border-red-100 text-red-500 text-xs font-black hover:bg-red-100 transition-all">
+                        <Trash2 className="w-3.5 h-3.5"/> Cancel
                       </button>
                     )}
                   </div>
+
                 </div>
               </motion.div>
             );
           })}
         </AnimatePresence>
 
+        {/* Empty state */}
         {schedules.length === 0 && (
-          <div className="text-center py-16 bg-[#12121c] rounded-2xl border border-white/5">
-            <Calendar className="w-12 h-12 text-gray-700 mx-auto mb-3" />
-            <h3 className="text-white font-medium">No schedules found</h3>
-            <p className="text-gray-500 text-sm mt-1">Create a schedule to start selling tickets</p>
-          </div>
+          <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
+            className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-gray-100 shadow-sm text-center">
+            <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center mb-4">
+              <Calendar className="w-7 h-7 text-orange-400"/>
+            </div>
+            <h3 className="font-black text-gray-900 mb-1">No schedules found</h3>
+            <p className="text-gray-400 text-sm mb-5">
+              {filter === 'all' ? 'Create a schedule to start selling tickets' : `No ${filter.toLowerCase()} schedules`}
+            </p>
+            {filter === 'all' && (
+              <Link to="/traveler/add-schedule"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-black shadow-sm"
+                style={{ background:'linear-gradient(135deg,#f97415,#ea580c)' }}>
+                <Plus className="w-4 h-4"/> Create First Schedule
+              </Link>
+            )}
+          </motion.div>
         )}
       </div>
     </div>
