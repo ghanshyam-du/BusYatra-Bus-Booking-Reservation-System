@@ -89,7 +89,7 @@ const SeatSelection = ({ bus, onClose, onBookingComplete }) => {
     setPassengers(updated);
   };
 
-  const handleBooking = async () => {
+  const handleBooking = async () => { 
     for (let i = 0; i < passengers.length; i++) {
       if (!passengers[i].name || !passengers[i].age || !passengers[i].gender) {
         toast.error(`Please fill all details for passenger ${i + 1}`);
