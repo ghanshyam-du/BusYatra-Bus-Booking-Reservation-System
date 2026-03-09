@@ -309,7 +309,7 @@ export const assignTicket = asyncHandler(async (req, res, next) => {
   if (!ticket) {
     return next(new ErrorResponse('Ticket not found', 404));
   }
-  console.log('Looking for admin with user_id:', req.user.user_id);
+ 
   // Get admin profile from req.user
   const admin = await Admin.findOne({ user_id: req.user.user_id });
 console.log('Found admin:', admin);
