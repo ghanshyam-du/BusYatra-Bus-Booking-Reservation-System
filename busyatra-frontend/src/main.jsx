@@ -22,7 +22,7 @@ try {
       </BrowserRouter>
     </React.StrictMode>
   );
-  console.log('✅ Render called successfully');
+  console.log('✅ Render called successfully'); 
 } catch (error) {
   console.error('🔥 CRITICAL ERROR IN MAIN.JSX:', error);
   document.body.innerHTML = `<div style="color: red; padding: 20px;">
