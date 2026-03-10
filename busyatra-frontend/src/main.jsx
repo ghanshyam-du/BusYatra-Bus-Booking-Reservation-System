@@ -20,7 +20,7 @@ try {
       <BrowserRouter>
         <App />
       </BrowserRouter>
-    </React.StrictMode>
+    </React.StrictMode> 
   );
   console.log('✅ Render called successfully'); 
 } catch (error) {
