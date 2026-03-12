@@ -45,7 +45,7 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Gender is required']
   },
   date_of_birth: {
-    type: Date,
+    type: Date, 
     required: [true, 'Date of birth is required']
   },
   is_active: {
