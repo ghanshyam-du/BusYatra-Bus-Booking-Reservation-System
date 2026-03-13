@@ -74,7 +74,7 @@ userSchema.pre('save', async function() {
   if (this.user_id) return ;
   
   const count = await this.constructor.countDocuments();
-  this.user_id = `USR${String(count + 1).padStart(6, '0')}`;
+  this.user_id = `USR${String(count+1).padStart(6, '0')}`;
   
 });
 
