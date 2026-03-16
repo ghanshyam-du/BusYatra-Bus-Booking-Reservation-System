@@ -60,7 +60,7 @@ BusYatra is an end-to-end bus booking platform that digitizes the entire bus tic
 
 Traditional bus booking systems face several challenges:
 
-### Current Pain Points
+
 
 1. **Lack of Transparency**
    - Customers cannot view real-time seat availability
