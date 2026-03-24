@@ -432,7 +432,7 @@ Phase 6: Maintenance
   bus_id: String (PK),
   traveler_id: String (FK → Traveler),
   bus_number: String (Unique),
-  bus_type: Enum ['AC Sleeper', 'Non-AC Sleeper', ...],
+  bus_type: Enum ['AC Sleeper', 'Non-AC Sleeper', ..],
   from_location: String,
   to_location: String,
   total_seats: Number,
