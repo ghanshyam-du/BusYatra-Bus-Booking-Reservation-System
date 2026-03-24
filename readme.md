@@ -507,7 +507,7 @@ Phase 6: Maintenance
   passenger_name: String,
   passenger_age: Number,
   passenger_gender: Enum ['Male', 'Female', 'Other'],
-  passenger_id_type: Enum ['Aadhar', 'PAN', 'Passport', ...],
+  passenger_id_type: Enum ['Aadhar', 'PAN', 'Passport', ..],
   passenger_id_number: String,
   timestamps: true
 }
