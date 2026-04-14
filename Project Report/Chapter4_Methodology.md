@@ -26,17 +26,18 @@ with each sprint delivering a working increment of the system.
 
 **Project Gantt Chart:**
 
-```
-Phase                    | W1 | W2 | W3 | W4 | W5 | W6 | W7 | W8 | W9 |W10 |W11 |W12 |W13
-Requirements & Design    | ██ | ██ |    |    |    |    |    |    |    |    |    |    |
-Database & Backend Setup |    |    | ██ | ██ |    |    |    |    |    |    |    |    |
-Core API Development     |    |    |    |    | ██ | ██ | ██ |    |    |    |    |    |
-Frontend Development     |    |    |    |    |    | ██ | ██ | ██ | ██ |    |    |    |
-Integration & Testing    |    |    |    |    |    |    |    |    |    | ██ | ██ |    |
-Deployment & Docs        |    |    |    |    |    |    |    |    |    |    |    | ██ | ██
-```
+| Phase | Wk 1–2 | Wk 3–4 | Wk 5–6 | Wk 7–8 | Wk 9–10 | Wk 11–12 | Wk 13 |
+|---|---|---|---|---|---|---|---|
+| Requirements & DB Schema | ████ | | | | | | |
+| Backend API (Core) | | ████ | ████ | | | | |
+| Frontend UI (Core) | | | ████ | ████ | | | |
+| Advanced Modules (Admin, Traveler) | | | | ████ | ████ | | |
+| Real-Time Features (Seat Locking) | | | | | ████ | | |
+| Integration & Testing | | | | | | ████ | |
+| Bug Fixes & Refinement | | | | | | ████ | |
+| Documentation & Deployment | | | | | | | ████ |
 
-**Figure 9.0: Project Gantt Chart**
+**Figure 9.0 — BusYatra Project Gantt Chart (December 2025 – March 2026)**
 
 ---
 
