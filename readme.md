@@ -45,7 +45,7 @@ BusYatra is an end-to-end bus booking platform that digitizes the entire bus tic
 - **Project Status:** Development Phase
 - **Target Users:** Indian intercity bus travelers and bus operators
 
-### Key Objectives
+### Key Objectives 
 
 1. Simplify the bus ticket booking process for customers
 2. Provide bus operators with efficient fleet and schedule management tools
