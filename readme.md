@@ -2,7 +2,7 @@
   
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)](https://nodejs.org/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![MongoDB] (https://img.shields.io/badge/MongoDB-4EA94B?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://reactjs.org/)
 
 **BusYatra** is a comprehensive web-based bus ticket booking and management platform designed to simplify intercity bus travel in India. The system connects three key stakeholders: Customers who book tickets, Travelers (Bus Operators) who manage buses and schedules, and Administrators who ensure smooth operations
